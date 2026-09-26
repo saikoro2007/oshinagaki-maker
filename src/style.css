@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .vertical-rl {
+    writing-mode: vertical-rl;
+    -webkit-writing-mode: vertical-rl;
+    -ms-writing-mode: tb-rl;
+  }
+  .horizontal-tb {
+    writing-mode: horizontal-tb;
+    -webkit-writing-mode: horizontal-tb;
+  }
+  .tcy {
+    text-combine-upright: all;
+    -webkit-text-combine: horizontal;
+    -ms-text-combine-horizontal: all;
+  }
+  .font-brush {
+    font-family: 'Yuji Boku', 'Shippori Mincho', 'Noto Serif JP', serif;
+  }
+  .font-mincho {
+    font-family: 'Shippori Mincho', 'Noto Serif JP', serif;
+  }
+  .font-serif-jp {
+    font-family: 'Noto Serif JP', serif;
+  }
+  .font-gothic {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+  }
+}
+
+/* Print Specific Rules */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-sheet {
+    box-shadow: none !important;
+    border-color: #333 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    min-height: 98vh !important;
+    page-break-inside: avoid;
+  }
+}
+
+/* Custom scrollbar for preview */
+.preview-scroll::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.preview-scroll::-webkit-scrollbar-thumb {
+  background: #a8a29e;
+  border-radius: 9999px;
+}
