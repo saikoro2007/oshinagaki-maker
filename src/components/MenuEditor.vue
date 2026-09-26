@@ -228,8 +228,28 @@ function handleFileChange(event) {
           </div>
         </div>
 
-        <!-- Stamp & Border options -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+        <!-- Paper orientation & size & border options -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+          <div>
+            <label class="font-semibold text-stone-700 block mb-1">用紙の向き</label>
+            <select
+              v-model="menuData.paperOrientation"
+              class="w-full bg-white border border-stone-300 rounded-lg py-1.5 px-2 text-stone-800 font-bold"
+            >
+              <option value="landscape">横向き（推奨・定番）</option>
+              <option value="portrait">縦向き</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-semibold text-stone-700 block mb-1">用紙サイズ</label>
+            <select
+              v-model="menuData.paperSize"
+              class="w-full bg-white border border-stone-300 rounded-lg py-1.5 px-2 text-stone-800"
+            >
+              <option value="A4">A4 用紙</option>
+              <option value="B5">B5 用紙</option>
+            </select>
+          </div>
           <div>
             <label class="font-semibold text-stone-700 block mb-1">外枠デザイン</label>
             <select
@@ -242,23 +262,13 @@ function handleFileChange(event) {
             </select>
           </div>
           <div>
-            <label class="font-semibold text-stone-700 block mb-1">用紙サイズ</label>
-            <select
-              v-model="menuData.paperSize"
-              class="w-full bg-white border border-stone-300 rounded-lg py-1.5 px-2 text-stone-800"
-            >
-              <option value="A4">A4 縦向き</option>
-              <option value="B5">B5 縦向き</option>
-            </select>
-          </div>
-          <div>
             <label class="font-semibold text-stone-700 block mb-1">赤印鑑テキスト</label>
             <input
               v-model="menuData.stampText"
               type="text"
-              placeholder="名物 / 厳選 / 店名など"
+              placeholder="名物 / 厳選など"
               maxlength="4"
-              class="w-full bg-white border border-stone-300 rounded-lg py-1 px-2 text-stone-800"
+              class="w-full bg-white border border-stone-300 rounded-lg py-1 px-2 text-stone-800 text-center"
             />
           </div>
         </div>

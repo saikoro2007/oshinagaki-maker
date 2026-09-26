@@ -16,7 +16,7 @@ import {
 const STORAGE_KEY = 'oshinagaki_maker_menu_data'
 
 // Tab state: 'editor' | 'preview'
-const activeTab = ref('editor')
+const activeTab = ref('preview')
 const showPresetModal = ref(false)
 const showSaveToast = ref(false)
 
@@ -154,7 +154,7 @@ function triggerPrint() {
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-1 max-w-3xl w-full mx-auto p-4 sm:p-6">
+    <main class="flex-1 w-full mx-auto p-3 sm:p-6 transition-all" :class="activeTab === 'preview' ? 'max-w-6xl' : 'max-w-2xl'">
       <!-- Editor View -->
       <div v-show="activeTab === 'editor'" class="no-print">
         <MenuEditor
@@ -164,12 +164,13 @@ function triggerPrint() {
         />
       </div>
 
-      <!-- Preview View -->
-      <!-- We always keep MenuPreview in DOM for printing purposes -->
-      <div :class="{ 'hidden sm:block': activeTab === 'editor' }">
-        <div v-if="activeTab === 'editor'" class="no-print mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-center justify-between">
-          <span>💡 編集中の仕上がりイメージは上部「仕上がり確認」タブまたは下で確認できます</span>
-        </div>
+      <!-- Preview View (Screen) -->
+      <div v-show="activeTab === 'preview'" class="no-print">
+        <MenuPreview :menu-data="menuData" />
+      </div>
+
+      <!-- Always in DOM for Print (@media print) -->
+      <div class="hidden print:block">
         <MenuPreview :menu-data="menuData" />
       </div>
     </main>

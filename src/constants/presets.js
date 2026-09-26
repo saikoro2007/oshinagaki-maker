@@ -80,8 +80,9 @@ export const INITIAL_MENU_STATE = {
   frameStyle: 'traditional', // 'traditional' | 'minimal' | 'none'
   showEnglish: false,
   showNotes: true,
-  priceFormat: 'number', // 'number' (例: 180円) | 'kanji' (例: 一八〇円)
+  priceFormat: 'kanji', // 'kanji' (例: 一八〇円・和風標準) | 'number' (例: 180円)
   paperSize: 'A4', // 'A4' | 'B5'
+  paperOrientation: 'landscape', // 'landscape' (横長用紙・おすすめ・定番) | 'portrait' (縦長用紙)
   items: [
     { id: '1', name: 'とり精肉', price: '180', note: '塩・タレ', translation: 'Chicken Thigh' },
     { id: '2', name: '豚精肉', price: '190', note: '北海道産豚', translation: 'Pork Skewer' },
