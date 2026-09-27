@@ -21,18 +21,16 @@ export function toKanjiNumber(str) {
 
 /**
  * 価格の表示用文字列を生成
- * 横書きモードでは絶対に漢数字にせず、常にアラビア数字（180円）を適用
+ * formatがkanjiの場合は漢数字、numberの場合は算用数字（柔軟なカスタムに対応）
  */
 export function formatPrice(price, format = 'number', isVertical = true) {
   if (!price && price !== 0) return '';
   const cleanPrice = price.toString().replace(/[^0-9]/g, '');
   if (!cleanPrice) return price;
 
-  // 横書きの場合は常にアラビア数字（例: 180円）
-  if (!isVertical || format === 'number') {
-    return `${cleanPrice}円`;
+  if (format === 'kanji') {
+    return `${toKanjiNumber(cleanPrice)}円`;
   }
 
-  // 縦書きかつkanji指定の場合のみ漢数字（例: 一八〇円）
-  return `${toKanjiNumber(cleanPrice)}円`;
+  return `${cleanPrice}円`;
 }

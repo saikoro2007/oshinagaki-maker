@@ -90,6 +90,15 @@ function handleFileChange(event) {
   reader.readAsText(file)
   event.target.value = ''
 }
+
+function selectLayout(mode) {
+  props.menuData.layout = mode
+  if (mode === 'vertical') {
+    props.menuData.priceFormat = 'kanji'
+  } else {
+    props.menuData.priceFormat = 'number'
+  }
+}
 </script>
 
 <template>
@@ -127,7 +136,7 @@ function handleFileChange(event) {
           <div class="grid grid-cols-2 gap-2">
             <button
               type="button"
-              @click="menuData.layout = 'vertical'"
+              @click="selectLayout('vertical')"
               :class="[
                 'py-2 px-3 rounded-lg border text-center font-bold transition',
                 menuData.layout === 'vertical'
@@ -139,7 +148,7 @@ function handleFileChange(event) {
             </button>
             <button
               type="button"
-              @click="menuData.layout = 'horizontal'"
+              @click="selectLayout('horizontal')"
               :class="[
                 'py-2 px-3 rounded-lg border text-center font-bold transition',
                 menuData.layout === 'horizontal'

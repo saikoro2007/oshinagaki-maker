@@ -385,13 +385,13 @@ function triggerPrint() {
                     ({{ item.translation }})
                   </span>
                 </div>
-                <!-- Always Arabic numerals in Horizontal mode (Requirement 2) -->
+                <!-- Price in Horizontal mode -->
                 <div
                   contenteditable="true"
                   @blur="onPriceBlur(item, $event)"
                   class="editable-field font-bold text-sm sm:text-base text-stone-900 whitespace-nowrap pl-2 outline-none hover:bg-amber-100/60 cursor-text"
                 >
-                  {{ formatPrice(item.price, 'number', false) }}
+                  {{ formatPrice(item.price, menuData.priceFormat, false) }}
                 </div>
               </div>
             </div>
