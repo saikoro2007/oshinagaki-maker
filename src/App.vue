@@ -84,15 +84,26 @@ function triggerPrint() {
       <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
         <!-- Logo / Brand -->
         <div class="flex items-center gap-2.5">
-          <!-- Stylized Japanese Lantern/Scroll icon -->
-          <svg class="w-6 h-6 text-amber-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="8" y1="2" x2="16" y2="2"></line>
-            <path d="M7 6h10a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3z"></path>
-            <line x1="12" y1="6" x2="12" y2="18"></line>
-            <line x1="8" y1="22" x2="16" y2="22"></line>
-            <line x1="12" y1="18" x2="12" y2="22"></line>
-            <line x1="12" y1="2" x2="12" y2="6"></line>
-          </svg>
+          <!-- Stylized Japanese Seal Stamp Logo with "品" -->
+          <div class="relative shrink-0 flex items-center justify-center">
+            <svg class="w-7 h-7 drop-shadow-sm select-none" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="sealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#dc2626" />
+                  <stop offset="100%" stop-color="#991b1b" />
+                </linearGradient>
+              </defs>
+              <!-- Vermilion Red Stamp Background -->
+              <rect x="3" y="3" width="58" height="58" rx="10" fill="url(#sealGrad)" stroke="#7f1d1d" stroke-width="2"/>
+              <rect x="6.5" y="6.5" width="51" height="51" rx="8" fill="none" stroke="#fca5a5" stroke-width="1.2" stroke-dasharray="3 2" stroke-opacity="0.6"/>
+              <!-- Top Box of "品" -->
+              <rect x="23" y="14" width="18" height="13" rx="2.5" fill="none" stroke="#ffffff" stroke-width="3.8" stroke-linejoin="round"/>
+              <!-- Bottom Left Box of "品" -->
+              <rect x="13" y="34" width="17" height="13" rx="2.5" fill="none" stroke="#ffffff" stroke-width="3.8" stroke-linejoin="round"/>
+              <!-- Bottom Right Box of "品" -->
+              <rect x="34" y="34" width="17" height="13" rx="2.5" fill="none" stroke="#ffffff" stroke-width="3.8" stroke-linejoin="round"/>
+            </svg>
+          </div>
           <div>
             <h1 class="font-mincho font-bold text-base sm:text-lg tracking-wider text-stone-100 leading-none">
               おしながきメーカー
