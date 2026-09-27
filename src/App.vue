@@ -181,6 +181,38 @@ function triggerPrint() {
       </div>
     </main>
 
+    <!-- Common Screen Footer (Hidden on Print) -->
+    <footer class="no-print mt-auto py-6 border-t border-stone-200 bg-stone-100 text-stone-500 text-xs">
+      <div class="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+        <div>
+          <p class="font-bold text-stone-700">おしながきメーカー</p>
+          <p class="text-[11px] text-stone-400 mt-0.5">飲食店や催事のための縦書き印刷メニュー作成ツール</p>
+        </div>
+        <div class="flex items-center gap-4 text-[11px] text-stone-500">
+          <a
+            href="https://github.com/saikoro2007/oshinagaki-maker"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-stone-800 transition underline underline-offset-2"
+          >
+            GitHub
+          </a>
+          <span>·</span>
+          <span>
+            © 2026
+            <a
+              href="https://github.com/saikoro2007"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-stone-800 font-semibold transition"
+            >
+              saikoro2007
+            </a>
+          </span>
+        </div>
+      </div>
+    </footer>
+
     <!-- Preset Drawer Modal -->
     <PresetModal
       :show="showPresetModal"
