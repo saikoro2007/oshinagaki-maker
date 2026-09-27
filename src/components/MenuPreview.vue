@@ -85,7 +85,6 @@ function onTextBlur(targetObj, key, event) {
 
 function onPriceBlur(item, event) {
   const rawText = event.target.innerText.trim()
-  // 数字または漢数字を取得
   const cleaned = rawText.replace(/円/g, '').trim()
   if (cleaned) {
     item.price = cleaned
@@ -186,7 +185,7 @@ function triggerPrint() {
             v-if="menuData.layout === 'vertical'"
             class="vertical-rl w-full h-[450px] sm:h-[490px] flex flex-col justify-between overflow-x-visible py-1"
           >
-            <!-- 1. Right Header Section (Title & Subtitle & Store & Stamp) -->
+            <!-- 1. Right Header Section (Title & Subtitle & Stamp ONLY - No clunky store name next to title) -->
             <div class="flex flex-row justify-between pl-6 sm:pl-8 border-l-2 border-stone-800 shrink-0 h-full">
               <div>
                 <!-- Subtitle (Editable) -->
@@ -208,27 +207,16 @@ function triggerPrint() {
                 >
                   {{ menuData.title }}
                 </h1>
-
-                <!-- Store Name / Date in Header (Requirement 4) -->
-                <div
-                  v-if="menuData.storeName"
-                  contenteditable="true"
-                  @blur="onTextBlur(menuData, 'storeName', $event)"
-                  class="editable-field text-xs sm:text-sm text-stone-700 font-bold tracking-wider mt-3 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
-                  title="タップして編集"
-                >
-                  {{ menuData.storeName }}
-                </div>
               </div>
 
-              <!-- Traditional Red Stamp Seal (Editable) -->
+              <!-- Traditional Red Stamp Seal (Editable - can display store name or stamp text) -->
               <div
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'stampText', $event)"
                 class="editable-field border-2 border-red-700 text-red-700 font-bold text-xs p-1.5 rounded-xs tracking-tighter self-end select-none outline-none hover:bg-red-50 focus:ring-1 focus:ring-red-600 cursor-text"
                 title="タップして印鑑文字を変更"
               >
-                {{ menuData.stampText || (menuData.storeName ? menuData.storeName.slice(0, 2) : '名物') }}
+                {{ menuData.stampText || (menuData.storeName ? menuData.storeName.slice(0, 4) : '名物') }}
               </div>
             </div>
 
@@ -301,12 +289,23 @@ function triggerPrint() {
               </div>
             </div>
 
-            <!-- 3. Left Footer Section (Requirement 4: Clean, minimal footer note without awkward borders) -->
-            <div class="flex flex-row justify-end pr-2 sm:pr-4 shrink-0 h-full text-stone-700">
+            <!-- 3. Left Footer Section (Clean footer with optional store signature & tax note) -->
+            <div class="flex flex-row justify-between pr-2 sm:pr-4 shrink-0 h-full text-stone-700">
+              <div
+                v-if="menuData.storeName"
+                contenteditable="true"
+                @blur="onTextBlur(menuData, 'storeName', $event)"
+                class="editable-field text-xs font-bold text-stone-600 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text self-start pt-1"
+                title="タップして店名を編集"
+              >
+                {{ menuData.storeName }}
+              </div>
+              <div v-else></div>
+
               <div
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'footerNote', $event)"
-                class="editable-field text-[10px] text-stone-500 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text self-end"
+                class="editable-field text-[10px] text-stone-400 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text self-end pb-1"
                 title="タップして注記を編集"
               >
                 {{ menuData.footerNote }}
@@ -341,7 +340,7 @@ function triggerPrint() {
                   @blur="onTextBlur(menuData, 'stampText', $event)"
                   class="editable-field border-2 border-red-700 text-red-700 font-bold text-[10px] px-1 py-0.5 rounded-xs outline-none hover:bg-red-50 cursor-text"
                 >
-                  {{ menuData.stampText || (menuData.storeName ? menuData.storeName.slice(0, 2) : '名物') }}
+                  {{ menuData.stampText || (menuData.storeName ? menuData.storeName.slice(0, 4) : '名物') }}
                 </div>
               </div>
               <div
@@ -386,12 +385,13 @@ function triggerPrint() {
                     ({{ item.translation }})
                   </span>
                 </div>
+                <!-- Always Arabic numerals in Horizontal mode (Requirement 2) -->
                 <div
                   contenteditable="true"
                   @blur="onPriceBlur(item, $event)"
                   class="editable-field font-bold text-sm sm:text-base text-stone-900 whitespace-nowrap pl-2 outline-none hover:bg-amber-100/60 cursor-text"
                 >
-                  {{ formatPrice(item.price, menuData.priceFormat, false) }}
+                  {{ formatPrice(item.price, 'number', false) }}
                 </div>
               </div>
             </div>
@@ -404,6 +404,14 @@ function triggerPrint() {
                 class="editable-field outline-none hover:bg-amber-100/60 cursor-text"
               >
                 {{ menuData.footerNote }}
+              </div>
+              <div
+                v-if="menuData.storeName"
+                contenteditable="true"
+                @blur="onTextBlur(menuData, 'storeName', $event)"
+                class="editable-field font-bold text-stone-700 tracking-wider outline-none hover:bg-amber-100/60 cursor-text"
+              >
+                {{ menuData.storeName }}
               </div>
             </div>
           </div>

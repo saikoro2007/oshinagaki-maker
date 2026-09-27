@@ -84,14 +84,23 @@ function triggerPrint() {
       <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
         <!-- Logo / Brand -->
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-amber-700 flex items-center justify-center font-bold text-white shadow-inner font-brush text-lg">
-            品
-          </div>
+          <!-- Stylized Japanese Lantern/Scroll icon -->
+          <svg class="w-6 h-6 text-amber-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="8" y1="2" x2="16" y2="2"></line>
+            <path d="M7 6h10a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3z"></path>
+            <line x1="12" y1="6" x2="12" y2="18"></line>
+            <line x1="8" y1="22" x2="16" y2="22"></line>
+            <line x1="12" y1="18" x2="12" y2="22"></line>
+            <line x1="12" y1="2" x2="12" y2="6"></line>
+          </svg>
           <div>
-            <h1 class="text-sm sm:text-base font-bold tracking-wider leading-none text-stone-100">
-              お品書きメーカー
-            </h1>
-            <span class="text-[10px] text-amber-400/90 font-medium">スマホで作れる縦書き印刷メニュー</span>
+            <div class="flex items-baseline gap-1.5 leading-none">
+              <h1 class="text-base font-bold tracking-widest font-mincho text-stone-100">
+                お品書き
+              </h1>
+              <span class="text-xs font-bold text-amber-400 font-sans tracking-tight">メーカー</span>
+            </div>
+            <span class="text-[10px] text-stone-400 tracking-wider block mt-1">スマホで作る縦書き印刷メニュー</span>
           </div>
         </div>
 
