@@ -94,7 +94,7 @@ function triggerPrint() {
             <line x1="12" y1="2" x2="12" y2="6"></line>
           </svg>
           <div>
-            <h1 class="text-base font-bold tracking-wider text-stone-100 leading-none">
+            <h1 class="font-mincho font-bold text-base sm:text-lg tracking-wider text-stone-100 leading-none">
               おしながきメーカー
             </h1>
             <span class="text-[10px] text-stone-400 tracking-wider block mt-1">スマホで作る縦書き印刷メニュー</span>

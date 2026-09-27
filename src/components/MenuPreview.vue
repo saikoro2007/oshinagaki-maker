@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { formatPrice } from '../utils/formatters'
-import { Printer, Maximize2, Sparkles, Edit3 } from '@lucide/vue'
+import { Printer, Maximize2, Minimize2, Sparkles, Edit3, ArrowLeftRight } from '@lucide/vue'
 
 const props = defineProps({
   menuData: {
@@ -11,6 +11,45 @@ const props = defineProps({
 })
 
 const isFitToScreen = ref(false)
+const scrollContainer = ref(null)
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 800)
+
+function handleResize() {
+  windowWidth.value = window.innerWidth
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+  nextTick(() => {
+    // 縦書きの場合、最初は右側のタイトルが見えるように右端へスクロール
+    if (scrollContainer.value && props.menuData.layout === 'vertical') {
+      scrollContainer.value.scrollLeft = scrollContainer.value.scrollWidth
+    }
+  })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
+
+// レイアウトや表示切替時にスクロール位置を調整
+watch(() => props.menuData.layout, (newLayout) => {
+  nextTick(() => {
+    if (scrollContainer.value) {
+      if (newLayout === 'vertical') {
+        scrollContainer.value.scrollLeft = scrollContainer.value.scrollWidth
+      } else {
+        scrollContainer.value.scrollLeft = 0
+      }
+    }
+  })
+})
+
+const scaleRatio = computed(() => {
+  const baseWidth = isLandscape.value ? 840 : 380
+  const availableWidth = Math.max(windowWidth.value - 32, 280)
+  return Math.min(availableWidth / baseWidth, 1)
+})
 
 const fontClass = computed(() => {
   switch (props.menuData.fontFamily) {
@@ -109,6 +148,12 @@ function triggerPrint() {
           outline: none !important;
           background: transparent !important;
         }
+        .fit-wrapper, .fit-inner {
+          transform: none !important;
+          width: 100% !important;
+          height: auto !important;
+          overflow: visible !important;
+        }
       }
     </component>
 
@@ -133,10 +178,10 @@ function triggerPrint() {
         <button
           type="button"
           @click="isFitToScreen = !isFitToScreen"
-          class="sm:hidden px-3 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-xl text-xs font-semibold flex items-center gap-1 border border-stone-700 transition"
+          class="sm:hidden px-3 py-2 bg-stone-800 hover:bg-stone-700 active:scale-95 text-stone-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-stone-700 transition cursor-pointer"
         >
-          <Maximize2 class="w-3.5 h-3.5" />
-          <span>{{ isFitToScreen ? '拡大表示' : '全体に縮小' }}</span>
+          <component :is="isFitToScreen ? Maximize2 : Minimize2" class="w-3.5 h-3.5" />
+          <span>{{ isFitToScreen ? '原寸表示 (スワイプ)' : '全体表示 (画面に収める)' }}</span>
         </button>
 
         <button
@@ -150,21 +195,40 @@ function triggerPrint() {
       </div>
     </div>
 
-    <!-- Paper Scroll Container -->
+    <!-- Mobile swipe hint when in 100% full scale -->
     <div
-      class="preview-scroll w-full overflow-x-auto pb-8 flex justify-center px-1 sm:px-4"
+      v-if="!isFitToScreen"
+      class="no-print sm:hidden text-center text-[11px] text-stone-700 flex items-center justify-center gap-1.5 py-0.5"
+    >
+      <ArrowLeftRight class="w-3 h-3 text-stone-700 animate-pulse" />
+      <span>左右にスクロールして全体を確認・編集できます</span>
+    </div>
+
+    <!-- Paper Container (Fit Mode vs Scroll Mode) -->
+    <div
+      ref="scrollContainer"
+      :class="[
+        'w-full transition-all',
+        isFitToScreen
+          ? 'fit-wrapper flex justify-center overflow-hidden py-2'
+          : 'preview-scroll overflow-x-auto pb-8 flex justify-start sm:justify-center px-2 sm:px-4'
+      ]"
+      :style="isFitToScreen ? { height: `${(isLandscape ? 560 : 640) * scaleRatio}px` } : {}"
     >
       <div
-        :class="[
-          'print-sheet bg-[#fffdfa] text-stone-950 shadow-2xl transition-all relative select-none border border-stone-300/60',
-          fontClass,
-          isLandscape
-            ? 'min-w-[820px] max-w-[1080px] w-full min-h-[500px] sm:min-h-[560px] p-6 sm:p-10'
-            : 'min-w-[340px] max-w-[750px] w-full min-h-[640px] p-6 sm:p-8',
-          isFitToScreen ? 'scale-[0.42] sm:scale-100 origin-top' : ''
-        ]"
-        style="box-sizing: border-box;"
+        :class="isFitToScreen ? 'fit-inner origin-top-left sm:origin-top' : ''"
+        :style="isFitToScreen ? { transform: `scale(${scaleRatio})`, width: isLandscape ? '840px' : '380px' } : {}"
       >
+        <div
+          :class="[
+            'print-sheet shrink-0 bg-[#fffdfa] text-stone-950 shadow-2xl transition-all relative select-none border border-stone-300/60',
+            fontClass,
+            isLandscape
+              ? (isFitToScreen ? 'w-[840px] h-[560px] p-6 sm:p-10' : 'min-w-[820px] max-w-[1080px] w-full min-h-[500px] sm:min-h-[560px] p-6 sm:p-10')
+              : (isFitToScreen ? 'w-[380px] h-[640px] p-6 sm:p-8' : 'min-w-[340px] max-w-[750px] w-full min-h-[640px] p-6 sm:p-8'),
+          ]"
+          style="box-sizing: border-box;"
+        >
         <!-- Outer Frame -->
         <div
           :class="[
@@ -418,5 +482,6 @@ function triggerPrint() {
         </div>
       </div>
     </div>
+  </div>
   </div>
 </template>
