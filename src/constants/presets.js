@@ -83,6 +83,9 @@ export const INITIAL_MENU_STATE = {
   priceFormat: 'kanji', // 'kanji' (例: 一八〇円・和風標準) | 'number' (例: 180円)
   paperSize: 'A4', // 'A4' | 'B5'
   paperOrientation: 'landscape', // 'landscape' (横長用紙・おすすめ・定番) | 'portrait' (縦長用紙)
+  density: 'auto', // 'auto' (品数に応じて自動) | 'spacious' (ゆったり大) | 'normal' (標準中) | 'compact' (すっきり小)
+  showDividers: false, // 区切り線（デフォルトOFFで無駄な線を排除）
+  storeNamePosition: 'header', // 'header' (右側タイトル付近) | 'footer' (左端注記横) | 'none'
   items: [
     { id: '1', name: 'とり精肉', price: '180', note: '塩・タレ', translation: 'Chicken Thigh' },
     { id: '2', name: '豚精肉', price: '190', note: '北海道産豚', translation: 'Pork Skewer' },

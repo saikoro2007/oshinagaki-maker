@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { formatPrice } from '../utils/formatters'
-import { Printer, ZoomIn, ZoomOut, Maximize2 } from '@lucide/vue'
+import { Printer, Maximize2, Sparkles, Edit3 } from '@lucide/vue'
 
 const props = defineProps({
   menuData: {
@@ -39,6 +39,59 @@ const frameClasses = computed(() => {
 
 const isLandscape = computed(() => props.menuData.paperOrientation !== 'portrait')
 
+// 2. 文字サイズ・密度の動的計算（自動または手動設定）
+const effectiveDensity = computed(() => {
+  if (props.menuData.density && props.menuData.density !== 'auto') {
+    return props.menuData.density
+  }
+  const count = props.menuData.items.length
+  if (count <= 7) return 'spacious'
+  if (count <= 11) return 'normal'
+  return 'compact'
+})
+
+const itemClasses = computed(() => {
+  switch (effectiveDensity.value) {
+    case 'compact':
+      return {
+        col: 'px-1 sm:px-1.5 min-w-[24px] sm:min-w-[30px]',
+        name: 'text-sm sm:text-base tracking-normal leading-snug',
+        note: 'text-[9px] px-0.5 py-0.5 mt-1',
+        price: 'text-xs sm:text-sm tracking-tighter',
+      }
+    case 'normal':
+      return {
+        col: 'px-2 sm:px-2.5 min-w-[28px] sm:min-w-[36px]',
+        name: 'text-base sm:text-lg tracking-wider leading-snug',
+        note: 'text-[10px] px-0.5 py-1 mt-1.5',
+        price: 'text-sm sm:text-base tracking-normal',
+      }
+    case 'spacious':
+    default:
+      return {
+        col: 'px-3 sm:px-4 min-w-[34px] sm:min-w-[44px]',
+        name: 'text-lg sm:text-xl tracking-widest leading-tight',
+        note: 'text-[11px] px-1 py-1 mt-2',
+        price: 'text-base sm:text-lg tracking-wider',
+      }
+  }
+})
+
+// 5. プレビュー上からの直接編集（インプレース編集）ハンドラー
+function onTextBlur(targetObj, key, event) {
+  const text = event.target.innerText.trim()
+  targetObj[key] = text
+}
+
+function onPriceBlur(item, event) {
+  const rawText = event.target.innerText.trim()
+  // 数字または漢数字を取得
+  const cleaned = rawText.replace(/円/g, '').trim()
+  if (cleaned) {
+    item.price = cleaned
+  }
+}
+
 function triggerPrint() {
   window.print()
 }
@@ -53,18 +106,26 @@ function triggerPrint() {
           size: {{ menuData.paperSize || 'A4' }} {{ isLandscape ? 'landscape' : 'portrait' }};
           margin: 8mm;
         }
+        .editable-field {
+          outline: none !important;
+          background: transparent !important;
+        }
       }
     </component>
 
     <!-- Screen-only Control Bar -->
-    <div class="no-print bg-stone-900 text-white rounded-2xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-3 max-w-4xl mx-auto">
+    <div class="no-print bg-stone-900 text-white rounded-2xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-3 max-w-5xl mx-auto">
       <div>
         <div class="font-bold text-sm sm:text-base flex items-center gap-1.5">
           <span>🖨️</span>
           <span>お品書きプレビュー</span>
+          <span class="text-xs font-normal text-amber-300 ml-2 bg-amber-950/80 border border-amber-700/60 px-2 py-0.5 rounded-full flex items-center gap-1">
+            <Edit3 class="w-3 h-3" />
+            <span>文字を直接タップして編集可能</span>
+          </span>
         </div>
-        <p class="text-xs text-stone-300 mt-0.5">
-          用紙: {{ menuData.paperSize || 'A4' }}・{{ isLandscape ? '横向き (横長)' : '縦向き (縦長)' }} / {{ menuData.layout === 'vertical' ? '縦書き' : '横書き' }} / {{ menuData.items.length }}品
+        <p class="text-xs text-stone-300 mt-1">
+          {{ menuData.paperSize || 'A4' }}・{{ isLandscape ? '横向き (横長)' : '縦向き (縦長)' }} / {{ menuData.layout === 'vertical' ? '縦書き' : '横書き' }} / {{ menuData.items.length }}品目 ({{ effectiveDensity === 'compact' ? 'すっきり小' : effectiveDensity === 'normal' ? '標準中' : 'ゆったり大' }})
         </p>
       </div>
 
@@ -99,7 +160,7 @@ function triggerPrint() {
           'print-sheet bg-[#fffdfa] text-stone-950 shadow-2xl transition-all relative select-none border border-stone-300/60',
           fontClass,
           isLandscape
-            ? 'min-w-[820px] max-w-[1080px] w-full min-h-[520px] sm:min-h-[580px] p-6 sm:p-10'
+            ? 'min-w-[820px] max-w-[1080px] w-full min-h-[500px] sm:min-h-[560px] p-6 sm:p-10'
             : 'min-w-[340px] max-w-[750px] w-full min-h-[640px] p-6 sm:p-8',
           isFitToScreen ? 'scale-[0.42] sm:scale-100 origin-top' : ''
         ]"
@@ -123,21 +184,50 @@ function triggerPrint() {
           <!-- VERTICAL WRITING LAYOUT (縦書き・メニューが横に流れる) -->
           <div
             v-if="menuData.layout === 'vertical'"
-            class="vertical-rl w-full h-[460px] sm:h-[500px] flex flex-col justify-between overflow-x-visible py-1"
+            class="vertical-rl w-full h-[450px] sm:h-[490px] flex flex-col justify-between overflow-x-visible py-1"
           >
-            <!-- 1. Right Header Section (Title & Subtitle & Stamp) -->
+            <!-- 1. Right Header Section (Title & Subtitle & Store & Stamp) -->
             <div class="flex flex-row justify-between pl-6 sm:pl-8 border-l-2 border-stone-800 shrink-0 h-full">
               <div>
-                <div class="text-xs sm:text-sm text-stone-600 font-bold tracking-widest">
+                <!-- Subtitle (Editable) -->
+                <div
+                  contenteditable="true"
+                  @blur="onTextBlur(menuData, 'subtitle', $event)"
+                  class="editable-field text-xs sm:text-sm text-stone-600 font-bold tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
+                  title="タップして編集"
+                >
                   {{ menuData.subtitle }}
                 </div>
-                <h1 class="text-3xl sm:text-4xl font-black tracking-widest text-stone-950 mt-2">
+
+                <!-- Main Title (Editable) -->
+                <h1
+                  contenteditable="true"
+                  @blur="onTextBlur(menuData, 'title', $event)"
+                  class="editable-field text-3xl sm:text-4xl font-black tracking-widest text-stone-950 mt-2 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
+                  title="タップして編集"
+                >
                   {{ menuData.title }}
                 </h1>
+
+                <!-- Store Name / Date in Header (Requirement 4) -->
+                <div
+                  v-if="menuData.storeName"
+                  contenteditable="true"
+                  @blur="onTextBlur(menuData, 'storeName', $event)"
+                  class="editable-field text-xs sm:text-sm text-stone-700 font-bold tracking-wider mt-3 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
+                  title="タップして編集"
+                >
+                  {{ menuData.storeName }}
+                </div>
               </div>
 
-              <!-- Traditional Red Stamp Seal -->
-              <div class="border-2 border-red-700 text-red-700 font-bold text-xs p-1.5 rounded-xs tracking-tighter self-end select-none">
+              <!-- Traditional Red Stamp Seal (Editable) -->
+              <div
+                contenteditable="true"
+                @blur="onTextBlur(menuData, 'stampText', $event)"
+                class="editable-field border-2 border-red-700 text-red-700 font-bold text-xs p-1.5 rounded-xs tracking-tighter self-end select-none outline-none hover:bg-red-50 focus:ring-1 focus:ring-red-600 cursor-text"
+                title="タップして印鑑文字を変更"
+              >
                 {{ menuData.stampText || (menuData.storeName ? menuData.storeName.slice(0, 2) : '名物') }}
               </div>
             </div>
@@ -147,19 +237,37 @@ function triggerPrint() {
               <div
                 v-for="(item, idx) in menuData.items"
                 :key="item.id || idx"
-                class="flex flex-row justify-between h-full py-1 px-2 border-l border-dotted border-stone-300 relative group min-w-[28px] sm:min-w-[36px]"
+                :class="[
+                  'flex flex-row justify-between h-full py-1 relative group transition-all',
+                  itemClasses.col,
+                  menuData.showDividers ? 'border-l border-stone-200' : ''
+                ]"
               >
                 <!-- Item Name & Tag (Top of vertical column) -->
                 <div>
-                  <!-- Main Item Name -->
-                  <div class="text-lg sm:text-xl font-bold tracking-wider leading-tight text-stone-900">
+                  <!-- Main Item Name (Editable) -->
+                  <div
+                    contenteditable="true"
+                    @blur="onTextBlur(item, 'name', $event)"
+                    :class="[
+                      'editable-field font-bold text-stone-900 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text',
+                      itemClasses.name
+                    ]"
+                    title="タップして品名を編集"
+                  >
                     {{ item.name }}
                   </div>
 
-                  <!-- Note Badge (e.g. 塩・タレ) -->
+                  <!-- Note Badge (e.g. 塩・タレ) (Editable) -->
                   <div
                     v-if="menuData.showNotes && item.note"
-                    class="text-[10px] text-stone-600 tracking-tighter bg-stone-100 border border-stone-300 px-0.5 py-1 rounded-xs mt-2"
+                    contenteditable="true"
+                    @blur="onTextBlur(item, 'note', $event)"
+                    :class="[
+                      'editable-field text-stone-600 tracking-tighter bg-stone-100 border border-stone-300 rounded-xs outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text',
+                      itemClasses.note
+                    ]"
+                    title="タップして補足を編集"
                   >
                     {{ item.note }}
                   </div>
@@ -167,29 +275,40 @@ function triggerPrint() {
                   <!-- English translation if enabled -->
                   <div
                     v-if="menuData.showEnglish && item.translation"
-                    class="text-[9px] text-stone-500 font-sans tracking-tight opacity-80 mt-1"
+                    contenteditable="true"
+                    @blur="onTextBlur(item, 'translation', $event)"
+                    class="editable-field text-[9px] text-stone-500 font-sans tracking-tight opacity-80 mt-1 outline-none hover:bg-amber-100/60 cursor-text"
+                    title="タップして翻訳を編集"
                   >
                     {{ item.translation }}
                   </div>
                 </div>
 
-                <!-- Price at the bottom of the column -->
+                <!-- Price at the bottom of the column (Editable) -->
                 <div class="self-end pb-1">
-                  <div class="text-sm sm:text-base font-bold text-stone-900 tracking-widest whitespace-nowrap">
+                  <div
+                    contenteditable="true"
+                    @blur="onPriceBlur(item, $event)"
+                    :class="[
+                      'editable-field font-bold text-stone-900 whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text',
+                      itemClasses.price
+                    ]"
+                    title="タップして価格を編集"
+                  >
                     {{ formatPrice(item.price, menuData.priceFormat, true) }}
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- 3. Left Footer Section (Store Name, Notice) -->
-            <div class="flex flex-row justify-between pr-4 sm:pr-6 border-r border-stone-300 shrink-0 h-full text-stone-700">
-              <div v-if="menuData.storeName" class="text-base font-bold tracking-widest">
-                {{ menuData.storeName }}
-              </div>
-              <div v-else></div>
-
-              <div class="text-[10px] text-stone-500 tracking-wider">
+            <!-- 3. Left Footer Section (Requirement 4: Clean, minimal footer note without awkward borders) -->
+            <div class="flex flex-row justify-end pr-2 sm:pr-4 shrink-0 h-full text-stone-700">
+              <div
+                contenteditable="true"
+                @blur="onTextBlur(menuData, 'footerNote', $event)"
+                class="editable-field text-[10px] text-stone-500 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text self-end"
+                title="タップして注記を編集"
+              >
                 {{ menuData.footerNote }}
               </div>
             </div>
@@ -202,16 +321,36 @@ function triggerPrint() {
           >
             <!-- Header -->
             <div class="text-center pb-5 border-b-2 border-stone-800">
-              <div class="text-xs text-stone-600 font-bold tracking-widest mb-1">
+              <div
+                contenteditable="true"
+                @blur="onTextBlur(menuData, 'subtitle', $event)"
+                class="editable-field text-xs text-stone-600 font-bold tracking-widest mb-1 outline-none hover:bg-amber-100/60 cursor-text"
+              >
                 {{ menuData.subtitle }}
               </div>
               <div class="flex items-center justify-center gap-3">
-                <h1 class="text-2xl sm:text-3xl font-black tracking-widest text-stone-950">
+                <h1
+                  contenteditable="true"
+                  @blur="onTextBlur(menuData, 'title', $event)"
+                  class="editable-field text-2xl sm:text-3xl font-black tracking-widest text-stone-950 outline-none hover:bg-amber-100/60 cursor-text"
+                >
                   {{ menuData.title }}
                 </h1>
-                <div class="border-2 border-red-700 text-red-700 font-bold text-[10px] px-1 py-0.5 rounded-xs">
+                <div
+                  contenteditable="true"
+                  @blur="onTextBlur(menuData, 'stampText', $event)"
+                  class="editable-field border-2 border-red-700 text-red-700 font-bold text-[10px] px-1 py-0.5 rounded-xs outline-none hover:bg-red-50 cursor-text"
+                >
                   {{ menuData.stampText || (menuData.storeName ? menuData.storeName.slice(0, 2) : '名物') }}
                 </div>
+              </div>
+              <div
+                v-if="menuData.storeName"
+                contenteditable="true"
+                @blur="onTextBlur(menuData, 'storeName', $event)"
+                class="editable-field text-xs text-stone-700 font-bold tracking-wider mt-1 outline-none hover:bg-amber-100/60 cursor-text"
+              >
+                {{ menuData.storeName }}
               </div>
             </div>
 
@@ -220,24 +359,38 @@ function triggerPrint() {
               <div
                 v-for="(item, idx) in menuData.items"
                 :key="item.id || idx"
-                class="flex items-baseline justify-between border-b border-dotted border-stone-300 pb-1.5"
+                class="flex items-baseline justify-between border-b border-stone-200 pb-1.5"
               >
                 <div class="flex items-center gap-2">
-                  <span class="text-base font-bold text-stone-900">{{ item.name }}</span>
+                  <span
+                    contenteditable="true"
+                    @blur="onTextBlur(item, 'name', $event)"
+                    class="editable-field text-base font-bold text-stone-900 outline-none hover:bg-amber-100/60 cursor-text"
+                  >
+                    {{ item.name }}
+                  </span>
                   <span
                     v-if="menuData.showNotes && item.note"
-                    class="text-[11px] text-stone-600 bg-stone-100 border border-stone-300 px-1 rounded-xs"
+                    contenteditable="true"
+                    @blur="onTextBlur(item, 'note', $event)"
+                    class="editable-field text-[11px] text-stone-600 bg-stone-100 border border-stone-300 px-1 rounded-xs outline-none hover:bg-amber-100/60 cursor-text"
                   >
                     {{ item.note }}
                   </span>
                   <span
                     v-if="menuData.showEnglish && item.translation"
-                    class="text-xs text-stone-400 font-sans"
+                    contenteditable="true"
+                    @blur="onTextBlur(item, 'translation', $event)"
+                    class="editable-field text-xs text-stone-400 font-sans outline-none hover:bg-amber-100/60 cursor-text"
                   >
                     ({{ item.translation }})
                   </span>
                 </div>
-                <div class="font-bold text-sm sm:text-base text-stone-900 whitespace-nowrap pl-2">
+                <div
+                  contenteditable="true"
+                  @blur="onPriceBlur(item, $event)"
+                  class="editable-field font-bold text-sm sm:text-base text-stone-900 whitespace-nowrap pl-2 outline-none hover:bg-amber-100/60 cursor-text"
+                >
                   {{ formatPrice(item.price, menuData.priceFormat, false) }}
                 </div>
               </div>
@@ -245,8 +398,13 @@ function triggerPrint() {
 
             <!-- Footer -->
             <div class="pt-4 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-500 gap-1">
-              <div>{{ menuData.footerNote }}</div>
-              <div v-if="menuData.storeName" class="font-bold text-stone-800 tracking-wider">{{ menuData.storeName }}</div>
+              <div
+                contenteditable="true"
+                @blur="onTextBlur(menuData, 'footerNote', $event)"
+                class="editable-field outline-none hover:bg-amber-100/60 cursor-text"
+              >
+                {{ menuData.footerNote }}
+              </div>
             </div>
           </div>
         </div>

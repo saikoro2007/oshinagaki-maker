@@ -15,7 +15,9 @@ import {
   Coins,
   Download,
   Upload,
-  Stamp
+  Stamp,
+  Sliders,
+  AlignRight
 } from '@lucide/vue'
 
 const props = defineProps({
@@ -110,7 +112,7 @@ function handleFileChange(event) {
             ]"
           >
             <Settings2 class="w-3.5 h-3.5" />
-            <span>{{ showSettings ? '設定を閉じる' : '書体・外枠設定' }}</span>
+            <span>{{ showSettings ? '設定を閉じる' : '書体・レイアウト設定' }}</span>
           </button>
         </div>
       </div>
@@ -133,7 +135,7 @@ function handleFileChange(event) {
                   : 'bg-white text-stone-700 border-stone-200'
               ]"
             >
-              縦書き（和風・おすすめ）
+              縦書き（和風短冊・おすすめ）
             </button>
             <button
               type="button"
@@ -195,12 +197,53 @@ function handleFileChange(event) {
           </div>
         </div>
 
+        <!-- Density & Size Options (Requirement 2) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="font-semibold text-stone-700 block mb-1 flex items-center gap-1">
+              <Sliders class="w-3.5 h-3.5 text-stone-500" /> 文字サイズ・品目密度
+            </label>
+            <select
+              v-model="menuData.density"
+              class="w-full bg-white border border-stone-300 rounded-lg py-1.5 px-2 text-stone-800"
+            >
+              <option value="auto">自動調整（品数に合わせて最適化）</option>
+              <option value="spacious">ゆったり大文字（少品目向け）</option>
+              <option value="normal">標準（中文字）</option>
+              <option value="compact">すっきり小文字（多品目収容）</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="font-semibold text-stone-700 block mb-1">品目間の区切り線</label>
+            <select
+              v-model="menuData.showDividers"
+              class="w-full bg-white border border-stone-300 rounded-lg py-1.5 px-2 text-stone-800"
+            >
+              <option :value="false">線なし（すっきり和風・推奨）</option>
+              <option :value="true">細い区切り線あり</option>
+            </select>
+          </div>
+        </div>
+
         <!-- Price Display format -->
         <div>
           <label class="font-semibold text-stone-700 block mb-1.5 flex items-center gap-1">
             <Coins class="w-3.5 h-3.5 text-stone-500" /> 価格の表記
           </label>
           <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              @click="menuData.priceFormat = 'kanji'"
+              :class="[
+                'py-1.5 px-3 rounded-lg border text-center transition font-medium',
+                menuData.priceFormat === 'kanji'
+                  ? 'bg-amber-900 text-white border-amber-900'
+                  : 'bg-white text-stone-700 border-stone-200'
+              ]"
+            >
+              漢数字（例: 一八〇円・和風推奨）
+            </button>
             <button
               type="button"
               @click="menuData.priceFormat = 'number'"
@@ -212,18 +255,6 @@ function handleFileChange(event) {
               ]"
             >
               数字表記（例: 180円）
-            </button>
-            <button
-              type="button"
-              @click="menuData.priceFormat = 'kanji'"
-              :class="[
-                'py-1.5 px-3 rounded-lg border text-center transition font-medium',
-                menuData.priceFormat === 'kanji'
-                  ? 'bg-amber-900 text-white border-amber-900'
-                  : 'bg-white text-stone-700 border-stone-200'
-              ]"
-            >
-              漢数字（例: 一八〇円）
             </button>
           </div>
         </div>
@@ -351,7 +382,7 @@ function handleFileChange(event) {
             <input
               v-model="menuData.storeName"
               type="text"
-              placeholder="店名（例: やきとりもず）"
+              placeholder="店名（例: 御食事処 〇〇）"
               class="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-sm focus:ring-2 focus:ring-amber-800 transition"
             />
           </div>
