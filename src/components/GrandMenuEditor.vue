@@ -140,6 +140,9 @@
             <span v-if="section.subtitle" class="text-xs text-stone-500 truncate hidden sm:inline">
               ({{ section.subtitle }})
             </span>
+            <span v-if="section.placement" class="text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0" :class="section.placement === 'top' ? 'bg-sky-100 text-sky-800' : 'bg-orange-100 text-orange-800'">
+              {{ section.placement === 'top' ? '上段' : '下段' }}
+            </span>
             <span v-if="section.uniformPrice" class="text-xs text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 shrink-0">
               各{{ section.uniformPrice }}円
             </span>
@@ -214,6 +217,18 @@
                   placeholder="例: 一本 塩・タレ、グラス・ボトルなど"
                   class="w-full px-2.5 py-1.5 bg-white border border-stone-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 outline-none"
                 />
+              </div>
+
+              <div>
+                <label class="block text-stone-600 font-medium mb-1">配置段（横置き時）</label>
+                <select
+                  v-model="section.placement"
+                  class="w-full px-2.5 py-1.5 bg-white border border-stone-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 outline-none"
+                >
+                  <option value="top">上段に配置</option>
+                  <option value="bottom">下段に配置</option>
+                  <option value="">自動分割</option>
+                </select>
               </div>
             </div>
 

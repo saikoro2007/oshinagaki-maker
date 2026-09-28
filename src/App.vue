@@ -50,7 +50,21 @@ onMounted(() => {
 
     const savedGrand = localStorage.getItem(STORAGE_KEY_GRAND)
     if (savedGrand) {
-      Object.assign(grandMenuData, JSON.parse(savedGrand))
+      const parsed = JSON.parse(savedGrand)
+      // 写真完全再現版への自動マイグレーション
+      if (parsed.version === MOZU_GRAND_MENU_STATE.version) {
+        Object.assign(grandMenuData, parsed)
+      } else {
+        // バージョンが古い場合は最新の初期データに移行（ロゴがあれば保持）
+        const keepLogo = parsed.logoImage || parsed.noticeBlock?.logoImage || ''
+        const updated = JSON.parse(JSON.stringify(MOZU_GRAND_MENU_STATE))
+        if (keepLogo) {
+          updated.logoImage = keepLogo
+          if (updated.noticeBlock) updated.noticeBlock.logoImage = keepLogo
+        }
+        Object.assign(grandMenuData, updated)
+        localStorage.setItem(STORAGE_KEY_GRAND, JSON.stringify(updated))
+      }
     }
   } catch (e) {
     console.error('Failed to load menu data:', e)

@@ -63,42 +63,43 @@
         :style="sheetStyle"
       >
         <!-- ==============================================================
-             A. LANDSCAPE LAYOUT (横置き・汎用2段組レイアウト)
+             A. LANDSCAPE LAYOUT (横置き・実写真忠実2段組レイアウト)
              ============================================================== -->
         <div
           v-if="isLandscape"
-          class="w-full h-full flex flex-col justify-between relative z-10 p-3 sm:p-5 print:p-2 box-border overflow-hidden"
+          class="w-full h-full flex flex-col justify-between relative z-10 px-3 py-2.5 sm:px-5 sm:py-3.5 print:p-2 box-border overflow-hidden"
         >
           <!-- ------------------------------------------------------------
-               上段 (Top Half): 前半のカテゴリ群
+               上段 (Top Half): 焼き物(20品)・トッピング(3品)・サラダ(2品)・ご飯もの(6品)
                ------------------------------------------------------------ -->
-          <div class="vertical-rl h-[48%] flex flex-col justify-start items-stretch border-b border-stone-800/20 pb-2 overflow-visible">
+          <div class="vertical-rl h-[48%] flex flex-col justify-start items-stretch pb-1 overflow-visible">
             
             <div
               v-for="(section, sIdx) in topSections"
               :key="section.id || sIdx"
               :class="[
                 'flex flex-col items-stretch h-full shrink-0',
-                sIdx === 0 ? 'pl-2 sm:pl-3' : 'px-2 sm:px-2.5 border-r border-current/25 pl-2 sm:pl-3'
+                sIdx === 0 ? 'pl-0.5' : 'pl-1.5 sm:pl-2'
               ]"
             >
               <!-- 見出し列（カテゴリ名 ＋ サブ注記） -->
-              <div class="flex flex-row justify-start items-center h-full px-1.5 shrink-0 border-l border-current/20">
+              <div class="flex flex-row justify-start items-start h-full px-0.5 shrink-0">
                 <h2
                   contenteditable="true"
                   @blur="onTextBlur(section, 'name', $event)"
                   :class="[
                     'editable-field font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 whitespace-nowrap',
-                    section.items?.length > 10 ? 'text-lg sm:text-2xl' : 'text-base sm:text-xl'
+                    section.name === '焼き物' || section.name === 'ご飯もの' ? 'text-base sm:text-lg lg:text-xl' : 'text-sm sm:text-base lg:text-lg'
                   ]"
                 >
                   {{ section.name }}
                 </h2>
+                <!-- サブ注記（一本 塩・タレ 等）: 見出しのすぐ左上端に配置 -->
                 <span
                   v-if="section.subtitle"
                   contenteditable="true"
                   @blur="onTextBlur(section, 'subtitle', $event)"
-                  class="editable-field text-[10px] sm:text-xs opacity-80 tracking-wider mt-2 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 whitespace-nowrap"
+                  class="editable-field text-[8.5px] sm:text-[9.5px] opacity-80 tracking-widest pt-1 pl-0.5 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded whitespace-nowrap"
                 >
                   {{ section.subtitle }}
                 </span>
@@ -108,10 +109,10 @@
               <div
                 v-for="(item, idx) in section.items"
                 :key="item.id || idx"
-                class="flex flex-row justify-between h-full px-0.5 min-w-[14px] sm:min-w-[17px] shrink-0"
+                class="flex flex-row justify-between h-full px-[1.5px] min-w-[10px] sm:min-w-[12px] shrink-0"
               >
-                <!-- 品名 -->
-                <div class="pt-0.5 whitespace-nowrap overflow-visible">
+                <!-- 品名（上端揃え、中黒付き） -->
+                <div class="pt-0.5 whitespace-nowrap overflow-visible leading-none">
                   <span
                     contenteditable="true"
                     @blur="onTextBlur(item, 'name', $event)"
@@ -120,28 +121,28 @@
                       getItemNameClass(item.name)
                     ]"
                   >
-                    <span v-if="menuData.showDotPrefix" class="text-[9px] opacity-70 mr-0.5">・</span>{{ item.name }}
+                    <span v-if="menuData.showDotPrefix" class="text-[8px] opacity-70 mr-0.5">・</span>{{ item.name }}
                   </span>
                 </div>
 
-                <!-- 個別価格（一括価格がない場合のみ表示） -->
-                <div v-if="!section.uniformPrice" class="self-end pb-0.5 whitespace-nowrap shrink-0">
+                <!-- 個別価格（一括価格がない場合のみ表示、下端ベースライン揃え） -->
+                <div v-if="!section.uniformPrice" class="self-end pb-0.5 whitespace-nowrap shrink-0 leading-none">
                   <span
                     contenteditable="true"
                     @blur="onPriceBlur(item, $event)"
-                    class="editable-field text-[10.5px] sm:text-[11.5px] font-bold tracking-tighter outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 font-mono"
+                    class="editable-field text-[9.5px] sm:text-[10.5px] font-bold tracking-tight outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 font-mono"
                   >
                     {{ formatPrice(item.price, menuData.priceFormat, true) }}
                   </span>
                 </div>
               </div>
 
-              <!-- 一括価格列（カテゴリに一括価格が設定されている場合） -->
-              <div v-if="section.uniformPrice" class="flex flex-row justify-end items-end h-full px-0.5 shrink-0 pb-0.5">
+              <!-- 一括価格列（トッピング等の「各五〇円」：下端揃え） -->
+              <div v-if="section.uniformPrice" class="flex flex-row justify-end items-end h-full px-0.5 shrink-0 pb-0.5 leading-none">
                 <span
                   contenteditable="true"
                   @blur="onTextBlur(section, 'uniformPrice', $event)"
-                  class="editable-field text-[10.5px] sm:text-xs font-bold tracking-tight whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                  class="editable-field text-[9.5px] sm:text-[10px] font-bold tracking-tight whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
                 >
                   各{{ formatPrice(section.uniformPrice, menuData.priceFormat, true) }}
                 </span>
@@ -151,26 +152,26 @@
           </div>
 
           <!-- ------------------------------------------------------------
-               下段 (Bottom Half): 後半のカテゴリ群 ＋ 店舗案内・ロゴ
+               下段 (Bottom Half): 一品(17品) ＋ 店舗案内・営業ルール
                ------------------------------------------------------------ -->
-          <div class="vertical-rl h-[48%] flex flex-col justify-start items-stretch pt-2 overflow-visible">
+          <div class="vertical-rl h-[48%] flex flex-col justify-start items-stretch pt-1 overflow-visible">
             
             <div
               v-for="(section, sIdx) in bottomSections"
               :key="section.id || sIdx"
               :class="[
                 'flex flex-col items-stretch h-full shrink-0',
-                sIdx === 0 ? 'pl-2 sm:pl-3' : 'px-2 sm:px-2.5 border-r border-current/25 pl-2 sm:pl-3'
+                sIdx === 0 ? 'pl-0.5' : 'pl-1.5 sm:pl-2'
               ]"
             >
-              <!-- 見出し列（カテゴリ名 ＋ サブ注記） -->
-              <div class="flex flex-row justify-start items-center h-full px-1.5 shrink-0 border-l border-current/20">
+              <!-- 見出し列（一品 等） -->
+              <div class="flex flex-row justify-start items-start h-full px-0.5 shrink-0">
                 <h2
                   contenteditable="true"
                   @blur="onTextBlur(section, 'name', $event)"
                   :class="[
                     'editable-field font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 whitespace-nowrap',
-                    section.items?.length > 10 ? 'text-lg sm:text-2xl' : 'text-base sm:text-xl'
+                    section.name === '一品' ? 'text-base sm:text-lg lg:text-xl' : 'text-sm sm:text-base lg:text-lg'
                   ]"
                 >
                   {{ section.name }}
@@ -179,7 +180,7 @@
                   v-if="section.subtitle"
                   contenteditable="true"
                   @blur="onTextBlur(section, 'subtitle', $event)"
-                  class="editable-field text-[10px] sm:text-xs opacity-80 tracking-wider mt-2 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 whitespace-nowrap"
+                  class="editable-field text-[8.5px] sm:text-[9.5px] opacity-80 tracking-widest pt-1 pl-0.5 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded whitespace-nowrap"
                 >
                   {{ section.subtitle }}
                 </span>
@@ -189,10 +190,10 @@
               <div
                 v-for="(item, idx) in section.items"
                 :key="item.id || idx"
-                class="flex flex-row justify-between h-full px-0.5 min-w-[13.5px] sm:min-w-[16px] shrink-0"
+                class="flex flex-row justify-between h-full px-[1.5px] min-w-[10px] sm:min-w-[12px] shrink-0"
               >
                 <!-- 品名 -->
-                <div class="pt-0.5 whitespace-nowrap overflow-visible">
+                <div class="pt-0.5 whitespace-nowrap overflow-visible leading-none">
                   <span
                     contenteditable="true"
                     @blur="onTextBlur(item, 'name', $event)"
@@ -201,54 +202,57 @@
                       getItemNameClass(item.name)
                     ]"
                   >
-                    <span v-if="menuData.showDotPrefix" class="text-[9px] opacity-70 mr-0.5">・</span>{{ item.name }}
+                    <span v-if="menuData.showDotPrefix" class="text-[8px] opacity-70 mr-0.5">・</span>{{ item.name }}
                   </span>
                 </div>
 
-                <!-- 個別価格（一括価格がない場合のみ表示） -->
-                <div v-if="!section.uniformPrice" class="self-end pb-0.5 whitespace-nowrap shrink-0">
+                <!-- 個別価格（下端揃え） -->
+                <div v-if="!section.uniformPrice" class="self-end pb-0.5 whitespace-nowrap shrink-0 leading-none">
                   <span
                     contenteditable="true"
                     @blur="onPriceBlur(item, $event)"
-                    class="editable-field text-[10.5px] sm:text-[11.5px] font-bold tracking-tighter outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 font-mono"
+                    class="editable-field text-[9.5px] sm:text-[10.5px] font-bold tracking-tight outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 font-mono"
                   >
                     {{ formatPrice(item.price, menuData.priceFormat, true) }}
                   </span>
                 </div>
               </div>
 
-              <!-- 一括価格列（カテゴリに一括価格が設定されている場合） -->
-              <div v-if="section.uniformPrice" class="flex flex-row justify-end items-end h-full px-0.5 shrink-0 pb-0.5">
+              <!-- 一括価格列 -->
+              <div v-if="section.uniformPrice" class="flex flex-row justify-end items-end h-full px-0.5 shrink-0 pb-0.5 leading-none">
                 <span
                   contenteditable="true"
                   @blur="onTextBlur(section, 'uniformPrice', $event)"
-                  class="editable-field text-[10.5px] sm:text-xs font-bold tracking-tight whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                  class="editable-field text-[9.5px] sm:text-[10px] font-bold tracking-tight whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
                 >
                   各{{ formatPrice(section.uniformPrice, menuData.priceFormat, true) }}
                 </span>
               </div>
             </div>
 
-            <!-- 店舗ロゴ & 営業案内ブロック (左端・ロゴ画像がある時だけ画像表示) -->
+            <!-- 店舗案内・営業ルール（下段左寄り・実写真スタイル） -->
             <div
               v-if="menuData.noticeBlock && menuData.noticeBlock.show"
-              class="flex flex-col items-stretch h-full pl-2 sm:pl-3 pr-1 shrink-0"
+              class="flex flex-col items-stretch h-full pl-5 sm:pl-8 pr-1 shrink-0"
             >
-              <!-- 案内文 (3行) -->
-              <div class="flex flex-col justify-center items-start h-full gap-1.5 sm:gap-2 text-[9px] sm:text-[10.5px] leading-relaxed opacity-85 pt-1">
+              <!-- 案内文（実写真同様、2行ずつゆったり縦書き配置） -->
+              <div class="flex flex-col justify-center items-start h-full gap-1.5 sm:gap-2 text-[8.5px] sm:text-[9.5px] leading-relaxed opacity-90">
                 <div
                   v-for="(line, lIdx) in menuData.noticeBlock.lines"
                   :key="lIdx"
                   contenteditable="true"
                   @blur="onNoticeBlur(lIdx, $event)"
-                  class="editable-field whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                  :class="[
+                    'editable-field whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5',
+                    lIdx % 2 === 1 && lIdx < menuData.noticeBlock.lines.length - 1 ? 'mb-2 sm:mb-2.5' : ''
+                  ]"
                 >
                   {{ line }}
                 </div>
               </div>
 
-              <!-- 正式ロゴ画像（ユーザーが登録した場合のみ表示、デフォルトは空） -->
-              <div v-if="currentLogoImage" class="flex items-center justify-center pl-2 sm:pl-3 self-center shrink-0">
+              <!-- 正式ロゴ画像（ユーザーが登録した場合のみ表示、未設定時は空） -->
+              <div v-if="currentLogoImage" class="flex items-center justify-center pl-3 self-center shrink-0">
                 <img
                   :src="currentLogoImage"
                   alt="店舗ロゴ"
@@ -484,10 +488,18 @@ function getItemNameClass(name) {
 // 汎用動的セクション振り分けエンジン
 // ==============================================================
 
-// 横置き（2段組）: 品目数のバランスで上段と下段に均等自動分割
+// 横置き（2段組）: placement指定（'top' | 'bottom'）を優先し、未指定時は均等自動分割
 const topSections = computed(() => {
   const secs = props.menuData.sections || []
   if (secs.length <= 1) return secs
+
+  // 明示的な placement 指定があるか判定
+  const hasExplicit = secs.some(s => s.placement === 'top' || s.placement === 'bottom')
+  if (hasExplicit) {
+    return secs.filter(s => s.placement !== 'bottom')
+  }
+
+  // 自動均等分割
   const totalItems = secs.reduce((acc, s) => acc + (s.items?.length || 0), 0)
   const half = totalItems / 2
   let current = 0
@@ -504,8 +516,13 @@ const topSections = computed(() => {
 })
 
 const bottomSections = computed(() => {
+  const secs = props.menuData.sections || []
+  const hasExplicit = secs.some(s => s.placement === 'top' || s.placement === 'bottom')
+  if (hasExplicit) {
+    return secs.filter(s => s.placement === 'bottom')
+  }
   const topIds = new Set(topSections.value.map(s => s.id))
-  return (props.menuData.sections || []).filter(s => !topIds.has(s.id))
+  return secs.filter(s => !topIds.has(s.id))
 })
 
 // 縦置き（3段組）: 3分割自動振り分け
