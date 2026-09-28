@@ -86,6 +86,36 @@ const verticalContentHeightClass = computed(() => {
   }
 })
 
+// 和紙トーン・背景スタイル
+const bgToneStyle = computed(() => {
+  switch (props.menuData.bgTone) {
+    case 'pure-white':
+      return {
+        backgroundColor: '#ffffff',
+        backgroundImage: 'none',
+      }
+    case 'cloud':
+      return {
+        backgroundColor: '#fbf9f4',
+        backgroundImage: 'radial-gradient(#d8d0bf 0.8px, transparent 0.8px), radial-gradient(#e4dcce 0.6px, #fbf9f4 0.6px)',
+        backgroundSize: '24px 24px, 16px 16px',
+      }
+    case 'craft':
+      return {
+        backgroundColor: '#f2ece0',
+        backgroundImage: 'radial-gradient(#d3c7b2 0.75px, transparent 0.75px)',
+        backgroundSize: '20px 20px',
+      }
+    case 'natural':
+    default:
+      return {
+        backgroundColor: '#faf7f0',
+        backgroundImage: 'radial-gradient(#e8dfcf 0.6px, transparent 0.6px)',
+        backgroundSize: '28px 28px',
+      }
+  }
+})
+
 // 2. 文字サイズ・密度の動的計算（自動または手動設定）
 const effectiveDensity = computed(() => {
   if (props.menuData.density && props.menuData.density !== 'auto') {
@@ -211,16 +241,29 @@ function triggerPrint() {
     >
       <div
         :class="[
-          'print-sheet shrink-0 bg-[#fffdfa] text-stone-950 shadow-2xl transition-all relative select-none border border-stone-300/60 print:shadow-none print:border-none print:min-w-0 print:max-w-none print:w-full print:h-full print:min-h-0 print:p-3 sm:print:p-4',
+          'print-sheet shrink-0 text-stone-950 shadow-2xl transition-all relative select-none border border-stone-300/60 print:shadow-none print:border-none print:min-w-0 print:max-w-none print:w-full print:h-full print:min-h-0 print:p-3 sm:print:p-4 overflow-hidden',
           fontClass,
           sheetDimensionClasses
         ]"
-        style="box-sizing: border-box;"
+        :style="[bgToneStyle, { boxSizing: 'border-box' }]"
       >
+        <!-- Custom Background Watermark Image Layer -->
+        <div
+          v-if="menuData.customBgImage"
+          class="absolute inset-0 pointer-events-none select-none flex items-center justify-center p-8 overflow-hidden z-0"
+        >
+          <img
+            :src="menuData.customBgImage"
+            alt="透かし画像"
+            class="max-w-[70%] max-h-[70%] object-contain"
+            :style="{ opacity: (menuData.customBgOpacity || 12) / 100 }"
+          />
+        </div>
+
         <!-- Outer Frame -->
         <div
           :class="[
-            'w-full h-full p-5 sm:p-8 flex flex-col justify-between relative print:p-3.5 print:h-full',
+            'w-full h-full p-5 sm:p-8 flex flex-col justify-between relative z-10 print:p-3.5 print:h-full',
             frameClasses
           ]"
         >

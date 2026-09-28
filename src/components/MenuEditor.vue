@@ -17,7 +17,10 @@ import {
   Upload,
   Stamp,
   Sliders,
-  AlignRight
+  AlignRight,
+  Palette,
+  Image as ImageIcon,
+  X
 } from '@lucide/vue'
 
 const props = defineProps({
@@ -98,6 +101,24 @@ function selectLayout(mode) {
   } else {
     props.menuData.priceFormat = 'number'
   }
+}
+
+function handleBgImageUpload(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+  if (file.size > 5 * 1024 * 1024) {
+    alert('画像サイズが大きすぎます。5MB以下の画像を選択してください。')
+    return
+  }
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    props.menuData.customBgImage = e.target.result
+    if (!props.menuData.customBgOpacity) {
+      props.menuData.customBgOpacity = 12
+    }
+  }
+  reader.readAsDataURL(file)
+  event.target.value = ''
 }
 </script>
 
@@ -331,6 +352,114 @@ function selectLayout(mode) {
             />
             <span class="text-stone-700 font-medium">補足説明を表示</span>
           </label>
+        </div>
+
+        <!-- Background & Paper Texture Options -->
+        <div class="pt-2 border-t border-stone-200">
+          <label class="font-semibold text-stone-700 block mb-1.5 flex items-center gap-1">
+            <Palette class="w-3.5 h-3.5 text-stone-500" /> 用紙の背景・和紙質感
+          </label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <button
+              type="button"
+              @click="menuData.bgTone = 'natural'"
+              :class="[
+                'py-2 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1.5 text-xs',
+                (!menuData.bgTone || menuData.bgTone === 'natural')
+                  ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
+                  : 'bg-[#faf7f0] text-stone-700 border-stone-300 hover:border-amber-600'
+              ]"
+            >
+              <span class="w-2.5 h-2.5 rounded-full bg-[#faf7f0] border border-stone-400 shrink-0"></span>
+              <span>生成り和紙</span>
+            </button>
+            <button
+              type="button"
+              @click="menuData.bgTone = 'pure-white'"
+              :class="[
+                'py-2 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1.5 text-xs',
+                menuData.bgTone === 'pure-white'
+                  ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
+                  : 'bg-white text-stone-700 border-stone-300 hover:border-amber-600'
+              ]"
+            >
+              <span class="w-2.5 h-2.5 rounded-full bg-white border border-stone-400 shrink-0"></span>
+              <span>純白 (白無地)</span>
+            </button>
+            <button
+              type="button"
+              @click="menuData.bgTone = 'cloud'"
+              :class="[
+                'py-2 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1.5 text-xs',
+                menuData.bgTone === 'cloud'
+                  ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
+                  : 'bg-[#fbf9f4] text-stone-700 border-stone-300 hover:border-amber-600'
+              ]"
+            >
+              <span class="w-2.5 h-2.5 rounded-full bg-[#fbf9f4] border border-stone-400 shrink-0"></span>
+              <span>雲竜 (繊維調)</span>
+            </button>
+            <button
+              type="button"
+              @click="menuData.bgTone = 'craft'"
+              :class="[
+                'py-2 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1.5 text-xs',
+                menuData.bgTone === 'craft'
+                  ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
+                  : 'bg-[#f2ece0] text-stone-700 border-stone-300 hover:border-amber-600'
+              ]"
+            >
+              <span class="w-2.5 h-2.5 rounded-full bg-[#f2ece0] border border-stone-400 shrink-0"></span>
+              <span>クラフト・淡茶</span>
+            </button>
+          </div>
+
+          <!-- Custom Logo / Watermark Image Upload -->
+          <div class="mt-2.5 p-2.5 bg-white rounded-lg border border-stone-200">
+            <div class="flex items-center justify-between">
+              <label class="font-semibold text-stone-700 flex items-center gap-1 text-xs">
+                <ImageIcon class="w-3.5 h-3.5 text-stone-500" /> 店舗ロゴ・透かし画像
+              </label>
+              <span class="text-[10px] text-stone-400">背景中央にうっすら配置</span>
+            </div>
+
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+              <label class="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded-md text-stone-700 text-xs font-bold cursor-pointer transition flex items-center gap-1 shrink-0">
+                <Upload class="w-3 h-3" />
+                <span>{{ menuData.customBgImage ? '画像を変更' : '画像をアップロード' }}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="hidden"
+                  @change="handleBgImageUpload"
+                />
+              </label>
+
+              <button
+                v-if="menuData.customBgImage"
+                type="button"
+                @click="menuData.customBgImage = ''"
+                class="text-xs text-rose-600 hover:text-rose-700 font-medium transition flex items-center gap-0.5"
+              >
+                <X class="w-3 h-3" />
+                <span>削除</span>
+              </button>
+
+              <!-- Opacity slider if image uploaded -->
+              <div v-if="menuData.customBgImage" class="flex-1 min-w-[140px] flex items-center gap-1.5 ml-auto">
+                <span class="text-stone-500 text-[10px] whitespace-nowrap">濃さ:</span>
+                <input
+                  type="range"
+                  min="5"
+                  max="40"
+                  step="1"
+                  v-model.number="menuData.customBgOpacity"
+                  class="w-full accent-amber-900 cursor-pointer"
+                />
+                <span class="text-stone-600 text-xs font-mono w-7 text-right">{{ menuData.customBgOpacity || 12 }}%</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- JSON Backup / Restore -->
