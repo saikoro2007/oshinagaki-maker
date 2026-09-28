@@ -60,6 +60,31 @@ const frameClasses = computed(() => {
 })
 
 const isLandscape = computed(() => props.menuData.paperOrientation !== 'portrait')
+const isB5 = computed(() => props.menuData.paperSize === 'B5')
+
+// 用紙サイズ（A4/B5）と向き（縦/横）に応じた画面上の用紙プロポーション
+const sheetDimensionClasses = computed(() => {
+  if (isLandscape.value) {
+    // 横向き（横長用紙：1.414 : 1）
+    return isB5.value
+      ? 'min-w-[660px] max-w-[900px] w-full min-h-[460px] sm:min-h-[500px] p-5 sm:p-7'
+      : 'min-w-[720px] max-w-[1040px] w-full min-h-[500px] sm:min-h-[540px] p-5 sm:p-8'
+  } else {
+    // 縦向き（縦長用紙：1 : 1.414、正方形にならず美しい縦長比率を保持）
+    return isB5.value
+      ? 'min-w-[340px] max-w-[480px] w-full min-h-[680px] sm:min-h-[720px] p-5 sm:p-7'
+      : 'min-w-[340px] max-w-[550px] w-full min-h-[780px] sm:min-h-[820px] p-5 sm:p-8'
+  }
+})
+
+// 縦書きコンテンツの高さ（縦長用紙のときは高さを広げる）
+const verticalContentHeightClass = computed(() => {
+  if (isLandscape.value) {
+    return 'h-[450px] sm:h-[490px]'
+  } else {
+    return isB5.value ? 'h-[580px] sm:h-[620px]' : 'h-[660px] sm:h-[720px]'
+  }
+})
 
 // 2. 文字サイズ・密度の動的計算（自動または手動設定）
 const effectiveDensity = computed(() => {
@@ -124,7 +149,7 @@ function triggerPrint() {
     <component :is="'style'">
       @media print {
         @page {
-          size: {{ menuData.paperSize || 'A4' }} {{ isLandscape ? 'landscape' : 'portrait' }};
+          size: {{ menuData.paperSize === 'B5' ? '182mm 257mm' : 'A4' }} {{ isLandscape ? 'landscape' : 'portrait' }};
           margin: 6mm;
         }
         .editable-field {
@@ -146,7 +171,7 @@ function triggerPrint() {
           </span>
         </div>
         <p class="text-xs text-stone-300 mt-1">
-          {{ menuData.paperSize || 'A4' }}・{{ isLandscape ? '横向き (横長)' : '縦向き (縦長)' }} / {{ menuData.layout === 'vertical' ? '縦書き' : '横書き' }} / {{ menuData.items.length }}品目 ({{ effectiveDensity === 'compact' ? 'すっきり小' : effectiveDensity === 'normal' ? '標準中' : 'ゆったり大' }})
+          {{ menuData.paperSize || 'A4' }} ({{ menuData.paperSize === 'B5' ? '182×257mm' : '210×297mm' }})・{{ isLandscape ? '横向き (横長)' : '縦向き (縦長)' }} / {{ menuData.layout === 'vertical' ? '縦書き' : '横書き' }} / {{ menuData.items.length }}品目 ({{ effectiveDensity === 'compact' ? 'すっきり小' : effectiveDensity === 'normal' ? '標準中' : 'ゆったり大' }})
         </p>
       </div>
 
@@ -179,12 +204,16 @@ function triggerPrint() {
         :class="[
           'print-sheet shrink-0 bg-[#fffdfa] text-stone-950 shadow-2xl transition-all relative select-none border border-stone-300/60 print:shadow-none print:border-none print:min-w-0 print:max-w-none print:w-full print:h-full print:min-h-0 print:p-3 sm:print:p-4',
           fontClass,
-          isLandscape
-            ? 'min-w-[720px] max-w-[1040px] w-full min-h-[480px] sm:min-h-[520px] p-5 sm:p-8'
-            : 'min-w-[340px] max-w-[750px] w-full min-h-[640px] p-5 sm:p-8',
+          sheetDimensionClasses
         ]"
         style="box-sizing: border-box;"
       >
+        <!-- Paper Size Badge (Screen Only) -->
+        <div class="no-print absolute top-2.5 right-2.5 text-[10px] text-stone-500 font-sans tracking-wide bg-stone-100/90 border border-stone-200/90 px-2 py-0.5 rounded shadow-2xs pointer-events-none select-none flex items-center gap-1">
+          <span>📄</span>
+          <span>{{ menuData.paperSize || 'A4' }}・{{ isLandscape ? '横' : '縦' }}</span>
+        </div>
+
         <!-- Outer Frame -->
         <div
           :class="[
@@ -203,10 +232,13 @@ function triggerPrint() {
           <!-- VERTICAL WRITING LAYOUT (縦書き・メニューが横に流れる) -->
           <div
             v-if="menuData.layout === 'vertical'"
-            class="vertical-rl w-full h-[450px] sm:h-[490px] print:h-full flex flex-col justify-between overflow-x-visible py-1"
+            :class="[
+              'vertical-rl w-full print:h-full flex flex-col justify-between overflow-x-visible py-1',
+              verticalContentHeightClass
+            ]"
           >
-            <!-- 1. Right Header Section (Title & Subtitle & Stamp ONLY - No clunky store name next to title) -->
-            <div class="flex flex-row justify-between pl-6 sm:pl-8 border-l-2 border-stone-800 shrink-0 h-full">
+            <!-- 1. Right Header Section (Title & Subtitle & Stamp ONLY - Soft refined border) -->
+            <div class="flex flex-row justify-between pl-6 sm:pl-8 border-l border-stone-300 shrink-0 h-full">
               <div>
                 <!-- Subtitle (Editable) -->
                 <div
@@ -339,7 +371,7 @@ function triggerPrint() {
             class="w-full flex-1 flex flex-col justify-between print:h-full"
           >
             <!-- Header -->
-            <div class="text-center pb-5 border-b-2 border-stone-800">
+            <div class="text-center pb-5 border-b border-stone-300">
               <div
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'subtitle', $event)"
