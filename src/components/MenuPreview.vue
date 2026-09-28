@@ -119,13 +119,13 @@ function triggerPrint() {
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div class="space-y-4 print:space-y-0 print:m-0 print:p-0 print:h-full">
     <!-- Dynamic Print Page CSS for Landscape vs Portrait -->
     <component :is="'style'">
       @media print {
         @page {
           size: {{ menuData.paperSize || 'A4' }} {{ isLandscape ? 'landscape' : 'portrait' }};
-          margin: 8mm;
+          margin: 6mm;
         }
         .editable-field {
           outline: none !important;
@@ -173,11 +173,11 @@ function triggerPrint() {
     <!-- Paper Scroll Container -->
     <div
       ref="scrollContainer"
-      class="preview-scroll w-full overflow-x-auto pb-8 flex justify-start sm:justify-center px-2 sm:px-4"
+      class="preview-scroll w-full overflow-x-auto pb-8 flex justify-start sm:justify-center px-2 sm:px-4 print:p-0 print:overflow-visible print:block print:h-full"
     >
       <div
         :class="[
-          'print-sheet shrink-0 bg-[#fffdfa] text-stone-950 shadow-2xl transition-all relative select-none border border-stone-300/60',
+          'print-sheet shrink-0 bg-[#fffdfa] text-stone-950 shadow-2xl transition-all relative select-none border border-stone-300/60 print:shadow-none print:border-none print:min-w-0 print:max-w-none print:w-full print:h-full print:min-h-0 print:p-3 sm:print:p-4',
           fontClass,
           isLandscape
             ? 'min-w-[820px] max-w-[1080px] w-full min-h-[500px] sm:min-h-[560px] p-6 sm:p-10'
@@ -188,7 +188,7 @@ function triggerPrint() {
         <!-- Outer Frame -->
         <div
           :class="[
-            'w-full h-full p-5 sm:p-8 flex flex-col justify-between relative',
+            'w-full h-full p-5 sm:p-8 flex flex-col justify-between relative print:p-3.5 print:h-full',
             frameClasses
           ]"
         >
@@ -203,7 +203,7 @@ function triggerPrint() {
           <!-- VERTICAL WRITING LAYOUT (縦書き・メニューが横に流れる) -->
           <div
             v-if="menuData.layout === 'vertical'"
-            class="vertical-rl w-full h-[450px] sm:h-[490px] flex flex-col justify-between overflow-x-visible py-1"
+            class="vertical-rl w-full h-[450px] sm:h-[490px] print:h-full flex flex-col justify-between overflow-x-visible py-1"
           >
             <!-- 1. Right Header Section (Title & Subtitle & Stamp ONLY - No clunky store name next to title) -->
             <div class="flex flex-row justify-between pl-6 sm:pl-8 border-l-2 border-stone-800 shrink-0 h-full">
@@ -336,7 +336,7 @@ function triggerPrint() {
           <!-- HORIZONTAL WRITING LAYOUT (横書き) -->
           <div
             v-else
-            class="w-full flex-1 flex flex-col justify-between"
+            class="w-full flex-1 flex flex-col justify-between print:h-full"
           >
             <!-- Header -->
             <div class="text-center pb-5 border-b-2 border-stone-800">

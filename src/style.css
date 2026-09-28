@@ -31,16 +31,14 @@
 
 /* Print Specific Rules */
 @media print {
-  @page {
-    size: A4 portrait;
-    margin: 8mm;
-  }
-
   html, body {
     background: #ffffff !important;
     color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -49,15 +47,52 @@
     display: none !important;
   }
 
-  .print-sheet {
+  /* Reset outer containers for print */
+  #app,
+  .min-h-screen,
+  main,
+  .preview-scroll {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    min-height: 0 !important;
     box-shadow: none !important;
-    border-color: #333 !important;
+    overflow: visible !important;
+    background: transparent !important;
+  }
+
+  .space-y-4 {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .space-y-4 > * + * {
+    margin-top: 0 !important;
+  }
+
+  /* Force all print sheet contents to never break across pages */
+  .print-sheet,
+  .print-sheet * {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .print-sheet {
+    border: none !important;
+    box-shadow: none !important;
     margin: 0 auto !important;
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
     height: 100% !important;
-    min-height: 98vh !important;
-    page-break-inside: avoid;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    box-sizing: border-box !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    overflow: hidden !important;
   }
 }
 

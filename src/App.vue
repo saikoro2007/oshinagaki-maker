@@ -78,7 +78,7 @@ function triggerPrint() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-stone-100 flex flex-col">
+  <div class="min-h-screen bg-stone-100 flex flex-col print:min-h-0 print:h-full print:bg-white print:block">
     <!-- Mobile Top Navigation Header (Hidden on Print) -->
     <header class="no-print sticky top-0 z-40 bg-stone-900 text-white shadow-md border-b border-stone-800">
       <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -171,7 +171,7 @@ function triggerPrint() {
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-1 w-full mx-auto p-3 sm:p-6 transition-all" :class="activeTab === 'preview' ? 'max-w-6xl' : 'max-w-2xl'">
+    <main class="flex-1 w-full mx-auto p-3 sm:p-6 transition-all print:p-0 print:m-0 print:w-full print:max-w-none print:h-full" :class="activeTab === 'preview' ? 'max-w-6xl' : 'max-w-2xl'">
       <!-- Editor View -->
       <div v-show="activeTab === 'editor'" class="no-print">
         <MenuEditor
@@ -187,7 +187,7 @@ function triggerPrint() {
       </div>
 
       <!-- Always in DOM for Print (@media print) -->
-      <div class="hidden print:block">
+      <div class="hidden print:block print:w-full print:h-full">
         <MenuPreview :menu-data="menuData" />
       </div>
     </main>
