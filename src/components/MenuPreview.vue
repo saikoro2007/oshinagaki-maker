@@ -380,12 +380,13 @@ function closeImageModal() {
 
               <!-- Traditional Red Stamp Seal (Editable - can display store name or stamp text) -->
               <div
+                v-if="menuData.stampText && menuData.stampText.trim()"
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'stampText', $event)"
                 class="editable-field border-2 border-red-700 text-red-700 font-bold text-xs p-1.5 rounded-xs tracking-tighter self-end select-none outline-none hover:bg-red-50 focus:ring-1 focus:ring-red-600 cursor-text"
-                title="タップして印鑑文字を変更"
+                title="タップして印鑑文字を変更（文字を消すと非表示になります）"
               >
-                {{ menuData.stampText || (menuData.storeName ? menuData.storeName.slice(0, 4) : '名物') }}
+                {{ menuData.stampText }}
               </div>
             </div>
 
@@ -505,11 +506,13 @@ function closeImageModal() {
                   {{ menuData.title }}
                 </h1>
                 <div
+                  v-if="menuData.stampText && menuData.stampText.trim()"
                   contenteditable="true"
                   @blur="onTextBlur(menuData, 'stampText', $event)"
                   class="editable-field border-2 border-red-700 text-red-700 font-bold text-[10px] px-1 py-0.5 rounded-xs outline-none hover:bg-red-50 cursor-text"
+                  title="タップして印鑑文字を変更（文字を消すと非表示になります）"
                 >
-                  {{ menuData.stampText || (menuData.storeName ? menuData.storeName.slice(0, 4) : '名物') }}
+                  {{ menuData.stampText }}
                 </div>
               </div>
               <div

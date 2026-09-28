@@ -305,14 +305,44 @@ function selectLayout(mode) {
             </select>
           </div>
           <div>
-            <label class="font-semibold text-stone-700 block mb-1">赤印鑑テキスト</label>
+            <div class="flex items-center justify-between mb-1">
+              <label class="font-semibold text-stone-700 text-xs sm:text-sm">落款印（赤スタンプ）</label>
+              <button
+                v-if="menuData.stampText"
+                type="button"
+                @click="menuData.stampText = ''"
+                class="text-[11px] text-rose-600 hover:text-rose-700 hover:underline cursor-pointer"
+              >
+                枠ごと消去
+              </button>
+            </div>
             <input
               v-model="menuData.stampText"
               type="text"
-              placeholder="名物 / 厳選など"
+              placeholder="空欄で非表示（例: 名物）"
               maxlength="4"
-              class="w-full bg-white border border-stone-300 rounded-lg py-1 px-2 text-stone-800 text-center"
+              class="w-full bg-white border border-stone-300 rounded-lg py-1 px-2 text-stone-800 text-center text-sm"
             />
+            <div class="flex items-center justify-between mt-1 text-[11px]">
+              <span class="text-stone-400 text-[10px]">※空欄で枠ごと非表示</span>
+              <div class="flex items-center gap-1">
+                <button
+                  type="button"
+                  @click="menuData.stampText = '名物'"
+                  class="px-1.5 py-0.5 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 text-[10px] cursor-pointer"
+                >名物</button>
+                <button
+                  type="button"
+                  @click="menuData.stampText = '厳選'"
+                  class="px-1.5 py-0.5 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 text-[10px] cursor-pointer"
+                >厳選</button>
+                <button
+                  type="button"
+                  @click="menuData.stampText = '本日'"
+                  class="px-1.5 py-0.5 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 text-[10px] cursor-pointer"
+                >本日</button>
+              </div>
+            </div>
           </div>
         </div>
 
