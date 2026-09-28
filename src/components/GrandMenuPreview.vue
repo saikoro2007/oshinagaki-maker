@@ -6,10 +6,10 @@
     >
       <div class="flex items-center gap-2">
         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 text-xs font-bold">
-          グランドメニュー（2段組・定番）
+          グランドメニュー（定番）
         </span>
-        <span class="text-xs text-stone-500 hidden sm:inline">
-          A4横置き・全48品レイアウト
+        <span class="text-xs text-stone-500 font-medium">
+          {{ menuData.paperSize || 'A4' }} {{ isLandscape ? '横置き' : '縦置き' }}
         </span>
       </div>
 
@@ -56,24 +56,29 @@
       <div
         ref="printSheetRef"
         :class="[
-          'print-sheet shrink-0 shadow-2xl transition-all relative select-none border border-current/20 print:shadow-none print:border-none print:min-w-0 print:max-w-none print:w-full print:h-full print:min-h-0 print:p-2 sm:print:p-3 overflow-hidden',
+          'print-sheet shrink-0 shadow-2xl transition-all relative select-none border border-current/20 print:shadow-none print:border-none print:min-w-0 print:max-w-none print:w-full print:h-full print:min-h-0 print:p-2 overflow-hidden',
           fontClass,
           sheetDimensionClasses
         ]"
         :style="sheetStyle"
       >
-        <!-- Inner Menu Container (A4 Landscape, 2段組) -->
-        <div class="w-full h-full flex flex-col justify-between relative z-10 p-3 sm:p-5 print:p-2">
-          
-          <!-- ==============================================
-               上段 (Top Half): 焼き物 / トッピング / サラダ
-               ============================================== -->
-          <div class="vertical-rl h-[48%] flex flex-row items-stretch justify-start overflow-hidden border-b border-stone-800/20 pb-2">
+        <!-- ==============================================================
+             A. LANDSCAPE LAYOUT (横置き・実写真そのままの2段組)
+             ============================================================== -->
+        <div
+          v-if="isLandscape"
+          class="w-full h-full flex flex-col justify-between relative z-10 p-3 sm:p-5 print:p-2 box-border"
+        >
+          <!-- ------------------------------------------------------------
+               上段 (Top Half): 焼き物 (20品) / トッピング / サラダ
+               vertical-rl + flex-col で各セクション・品目が右から左へ並ぶ！
+               ------------------------------------------------------------ -->
+          <div class="vertical-rl h-[48%] flex flex-col justify-start items-stretch border-b border-stone-800/20 pb-2 overflow-visible">
             
             <!-- 1. 焼き物ブロック (右端) -->
-            <div v-if="yakimonoSection" class="flex flex-row items-stretch h-full pl-2 sm:pl-3">
-              <!-- 大見出し「焼き物」＋サブ「一本 塩・タレ」 -->
-              <div class="flex flex-col justify-start items-center shrink-0 pr-1 pl-2 sm:pl-3 border-l border-current/20">
+            <div v-if="yakimonoSection" class="flex flex-col items-stretch h-full pl-3 shrink-0">
+              <!-- 見出し列「焼き物」＋サブ「一本 塩・タレ」 -->
+              <div class="flex flex-row justify-start items-center h-full px-2 shrink-0 border-l border-current/25">
                 <h2
                   contenteditable="true"
                   @blur="onTextBlur(yakimonoSection, 'name', $event)"
@@ -85,48 +90,46 @@
                   v-if="yakimonoSection.subtitle"
                   contenteditable="true"
                   @blur="onTextBlur(yakimonoSection, 'subtitle', $event)"
-                  class="editable-field text-[10px] sm:text-xs opacity-80 tracking-wider mt-2 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                  class="editable-field text-[10px] sm:text-xs opacity-80 tracking-wider mt-2 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 whitespace-nowrap"
                 >
                   {{ yakimonoSection.subtitle }}
                 </span>
               </div>
 
-              <!-- 焼き物 品目群 (20品) -->
-              <div class="flex flex-row items-stretch h-full">
-                <div
-                  v-for="(item, idx) in yakimonoSection.items"
-                  :key="item.id || idx"
-                  class="flex flex-row justify-between h-full px-1 sm:px-1.5 min-w-[20px] sm:min-w-[25px]"
-                >
-                  <!-- 品名 (上部) -->
-                  <div class="pt-0.5">
-                    <span
-                      contenteditable="true"
-                      @blur="onTextBlur(item, 'name', $event)"
-                      class="editable-field text-xs sm:text-sm font-bold tracking-normal leading-snug whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
-                    >
-                      <span v-if="menuData.showDotPrefix" class="text-[10px] opacity-70 mr-0.5">・</span>{{ item.name }}
-                    </span>
-                  </div>
+              <!-- 焼き物品目列 (20品) -->
+              <div
+                v-for="(item, idx) in yakimonoSection.items"
+                :key="item.id || idx"
+                class="flex flex-row justify-between h-full px-1 min-w-[20px] sm:min-w-[24px] shrink-0"
+              >
+                <!-- 品名 (上寄せ) -->
+                <div class="pt-0.5 whitespace-nowrap">
+                  <span
+                    contenteditable="true"
+                    @blur="onTextBlur(item, 'name', $event)"
+                    class="editable-field text-xs sm:text-sm font-bold tracking-normal leading-snug outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                  >
+                    <span v-if="menuData.showDotPrefix" class="text-[10px] opacity-70 mr-0.5">・</span>{{ item.name }}
+                  </span>
+                </div>
 
-                  <!-- 価格 (下部) -->
-                  <div class="self-end pb-0.5">
-                    <span
-                      contenteditable="true"
-                      @blur="onPriceBlur(item, $event)"
-                      class="editable-field text-xs sm:text-sm font-bold tracking-tighter whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
-                    >
-                      {{ formatPrice(item.price, menuData.priceFormat, true) }}
-                    </span>
-                  </div>
+                <!-- 価格 (下寄せ) -->
+                <div class="self-end pb-0.5 whitespace-nowrap">
+                  <span
+                    contenteditable="true"
+                    @blur="onPriceBlur(item, $event)"
+                    class="editable-field text-xs sm:text-sm font-bold tracking-tighter outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                  >
+                    {{ formatPrice(item.price, menuData.priceFormat, true) }}
+                  </span>
                 </div>
               </div>
             </div>
 
             <!-- 2. トッピングブロック (中央上) -->
-            <div v-if="toppingSection" class="flex flex-row items-stretch h-full px-3 sm:px-5 border-r border-current/25 pl-4 sm:pl-6">
-              <!-- 見出し「トッピング」 -->
-              <div class="flex flex-col justify-start items-center shrink-0 pr-1 pl-2">
+            <div v-if="toppingSection" class="flex flex-col items-stretch h-full px-3 sm:px-4 border-r border-current/25 pl-4 sm:pl-5 shrink-0">
+              <!-- 見出し列「トッピング」 -->
+              <div class="flex flex-row justify-start items-center h-full px-2 shrink-0">
                 <h3
                   contenteditable="true"
                   @blur="onTextBlur(toppingSection, 'name', $event)"
@@ -136,41 +139,39 @@
                 </h3>
               </div>
 
-              <!-- トッピング品目群（梅、チーズ、山わさび） -->
-              <div class="flex flex-row items-stretch h-full">
-                <div
-                  v-for="(item, idx) in toppingSection.items"
-                  :key="item.id || idx"
-                  class="flex flex-row justify-start h-full px-1.5 sm:px-2 min-w-[20px] sm:min-w-[24px]"
-                >
-                  <div class="pt-0.5">
-                    <span
-                      contenteditable="true"
-                      @blur="onTextBlur(item, 'name', $event)"
-                      class="editable-field text-xs sm:text-sm font-bold tracking-normal leading-snug whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
-                    >
-                      <span v-if="menuData.showDotPrefix" class="text-[10px] opacity-70 mr-0.5">・</span>{{ item.name }}
-                    </span>
-                  </div>
-                </div>
-
-                <!-- 一括価格「各五〇円」 -->
-                <div class="self-end pb-1 pr-1">
+              <!-- トッピング品目列（梅、チーズ、山わさび） -->
+              <div
+                v-for="(item, idx) in toppingSection.items"
+                :key="item.id || idx"
+                class="flex flex-row justify-start h-full px-1.5 min-w-[20px] shrink-0"
+              >
+                <div class="pt-0.5 whitespace-nowrap">
                   <span
                     contenteditable="true"
-                    @blur="onTextBlur(toppingSection, 'uniformPrice', $event)"
-                    class="editable-field text-xs sm:text-sm font-bold tracking-tight whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                    @blur="onTextBlur(item, 'name', $event)"
+                    class="editable-field text-xs sm:text-sm font-bold tracking-normal leading-snug outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
                   >
-                    各{{ formatPrice(toppingSection.uniformPrice || '50', menuData.priceFormat, true) }}
+                    <span v-if="menuData.showDotPrefix" class="text-[10px] opacity-70 mr-0.5">・</span>{{ item.name }}
                   </span>
                 </div>
+              </div>
+
+              <!-- 一括価格「各五〇円」列 -->
+              <div class="flex flex-row justify-end items-end h-full px-1 shrink-0 pb-1">
+                <span
+                  contenteditable="true"
+                  @blur="onTextBlur(toppingSection, 'uniformPrice', $event)"
+                  class="editable-field text-xs sm:text-sm font-bold tracking-tight whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                >
+                  各{{ formatPrice(toppingSection.uniformPrice || '50', menuData.priceFormat, true) }}
+                </span>
               </div>
             </div>
 
             <!-- 3. サラダブロック (左手上) -->
-            <div v-if="saladSection" class="flex flex-row items-stretch h-full px-3 sm:px-5 pl-4 sm:pl-6">
-              <!-- 見出し「サラダ」 -->
-              <div class="flex flex-col justify-start items-center shrink-0 pr-1 pl-2">
+            <div v-if="saladSection" class="flex flex-col items-stretch h-full px-3 sm:px-4 pl-4 sm:pl-5 shrink-0">
+              <!-- 見出し列「サラダ」 -->
+              <div class="flex flex-row justify-start items-center h-full px-2 shrink-0">
                 <h3
                   contenteditable="true"
                   @blur="onTextBlur(saladSection, 'name', $event)"
@@ -180,46 +181,44 @@
                 </h3>
               </div>
 
-              <!-- サラダ品目 (2品) -->
-              <div class="flex flex-row items-stretch h-full">
-                <div
-                  v-for="(item, idx) in saladSection.items"
-                  :key="item.id || idx"
-                  class="flex flex-row justify-between h-full px-1.5 sm:px-2 min-w-[22px] sm:min-w-[26px]"
-                >
-                  <div class="pt-0.5">
-                    <span
-                      contenteditable="true"
-                      @blur="onTextBlur(item, 'name', $event)"
-                      class="editable-field text-xs sm:text-sm font-bold tracking-normal leading-snug whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
-                    >
-                      <span v-if="menuData.showDotPrefix" class="text-[10px] opacity-70 mr-0.5">・</span>{{ item.name }}
-                    </span>
-                  </div>
-                  <div class="self-end pb-0.5">
-                    <span
-                      contenteditable="true"
-                      @blur="onPriceBlur(item, $event)"
-                      class="editable-field text-xs sm:text-sm font-bold tracking-tighter whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
-                    >
-                      {{ formatPrice(item.price, menuData.priceFormat, true) }}
-                    </span>
-                  </div>
+              <!-- サラダ品目列 (2品) -->
+              <div
+                v-for="(item, idx) in saladSection.items"
+                :key="item.id || idx"
+                class="flex flex-row justify-between h-full px-1.5 min-w-[22px] sm:min-w-[26px] shrink-0"
+              >
+                <div class="pt-0.5 whitespace-nowrap">
+                  <span
+                    contenteditable="true"
+                    @blur="onTextBlur(item, 'name', $event)"
+                    class="editable-field text-xs sm:text-sm font-bold tracking-normal leading-snug outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                  >
+                    <span v-if="menuData.showDotPrefix" class="text-[10px] opacity-70 mr-0.5">・</span>{{ item.name }}
+                  </span>
+                </div>
+                <div class="self-end pb-0.5 whitespace-nowrap">
+                  <span
+                    contenteditable="true"
+                    @blur="onPriceBlur(item, $event)"
+                    class="editable-field text-xs sm:text-sm font-bold tracking-tighter outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                  >
+                    {{ formatPrice(item.price, menuData.priceFormat, true) }}
+                  </span>
                 </div>
               </div>
             </div>
 
           </div>
 
-          <!-- ==============================================
-               下段 (Bottom Half): 一品 / ご飯もの / ロゴ＆案内
-               ============================================== -->
-          <div class="vertical-rl h-[48%] flex flex-row items-stretch justify-start overflow-hidden pt-2">
+          <!-- ------------------------------------------------------------
+               下段 (Bottom Half): 一品料理 (17品) / ご飯もの / 店舗ロゴ＆案内
+               ------------------------------------------------------------ -->
+          <div class="vertical-rl h-[48%] flex flex-col justify-start items-stretch pt-2 overflow-visible">
             
             <!-- 1. 一品料理ブロック (右端) -->
-            <div v-if="ippinSection" class="flex flex-row items-stretch h-full pl-2 sm:pl-3">
-              <!-- 大見出し「一品」 -->
-              <div class="flex flex-col justify-start items-center shrink-0 pr-1 pl-2 sm:pl-3 border-l border-current/20">
+            <div v-if="ippinSection" class="flex flex-col items-stretch h-full pl-3 shrink-0">
+              <!-- 見出し列「一品」 -->
+              <div class="flex flex-row justify-start items-center h-full px-2 shrink-0 border-l border-current/25">
                 <h2
                   contenteditable="true"
                   @blur="onTextBlur(ippinSection, 'name', $event)"
@@ -229,42 +228,40 @@
                 </h2>
               </div>
 
-              <!-- 一品 品目群 (17品) -->
-              <div class="flex flex-row items-stretch h-full">
-                <div
-                  v-for="(item, idx) in ippinSection.items"
-                  :key="item.id || idx"
-                  class="flex flex-row justify-between h-full px-1 sm:px-1.5 min-w-[20px] sm:min-w-[25px]"
-                >
-                  <!-- 品名 (上部) -->
-                  <div class="pt-0.5">
-                    <span
-                      contenteditable="true"
-                      @blur="onTextBlur(item, 'name', $event)"
-                      class="editable-field text-xs sm:text-sm font-bold tracking-normal leading-snug whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
-                    >
-                      <span v-if="menuData.showDotPrefix" class="text-[10px] opacity-70 mr-0.5">・</span>{{ item.name }}
-                    </span>
-                  </div>
+              <!-- 一品 品目列 (17品) -->
+              <div
+                v-for="(item, idx) in ippinSection.items"
+                :key="item.id || idx"
+                class="flex flex-row justify-between h-full px-1 min-w-[20px] sm:min-w-[24px] shrink-0"
+              >
+                <!-- 品名 (上寄せ) -->
+                <div class="pt-0.5 whitespace-nowrap">
+                  <span
+                    contenteditable="true"
+                    @blur="onTextBlur(item, 'name', $event)"
+                    class="editable-field text-xs sm:text-sm font-bold tracking-normal leading-snug outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                  >
+                    <span v-if="menuData.showDotPrefix" class="text-[10px] opacity-70 mr-0.5">・</span>{{ item.name }}
+                  </span>
+                </div>
 
-                  <!-- 価格 (下部) -->
-                  <div class="self-end pb-0.5">
-                    <span
-                      contenteditable="true"
-                      @blur="onPriceBlur(item, $event)"
-                      class="editable-field text-xs sm:text-sm font-bold tracking-tighter whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
-                    >
-                      {{ formatPrice(item.price, menuData.priceFormat, true) }}
-                    </span>
-                  </div>
+                <!-- 価格 (下寄せ) -->
+                <div class="self-end pb-0.5 whitespace-nowrap">
+                  <span
+                    contenteditable="true"
+                    @blur="onPriceBlur(item, $event)"
+                    class="editable-field text-xs sm:text-sm font-bold tracking-tighter outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                  >
+                    {{ formatPrice(item.price, menuData.priceFormat, true) }}
+                  </span>
                 </div>
               </div>
             </div>
 
             <!-- 2. ご飯ものブロック (中央〜左) -->
-            <div v-if="gohanSection" class="flex flex-row items-stretch h-full px-3 sm:px-5 border-r border-current/25 pl-4 sm:pl-6">
-              <!-- 見出し「ご飯もの」 -->
-              <div class="flex flex-col justify-start items-center shrink-0 pr-1 pl-2">
+            <div v-if="gohanSection" class="flex flex-col items-stretch h-full px-3 sm:px-4 border-r border-current/25 pl-4 sm:pl-5 shrink-0">
+              <!-- 見出し列「ご飯もの」 -->
+              <div class="flex flex-row justify-start items-center h-full px-2 shrink-0">
                 <h3
                   contenteditable="true"
                   @blur="onTextBlur(gohanSection, 'name', $event)"
@@ -274,42 +271,40 @@
                 </h3>
               </div>
 
-              <!-- ご飯もの品目群 (6品) -->
-              <div class="flex flex-row items-stretch h-full">
-                <div
-                  v-for="(item, idx) in gohanSection.items"
-                  :key="item.id || idx"
-                  class="flex flex-row justify-between h-full px-1.5 sm:px-2 min-w-[21px] sm:min-w-[25px]"
-                >
-                  <div class="pt-0.5">
-                    <span
-                      contenteditable="true"
-                      @blur="onTextBlur(item, 'name', $event)"
-                      class="editable-field text-xs sm:text-sm font-bold tracking-normal leading-snug whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
-                    >
-                      <span v-if="menuData.showDotPrefix" class="text-[10px] opacity-70 mr-0.5">・</span>{{ item.name }}
-                    </span>
-                  </div>
-                  <div class="self-end pb-0.5">
-                    <span
-                      contenteditable="true"
-                      @blur="onPriceBlur(item, $event)"
-                      class="editable-field text-xs sm:text-sm font-bold tracking-tighter whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
-                    >
-                      {{ formatPrice(item.price, menuData.priceFormat, true) }}
-                    </span>
-                  </div>
+              <!-- ご飯もの品目列 (6品) -->
+              <div
+                v-for="(item, idx) in gohanSection.items"
+                :key="item.id || idx"
+                class="flex flex-row justify-between h-full px-1.5 min-w-[21px] sm:min-w-[25px] shrink-0"
+              >
+                <div class="pt-0.5 whitespace-nowrap">
+                  <span
+                    contenteditable="true"
+                    @blur="onTextBlur(item, 'name', $event)"
+                    class="editable-field text-xs sm:text-sm font-bold tracking-normal leading-snug outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                  >
+                    <span v-if="menuData.showDotPrefix" class="text-[10px] opacity-70 mr-0.5">・</span>{{ item.name }}
+                  </span>
+                </div>
+                <div class="self-end pb-0.5 whitespace-nowrap">
+                  <span
+                    contenteditable="true"
+                    @blur="onPriceBlur(item, $event)"
+                    class="editable-field text-xs sm:text-sm font-bold tracking-tighter outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                  >
+                    {{ formatPrice(item.price, menuData.priceFormat, true) }}
+                  </span>
                 </div>
               </div>
             </div>
 
-            <!-- 3. 店舗ロゴ & 営業案内ブロック (左端・実写真再現) -->
+            <!-- 3. 店舗ロゴ & 営業案内ブロック (左端・実写真完全再現) -->
             <div
               v-if="menuData.noticeBlock && menuData.noticeBlock.show"
-              class="flex flex-row items-stretch h-full pl-4 sm:pl-8 pr-2"
+              class="flex flex-col items-stretch h-full pl-4 sm:pl-8 pr-2 shrink-0"
             >
               <!-- 案内文 (3行) -->
-              <div class="flex flex-row justify-center items-start h-full gap-2 sm:gap-2.5 text-[10px] sm:text-xs leading-relaxed opacity-85 pt-1">
+              <div class="flex flex-col justify-center items-start h-full gap-2 sm:gap-2.5 text-[10px] sm:text-xs leading-relaxed opacity-85 pt-1">
                 <div
                   v-for="(line, lIdx) in menuData.noticeBlock.lines"
                   :key="lIdx"
@@ -330,6 +325,130 @@
           </div>
 
         </div>
+
+        <!-- ==============================================================
+             B. PORTRAIT LAYOUT (縦置き・3段組で全品一覧)
+             ============================================================== -->
+        <div
+          v-else
+          class="w-full h-full flex flex-col justify-between relative z-10 p-3 sm:p-5 print:p-2 box-border"
+        >
+          <!-- 1段目 (上段): 焼き物 (20品) -->
+          <div class="vertical-rl h-[32%] flex flex-col justify-start items-stretch border-b border-stone-800/20 pb-1.5 overflow-visible">
+            <div v-if="yakimonoSection" class="flex flex-col items-stretch h-full shrink-0">
+              <div class="flex flex-row justify-start items-center h-full px-1.5 shrink-0 border-l border-current/25">
+                <h2 class="text-lg sm:text-xl font-black tracking-widest">{{ yakimonoSection.name }}</h2>
+                <span v-if="yakimonoSection.subtitle" class="text-[9px] opacity-80 mt-1 whitespace-nowrap">{{ yakimonoSection.subtitle }}</span>
+              </div>
+              <div
+                v-for="(item, idx) in yakimonoSection.items"
+                :key="item.id || idx"
+                class="flex flex-row justify-between h-full px-0.5 sm:px-1 min-w-[18px] sm:min-w-[21px] shrink-0"
+              >
+                <div class="pt-0.5 whitespace-nowrap text-[11px] sm:text-xs font-bold leading-tight">
+                  <span v-if="menuData.showDotPrefix" class="text-[9px] opacity-70">・</span>{{ item.name }}
+                </div>
+                <div class="self-end pb-0.5 whitespace-nowrap text-[11px] sm:text-xs font-bold font-mono">
+                  {{ formatPrice(item.price, menuData.priceFormat, true) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2段目 (中段): 一品料理 (17品) -->
+          <div class="vertical-rl h-[32%] flex flex-col justify-start items-stretch border-b border-stone-800/20 py-1.5 overflow-visible">
+            <div v-if="ippinSection" class="flex flex-col items-stretch h-full shrink-0">
+              <div class="flex flex-row justify-start items-center h-full px-1.5 shrink-0 border-l border-current/25">
+                <h2 class="text-lg sm:text-xl font-black tracking-widest">{{ ippinSection.name }}</h2>
+              </div>
+              <div
+                v-for="(item, idx) in ippinSection.items"
+                :key="item.id || idx"
+                class="flex flex-row justify-between h-full px-0.5 sm:px-1 min-w-[18px] sm:min-w-[21px] shrink-0"
+              >
+                <div class="pt-0.5 whitespace-nowrap text-[11px] sm:text-xs font-bold leading-tight">
+                  <span v-if="menuData.showDotPrefix" class="text-[9px] opacity-70">・</span>{{ item.name }}
+                </div>
+                <div class="self-end pb-0.5 whitespace-nowrap text-[11px] sm:text-xs font-bold font-mono">
+                  {{ formatPrice(item.price, menuData.priceFormat, true) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3段目 (下段): トッピング + サラダ + ご飯もの + ロゴ案内 -->
+          <div class="vertical-rl h-[34%] flex flex-col justify-start items-stretch pt-1.5 overflow-visible">
+            <!-- トッピング -->
+            <div v-if="toppingSection" class="flex flex-col items-stretch h-full pr-2 shrink-0">
+              <div class="flex flex-row justify-start items-center h-full px-1 shrink-0 border-l border-current/25">
+                <h3 class="text-sm sm:text-base font-black">{{ toppingSection.name }}</h3>
+              </div>
+              <div
+                v-for="(item, idx) in toppingSection.items"
+                :key="item.id || idx"
+                class="flex flex-row justify-start h-full px-1 min-w-[18px] shrink-0"
+              >
+                <div class="pt-0.5 whitespace-nowrap text-[11px] sm:text-xs font-bold">
+                  <span v-if="menuData.showDotPrefix" class="text-[9px] opacity-70">・</span>{{ item.name }}
+                </div>
+              </div>
+              <div class="flex flex-row justify-end items-end h-full px-1 shrink-0 pb-1">
+                <span class="text-[10px] sm:text-xs font-bold whitespace-nowrap">各{{ formatPrice(toppingSection.uniformPrice || '50', menuData.priceFormat, true) }}</span>
+              </div>
+            </div>
+
+            <!-- サラダ -->
+            <div v-if="saladSection" class="flex flex-col items-stretch h-full px-2 border-r border-current/20 pl-2 shrink-0">
+              <div class="flex flex-row justify-start items-center h-full px-1 shrink-0">
+                <h3 class="text-sm sm:text-base font-black">{{ saladSection.name }}</h3>
+              </div>
+              <div
+                v-for="(item, idx) in saladSection.items"
+                :key="item.id || idx"
+                class="flex flex-row justify-between h-full px-1 min-w-[18px] shrink-0"
+              >
+                <div class="pt-0.5 whitespace-nowrap text-[11px] sm:text-xs font-bold">
+                  <span v-if="menuData.showDotPrefix" class="text-[9px] opacity-70">・</span>{{ item.name }}
+                </div>
+                <div class="self-end pb-0.5 whitespace-nowrap text-[11px] sm:text-xs font-bold font-mono">
+                  {{ formatPrice(item.price, menuData.priceFormat, true) }}
+                </div>
+              </div>
+            </div>
+
+            <!-- ご飯もの -->
+            <div v-if="gohanSection" class="flex flex-col items-stretch h-full px-2 border-r border-current/20 pl-2 shrink-0">
+              <div class="flex flex-row justify-start items-center h-full px-1 shrink-0">
+                <h3 class="text-sm sm:text-base font-black">{{ gohanSection.name }}</h3>
+              </div>
+              <div
+                v-for="(item, idx) in gohanSection.items"
+                :key="item.id || idx"
+                class="flex flex-row justify-between h-full px-1 min-w-[18px] shrink-0"
+              >
+                <div class="pt-0.5 whitespace-nowrap text-[11px] sm:text-xs font-bold">
+                  <span v-if="menuData.showDotPrefix" class="text-[9px] opacity-70">・</span>{{ item.name }}
+                </div>
+                <div class="self-end pb-0.5 whitespace-nowrap text-[11px] sm:text-xs font-bold font-mono">
+                  {{ formatPrice(item.price, menuData.priceFormat, true) }}
+                </div>
+              </div>
+            </div>
+
+            <!-- 店舗ロゴ＆案内 -->
+            <div v-if="menuData.noticeBlock && menuData.noticeBlock.show" class="flex flex-col items-stretch h-full pl-3 pr-1 shrink-0">
+              <div class="flex flex-col justify-center items-start h-full gap-1.5 text-[9px] sm:text-[10px] leading-relaxed opacity-85">
+                <div v-for="(line, lIdx) in menuData.noticeBlock.lines" :key="lIdx" class="whitespace-nowrap">
+                  {{ line }}
+                </div>
+              </div>
+              <div class="flex items-center justify-center pl-2 self-center">
+                <MozuLogo wrapper-class="w-16 h-16 sm:w-18 sm:h-18 text-stone-900" />
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -385,7 +504,7 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { formatPrice } from '../utils/formatters'
 import MozuLogo from './MozuLogo.vue'
-import { Printer, ArrowLeftRight, Image as ImageIcon, Loader2, Download, X } from '@lucide/vue'
+import { Printer, Image as ImageIcon, Loader2, Download, X, ArrowLeftRight } from '@lucide/vue'
 import { toPng } from 'html-to-image'
 
 const props = defineProps({
@@ -401,9 +520,11 @@ const isGeneratingImage = ref(false)
 const generatedImageUrl = ref(null)
 const showImageModal = ref(false)
 
+const isLandscape = computed(() => props.menuData.paperOrientation !== 'portrait')
+const isB5 = computed(() => props.menuData.paperSize === 'B5')
+
 onMounted(() => {
   nextTick(() => {
-    // 縦書きなので初期位置を右端にする
     if (scrollContainer.value) {
       scrollContainer.value.scrollLeft = scrollContainer.value.scrollWidth
     }
@@ -442,9 +563,17 @@ const fontClass = computed(() => {
   }
 })
 
-// A4 横置き（1.414 : 1）のプロポーション
+// 用紙の正確な比率（1.414 : 1 または 1 : 1.414）
 const sheetDimensionClasses = computed(() => {
-  return 'min-w-[840px] max-w-[1140px] w-full min-h-[560px] sm:min-h-[640px]'
+  if (isLandscape.value) {
+    return isB5.value
+      ? 'w-full max-w-[840px] aspect-[1.414/1] min-w-[620px]' // B5横 (257x182比率)
+      : 'w-full max-w-[960px] aspect-[1.414/1] min-w-[660px]' // A4横 (297x210比率 1.414:1)
+  } else {
+    return isB5.value
+      ? 'w-full max-w-[480px] aspect-[1/1.414] min-w-[360px]' // B5縦
+      : 'w-full max-w-[540px] aspect-[1/1.414] min-w-[390px]' // A4縦 (1:1.414比率)
+  }
 })
 
 const bgToneStyle = computed(() => {
@@ -553,8 +682,8 @@ function downloadGeneratedImage() {
 
 @media print {
   @page {
-    size: A4 landscape;
-    margin: 6mm;
+    size: auto;
+    margin: 4mm;
   }
 }
 </style>
