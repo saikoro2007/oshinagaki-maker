@@ -2,7 +2,7 @@
   <div class="space-y-5 pb-16">
     <!-- Header Card -->
     <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-stone-200">
-      <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center justify-between mb-2">
         <div>
           <span class="inline-block px-2.5 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 mb-1">
             グランドメニュー（定番・全品一覧）
@@ -24,7 +24,7 @@
       </div>
 
       <p class="text-xs text-stone-500 leading-relaxed">
-        各カテゴリをタップして開閉し、品名や価格を編集できます。変更は自動保存されます。
+        カテゴリの追加・並び替え・削除や、各品の品名・価格を編集できます。変更は自動保存されます。
       </p>
     </div>
 
@@ -99,64 +99,146 @@
       </div>
     </div>
 
-    <!-- Category Accordions -->
+    <!-- Category Sections Accordions (汎用追加・削除・並び替え・全カテゴリ一括価格対応) -->
     <div class="space-y-3">
+      <div class="flex items-center justify-between px-1">
+        <h3 class="font-bold text-sm text-stone-900 flex items-center gap-2">
+          <span>メニューカテゴリ一覧</span>
+          <span class="text-xs text-stone-500 font-normal">({{ menuData.sections?.length || 0 }}カテゴリ)</span>
+        </h3>
+        
+        <button
+          type="button"
+          @click="addNewCategory"
+          class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-xs transition cursor-pointer"
+        >
+          <Plus class="w-3.5 h-3.5" />
+          <span>カテゴリを追加</span>
+        </button>
+      </div>
+
+      <!-- Categories List -->
       <div
         v-for="(section, sIdx) in menuData.sections"
         :key="section.id || sIdx"
         class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden transition-all"
       >
-        <!-- Category Header (Click to toggle) -->
-        <button
-          type="button"
-          @click="toggleSection(section.id)"
-          class="w-full px-4 py-3.5 flex items-center justify-between bg-stone-50/70 hover:bg-stone-100/80 transition cursor-pointer text-left"
-        >
-          <div class="flex items-center gap-2.5">
-            <span class="w-2 h-4 bg-emerald-600 rounded-full"></span>
-            <span class="font-bold text-stone-900 text-sm sm:text-base">
-              {{ section.name }}
+        <!-- Category Header -->
+        <div class="w-full px-3.5 py-3 flex items-center justify-between bg-stone-50/80 border-b border-stone-100 gap-2">
+          <!-- Left: Title & Status -->
+          <div
+            @click="toggleSection(section.id)"
+            class="flex-1 flex items-center gap-2 cursor-pointer select-none overflow-hidden"
+          >
+            <span class="w-2 h-4 bg-emerald-600 rounded-full shrink-0"></span>
+            <span class="font-bold text-stone-900 text-sm truncate">
+              {{ section.name || '（名称未設定）' }}
             </span>
-            <span class="text-xs px-2 py-0.5 bg-stone-200 text-stone-700 rounded-full font-medium">
+            <span class="text-[11px] px-2 py-0.5 bg-stone-200 text-stone-700 rounded-full font-medium shrink-0">
               {{ section.items?.length || 0 }}品
             </span>
-            <span v-if="section.subtitle" class="text-xs text-stone-500 font-normal">
+            <span v-if="section.subtitle" class="text-xs text-stone-500 truncate hidden sm:inline">
               ({{ section.subtitle }})
             </span>
-            <span v-if="section.uniformPrice" class="text-xs text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+            <span v-if="section.uniformPrice" class="text-xs text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 shrink-0">
               各{{ section.uniformPrice }}円
             </span>
           </div>
 
-          <component
-            :is="isSectionOpen(section.id) ? ChevronUp : ChevronDown"
-            class="w-4 h-4 text-stone-400"
-          />
-        </button>
+          <!-- Right: Category Order & Delete Controls -->
+          <div class="flex items-center gap-1 shrink-0">
+            <!-- Move Category Up -->
+            <button
+              type="button"
+              @click="moveSection(sIdx, -1)"
+              :disabled="sIdx === 0"
+              class="p-1.5 text-stone-400 hover:text-stone-800 disabled:opacity-20 transition rounded hover:bg-stone-200/60"
+              title="カテゴリを前へ"
+            >
+              <ChevronUp class="w-4 h-4" />
+            </button>
+            <!-- Move Category Down -->
+            <button
+              type="button"
+              @click="moveSection(sIdx, 1)"
+              :disabled="sIdx === menuData.sections.length - 1"
+              class="p-1.5 text-stone-400 hover:text-stone-800 disabled:opacity-20 transition rounded hover:bg-stone-200/60"
+              title="カテゴリを次へ"
+            >
+              <ChevronDown class="w-4 h-4" />
+            </button>
+            <!-- Delete Category -->
+            <button
+              type="button"
+              @click="removeCategory(sIdx)"
+              class="p-1.5 text-stone-400 hover:text-red-600 transition rounded hover:bg-red-50"
+              title="カテゴリを削除"
+            >
+              <Trash2 class="w-4 h-4" />
+            </button>
+            <!-- Accordion Toggle Chevron -->
+            <button
+              type="button"
+              @click="toggleSection(section.id)"
+              class="p-1.5 text-stone-500 hover:text-stone-900 transition rounded hover:bg-stone-200/60 ml-1"
+            >
+              <component
+                :is="isSectionOpen(section.id) ? ChevronUp : ChevronDown"
+                class="w-4 h-4"
+              />
+            </button>
+          </div>
+        </div>
 
         <!-- Category Content (Collapsible) -->
-        <div v-if="isSectionOpen(section.id)" class="p-3 sm:p-4 border-t border-stone-100 space-y-3">
+        <div v-if="isSectionOpen(section.id)" class="p-3.5 sm:p-4 space-y-3.5">
           
-          <!-- Category Option inputs (Subtitle, Uniform price) -->
-          <div class="grid grid-cols-2 gap-2 pb-2 border-b border-stone-100 text-xs">
-            <div v-if="section.id === 'yakimono'">
-              <label class="block text-stone-500 font-medium mb-1">注記（例: 一本 塩・タレ）</label>
-              <input
-                v-model="section.subtitle"
-                type="text"
-                class="w-full px-2.5 py-1.5 border border-stone-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 outline-none"
-              />
+          <!-- Category Settings (Name, Subtitle, Uniform Price for ALL categories) -->
+          <div class="bg-stone-50 p-3 rounded-xl border border-stone-200/70 space-y-2.5 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div>
+                <label class="block text-stone-600 font-medium mb-1">カテゴリ名</label>
+                <input
+                  v-model="section.name"
+                  type="text"
+                  placeholder="例: 焼き物、お飲み物、一品など"
+                  class="w-full px-2.5 py-1.5 bg-white border border-stone-300 rounded-lg text-xs font-bold focus:ring-2 focus:ring-amber-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label class="block text-stone-600 font-medium mb-1">サブ注記（任意）</label>
+                <input
+                  v-model="section.subtitle"
+                  type="text"
+                  placeholder="例: 一本 塩・タレ、グラス・ボトルなど"
+                  class="w-full px-2.5 py-1.5 bg-white border border-stone-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 outline-none"
+                />
+              </div>
             </div>
-            <div v-if="section.id === 'topping'">
-              <label class="block text-stone-500 font-medium mb-1">一括価格（例: 各50円）</label>
-              <div class="flex items-center gap-1">
+
+            <!-- Uniform Price Setting (Available for ALL categories!) -->
+            <div class="pt-2 border-t border-stone-200/60 flex flex-wrap items-center justify-between gap-2">
+              <label class="flex items-center gap-1.5 cursor-pointer text-stone-700 font-medium">
+                <input
+                  type="checkbox"
+                  :checked="Boolean(section.uniformPrice)"
+                  @change="toggleUniformPrice(section, $event)"
+                  class="rounded border-stone-300 text-amber-600 focus:ring-amber-500"
+                />
+                <span>このカテゴリを一括価格にする（例: 各〇〇円）</span>
+              </label>
+
+              <div v-if="section.uniformPrice !== undefined && section.uniformPrice !== ''" class="flex items-center gap-1">
+                <span class="text-stone-500 font-medium">各</span>
                 <input
                   v-model="section.uniformPrice"
                   type="text"
-                  class="w-full px-2.5 py-1.5 border border-stone-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 outline-none"
+                  inputmode="numeric"
                   placeholder="50"
+                  class="w-20 px-2 py-1 bg-white border border-stone-300 rounded-lg text-xs font-mono font-bold text-right focus:ring-2 focus:ring-amber-500 outline-none"
                 />
-                <span class="text-xs text-stone-600 shrink-0">円</span>
+                <span class="text-stone-600">円</span>
               </div>
             </div>
           </div>
@@ -166,31 +248,31 @@
             <div
               v-for="(item, idx) in section.items"
               :key="item.id || idx"
-              class="flex items-center gap-2 p-2 bg-stone-50 rounded-xl border border-stone-200 hover:border-amber-300 transition"
+              class="flex items-center gap-2 p-2 bg-white rounded-xl border border-stone-200 hover:border-amber-300 transition"
             >
-              <!-- Index / Handle -->
-              <span class="text-[11px] font-mono font-bold text-stone-400 w-4 text-center">
+              <!-- Index / Number -->
+              <span class="text-[11px] font-mono font-bold text-stone-400 w-4 text-center shrink-0">
                 {{ idx + 1 }}
               </span>
 
               <!-- Item Name Input -->
-              <div class="flex-1">
+              <div class="flex-1 min-w-0">
                 <input
                   v-model="item.name"
                   type="text"
                   placeholder="品名"
-                  class="w-full px-2.5 py-1.5 bg-white border border-stone-300 rounded-lg text-xs sm:text-sm font-bold text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                  class="w-full px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-xs sm:text-sm font-bold text-stone-900 focus:bg-white focus:ring-2 focus:ring-amber-500 outline-none"
                 />
               </div>
 
-              <!-- Price Input (if not uniform price) -->
+              <!-- Price Input (Hidden if category has uniform price) -->
               <div v-if="!section.uniformPrice" class="w-20 sm:w-24 shrink-0 flex items-center gap-1">
                 <input
                   v-model="item.price"
                   type="text"
                   inputmode="numeric"
                   placeholder="価格"
-                  class="w-full px-2 py-1.5 bg-white border border-stone-300 rounded-lg text-xs sm:text-sm font-mono font-bold text-right text-stone-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                  class="w-full px-2 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-xs sm:text-sm font-mono font-bold text-right text-stone-900 focus:bg-white focus:ring-2 focus:ring-amber-500 outline-none"
                 />
                 <span class="text-xs text-stone-500 shrink-0">円</span>
               </div>
@@ -218,7 +300,7 @@
                 <button
                   type="button"
                   @click="removeItem(section, idx)"
-                  class="p-1 text-red-400 hover:text-red-600 transition"
+                  class="p-1 text-stone-300 hover:text-red-600 transition"
                   title="削除"
                 >
                   <Trash2 class="w-3.5 h-3.5" />
@@ -231,20 +313,30 @@
           <button
             type="button"
             @click="addItem(section)"
-            class="w-full py-2 bg-stone-100 hover:bg-stone-200 border border-dashed border-stone-300 rounded-xl text-xs font-bold text-stone-700 flex items-center justify-center gap-1.5 transition cursor-pointer"
+            class="w-full py-2 bg-stone-50 hover:bg-stone-100 border border-dashed border-stone-300 rounded-xl text-xs font-bold text-stone-700 flex items-center justify-center gap-1.5 transition cursor-pointer"
           >
-            <Plus class="w-3.5 h-3.5" />
-            <span>「{{ section.name }}」に品目を追加</span>
+            <Plus class="w-3.5 h-3.5 text-emerald-600" />
+            <span>「{{ section.name || 'このカテゴリ' }}」に品目を追加</span>
           </button>
         </div>
       </div>
+
+      <!-- Add New Category Bottom Button -->
+      <button
+        type="button"
+        @click="addNewCategory"
+        class="w-full py-3 bg-white hover:bg-emerald-50 border-2 border-dashed border-emerald-300 hover:border-emerald-500 rounded-2xl text-xs sm:text-sm font-bold text-emerald-800 flex items-center justify-center gap-2 shadow-xs transition cursor-pointer"
+      >
+        <Plus class="w-4 h-4 text-emerald-600" />
+        <span>新しいカテゴリを追加する</span>
+      </button>
     </div>
 
-    <!-- Store Rules & Notice Block Settings -->
-    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-stone-200 space-y-3">
-      <div class="flex items-center justify-between">
-        <h3 class="font-bold text-sm text-stone-900 flex items-center gap-2">
-          <span>店舗案内・営業ルール（左下枠）</span>
+    <!-- Store Rules & Notice Block Settings (はみ出し防止 & すっきりレイアウト) -->
+    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-stone-200 space-y-3.5 overflow-hidden">
+      <div class="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-stone-100">
+        <h3 class="font-bold text-sm text-stone-900">
+          店舗案内・営業ルール
         </h3>
         <label class="flex items-center gap-1.5 text-xs text-stone-600 cursor-pointer">
           <input
@@ -252,43 +344,47 @@
             v-model="menuData.noticeBlock.show"
             class="rounded border-stone-300 text-amber-600 focus:ring-amber-500"
           />
-          <span>表示する</span>
+          <span>メニューに表示する</span>
         </label>
       </div>
 
-      <div v-if="menuData.noticeBlock.show" class="space-y-2 pt-1">
-        <div
-          v-for="(line, lIdx) in menuData.noticeBlock.lines"
-          :key="lIdx"
-          class="flex items-center gap-2"
-        >
-          <span class="text-xs text-stone-400 font-mono w-4">{{ lIdx + 1 }}</span>
-          <input
-            v-model="menuData.noticeBlock.lines[lIdx]"
-            type="text"
-            class="flex-1 px-3 py-1.5 border border-stone-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 outline-none"
-          />
+      <div v-if="menuData.noticeBlock.show" class="space-y-3">
+        <!-- Lines list -->
+        <div class="space-y-2">
+          <label class="block text-xs font-medium text-stone-500">案内文（縦書きで表示）</label>
+          <div
+            v-for="(line, lIdx) in menuData.noticeBlock.lines"
+            :key="lIdx"
+            class="flex items-center gap-2 min-w-0"
+          >
+            <span class="text-xs text-stone-400 font-mono w-4 shrink-0">{{ lIdx + 1 }}</span>
+            <input
+              v-model="menuData.noticeBlock.lines[lIdx]"
+              type="text"
+              class="flex-1 min-w-0 px-3 py-1.5 border border-stone-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 outline-none"
+            />
+          </div>
         </div>
 
-        <!-- 店舗ロゴ画像設定 -->
+        <!-- 店舗ロゴ画像設定（デフォルト印字なし、ユーザー画像登録のみ） -->
         <div class="pt-3 border-t border-stone-100">
-          <label class="block text-stone-700 font-bold text-xs mb-1.5">店舗ロゴ画像</label>
+          <label class="block text-stone-700 font-bold text-xs mb-2">店舗ロゴ画像</label>
           <div class="flex items-center gap-3">
             <!-- プレビュー枠 -->
-            <div class="w-16 h-16 rounded-xl border border-stone-200 bg-stone-50 flex items-center justify-center overflow-hidden shrink-0">
+            <div class="w-14 h-14 rounded-xl border border-stone-200 bg-stone-50 flex items-center justify-center overflow-hidden shrink-0">
               <img
-                v-if="menuData.logoImage || menuData.noticeBlock?.logoImage"
-                :src="menuData.logoImage || menuData.noticeBlock?.logoImage"
+                v-if="currentLogoImage"
+                :src="currentLogoImage"
                 alt="店舗ロゴ"
                 class="w-full h-full object-contain p-1"
               />
-              <div v-else class="text-[10px] text-stone-400 text-center px-1">
-                標準印字（もず）
-              </div>
+              <span v-else class="text-[10px] text-stone-400 text-center px-1">
+                未設定
+              </span>
             </div>
 
             <!-- アップロード・削除ボタン -->
-            <div class="flex-1 space-y-1.5">
+            <div class="flex-1 min-w-0 flex flex-wrap items-center gap-2">
               <input
                 type="file"
                 ref="logoFileInput"
@@ -296,28 +392,23 @@
                 class="hidden"
                 @change="handleLogoUpload"
               />
-              <div class="flex items-center gap-2">
-                <button
-                  type="button"
-                  @click="triggerLogoUpload"
-                  class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-stone-950 font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-xs transition cursor-pointer"
-                >
-                  <Upload class="w-3.5 h-3.5" />
-                  <span>{{ (menuData.logoImage || menuData.noticeBlock?.logoImage) ? '画像を変更' : 'ロゴ画像を登録' }}</span>
-                </button>
+              <button
+                type="button"
+                @click="triggerLogoUpload"
+                class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-stone-950 font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+              >
+                <Upload class="w-3.5 h-3.5" />
+                <span>{{ currentLogoImage ? '画像を変更' : 'ロゴ画像を登録' }}</span>
+              </button>
 
-                <button
-                  v-if="menuData.logoImage || menuData.noticeBlock?.logoImage"
-                  type="button"
-                  @click="removeLogoImage"
-                  class="px-2.5 py-1.5 bg-stone-100 hover:bg-red-50 text-stone-600 hover:text-red-600 font-medium rounded-lg text-xs transition cursor-pointer"
-                >
-                  削除
-                </button>
-              </div>
-              <p class="text-[10px] text-stone-400">
-                ※PNG/JPG対応。自動で最適圧縮されて端末に保存されます。
-              </p>
+              <button
+                v-if="currentLogoImage"
+                type="button"
+                @click="removeLogoImage"
+                class="px-2.5 py-1.5 bg-stone-100 hover:bg-red-50 text-stone-600 hover:text-red-600 font-medium rounded-lg text-xs transition cursor-pointer"
+              >
+                削除
+              </button>
             </div>
           </div>
         </div>
@@ -388,7 +479,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import {
   ChevronUp,
   ChevronDown,
@@ -409,6 +500,10 @@ const props = defineProps({
 defineEmits(['reset-mozu-default'])
 
 const logoFileInput = ref(null)
+
+const currentLogoImage = computed(() => {
+  return props.menuData.logoImage || props.menuData.noticeBlock?.logoImage || ''
+})
 
 function triggerLogoUpload() {
   if (logoFileInput.value) {
@@ -440,8 +535,8 @@ function removeLogoImage() {
   }
 }
 
-// 最初に開いておくカテゴリ（初期値は焼き物）
-const openSections = ref(['yakimono', 'ippin'])
+// 最初に開いておくカテゴリ（初期値は先頭2つ）
+const openSections = ref(props.menuData.sections?.slice(0, 2).map(s => s.id) || [])
 
 function isSectionOpen(id) {
   return openSections.value.includes(id)
@@ -456,6 +551,53 @@ function toggleSection(id) {
   }
 }
 
+// カテゴリ全体の並び替え
+function moveSection(index, direction) {
+  const targetIndex = index + direction
+  if (targetIndex < 0 || targetIndex >= props.menuData.sections.length) return
+  const sec = props.menuData.sections.splice(index, 1)[0]
+  props.menuData.sections.splice(targetIndex, 0, sec)
+}
+
+// カテゴリ削除
+function removeCategory(index) {
+  const sec = props.menuData.sections[index]
+  const name = sec.name || 'このカテゴリ'
+  if (confirm(`「${name}」を削除してもよろしいですか？（含まれる品目もすべて削除されます）`)) {
+    props.menuData.sections.splice(index, 1)
+  }
+}
+
+// 新規カテゴリ追加
+function addNewCategory() {
+  if (!props.menuData.sections) {
+    props.menuData.sections = []
+  }
+  const newId = 'sec_' + Date.now().toString(36)
+  props.menuData.sections.push({
+    id: newId,
+    name: '新しいカテゴリ',
+    subtitle: '',
+    uniformPrice: '',
+    items: [
+      { id: Date.now().toString() + '_1', name: 'おすすめ品目', price: '300' }
+    ]
+  })
+  if (!openSections.value.includes(newId)) {
+    openSections.value.push(newId)
+  }
+}
+
+// 一括価格トグル
+function toggleUniformPrice(section, event) {
+  if (event.target.checked) {
+    section.uniformPrice = '50'
+  } else {
+    section.uniformPrice = ''
+  }
+}
+
+// 品目操作
 function addItem(section) {
   if (!section.items) section.items = []
   section.items.push({
