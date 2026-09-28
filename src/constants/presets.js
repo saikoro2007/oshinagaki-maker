@@ -112,9 +112,11 @@ export const MOZU_GRAND_MENU_STATE = {
   showDotPrefix: true, // 品名の頭に中黒「・」をつける（実写真スタイル）
   frameStyle: 'none', // 写真実物はフレーム枠線なし（用紙周囲の余白のみ）
   storeName: 'もず',
+  logoImage: '', // ユーザーがアップロードしたロゴ画像（Base64 DataURL）
   noticeBlock: {
     show: true,
     logoText: 'もず',
+    logoImage: '', // ユーザーアップロード画像
     lines: [
       'お通し代として お一人様四〇〇円をいただいております。',
       '混雑時はお席のご利用を 二時間までとさせていただきます。',

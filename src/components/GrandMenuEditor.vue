@@ -269,6 +269,58 @@
             class="flex-1 px-3 py-1.5 border border-stone-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 outline-none"
           />
         </div>
+
+        <!-- 店舗ロゴ画像設定 -->
+        <div class="pt-3 border-t border-stone-100">
+          <label class="block text-stone-700 font-bold text-xs mb-1.5">店舗ロゴ画像</label>
+          <div class="flex items-center gap-3">
+            <!-- プレビュー枠 -->
+            <div class="w-16 h-16 rounded-xl border border-stone-200 bg-stone-50 flex items-center justify-center overflow-hidden shrink-0">
+              <img
+                v-if="menuData.logoImage || menuData.noticeBlock?.logoImage"
+                :src="menuData.logoImage || menuData.noticeBlock?.logoImage"
+                alt="店舗ロゴ"
+                class="w-full h-full object-contain p-1"
+              />
+              <div v-else class="text-[10px] text-stone-400 text-center px-1">
+                標準印字（もず）
+              </div>
+            </div>
+
+            <!-- アップロード・削除ボタン -->
+            <div class="flex-1 space-y-1.5">
+              <input
+                type="file"
+                ref="logoFileInput"
+                accept="image/*"
+                class="hidden"
+                @change="handleLogoUpload"
+              />
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  @click="triggerLogoUpload"
+                  class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-stone-950 font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+                >
+                  <Upload class="w-3.5 h-3.5" />
+                  <span>{{ (menuData.logoImage || menuData.noticeBlock?.logoImage) ? '画像を変更' : 'ロゴ画像を登録' }}</span>
+                </button>
+
+                <button
+                  v-if="menuData.logoImage || menuData.noticeBlock?.logoImage"
+                  type="button"
+                  @click="removeLogoImage"
+                  class="px-2.5 py-1.5 bg-stone-100 hover:bg-red-50 text-stone-600 hover:text-red-600 font-medium rounded-lg text-xs transition cursor-pointer"
+                >
+                  削除
+                </button>
+              </div>
+              <p class="text-[10px] text-stone-400">
+                ※PNG/JPG対応。自動で最適圧縮されて端末に保存されます。
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -342,8 +394,10 @@ import {
   ChevronDown,
   Plus,
   Trash2,
-  RotateCcw
+  RotateCcw,
+  Upload
 } from '@lucide/vue'
+import { compressImageFile } from '../utils/imageCompressor'
 
 const props = defineProps({
   menuData: {
@@ -353,6 +407,38 @@ const props = defineProps({
 })
 
 defineEmits(['reset-mozu-default'])
+
+const logoFileInput = ref(null)
+
+function triggerLogoUpload() {
+  if (logoFileInput.value) {
+    logoFileInput.value.click()
+  }
+}
+
+async function handleLogoUpload(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+  try {
+    const compressedBase64 = await compressImageFile(file, 400, 0.85)
+    props.menuData.logoImage = compressedBase64
+    if (props.menuData.noticeBlock) {
+      props.menuData.noticeBlock.logoImage = compressedBase64
+    }
+  } catch (err) {
+    console.error('ロゴ画像の圧縮に失敗しました:', err)
+    alert('画像の読み込みに失敗しました。別の画像をお試しください。')
+  } finally {
+    event.target.value = ''
+  }
+}
+
+function removeLogoImage() {
+  props.menuData.logoImage = ''
+  if (props.menuData.noticeBlock) {
+    props.menuData.noticeBlock.logoImage = ''
+  }
+}
 
 // 最初に開いておくカテゴリ（初期値は焼き物）
 const openSections = ref(['yakimono', 'ippin'])
