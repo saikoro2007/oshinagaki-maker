@@ -97,3 +97,118 @@ export const INITIAL_MENU_STATE = {
     { id: '7', name: '名物もつ煮込み', price: '520', note: '自慢の一品', translation: 'Simmered Tripe Stew' },
   ]
 };
+
+// やきとりもず 実店舗グランドメニュー（定番メニュー）初期データ
+export const MOZU_GRAND_MENU_STATE = {
+  menuType: 'grand',
+  title: 'やきとりもず 定番お品書き',
+  bgColor: '#e3ebdc', // 実写真の若草色・淡緑和紙
+  bgPattern: 'washi',
+  textColor: '#1a1f1b',
+  fontFamily: 'brush', // 筆文字
+  paperSize: 'A4',
+  paperOrientation: 'landscape',
+  priceFormat: 'kanji',
+  showDotPrefix: true, // 品名の頭に中黒「・」をつける（実写真スタイル）
+  frameStyle: 'none', // 写真実物はフレーム枠線なし（用紙周囲の余白のみ）
+  storeName: 'もず',
+  noticeBlock: {
+    show: true,
+    logoText: 'もず',
+    lines: [
+      'お通し代として お一人様四〇〇円をいただいております。',
+      '混雑時はお席のご利用を 二時間までとさせていただきます。',
+      'お会計はテーブルにて承ります。 スタッフまでお声がけください。'
+    ]
+  },
+  sections: [
+    {
+      id: 'yakimono',
+      name: '焼き物',
+      subtitle: '一本 塩・タレ',
+      uniformPrice: '',
+      items: [
+        { id: 'y1', name: 'とりもも', price: '250', note: '' },
+        { id: 'y2', name: 'レバー', price: '220', note: '' },
+        { id: 'y3', name: 'ハツ', price: '220', note: '' },
+        { id: 'y4', name: 'すなぎも', price: '220', note: '' },
+        { id: 'y5', name: 'かわ', price: '220', note: '' },
+        { id: 'y6', name: '小肉', price: '220', note: '' },
+        { id: 'y7', name: 'ぽんじり', price: '250', note: '' },
+        { id: 'y8', name: 'ささみ', price: '220', note: '' },
+        { id: 'y9', name: '手羽先（二ヶ）', price: '220', note: '' },
+        { id: 'y10', name: 'つくね（月見・チーズ・梅）', price: '380', note: '' },
+        { id: 'y11', name: '豚ハラミ', price: '250', note: '' },
+        { id: 'y12', name: '豚タン', price: '250', note: '' },
+        { id: 'y13', name: 'ガツ', price: '250', note: '' },
+        { id: 'y14', name: 'ねぎ塩ホルモン', price: '280', note: '' },
+        { id: 'y15', name: '合がも', price: '350', note: '' },
+        { id: 'y16', name: '明太子（二本）', price: '350', note: '' },
+        { id: 'y17', name: '長ねぎ（二本）', price: '440', note: '' },
+        { id: 'y18', name: 'しいたけ（二本）', price: '350', note: '' },
+        { id: 'y19', name: 'ししとう（二本）', price: '350', note: '' },
+        { id: 'y20', name: 'トマト（一本）', price: '350', note: '' },
+      ]
+    },
+    {
+      id: 'ippin',
+      name: '一品',
+      subtitle: '',
+      uniformPrice: '',
+      items: [
+        { id: 'i1', name: 'ねぎ山わさび', price: '350', note: '' },
+        { id: 'i2', name: '冷やっこ', price: '480', note: '' },
+        { id: 'i3', name: 'えだまめ', price: '440', note: '' },
+        { id: 'i4', name: '塩こぶピーマン', price: '450', note: '' },
+        { id: 'i5', name: '揚げ出し豆腐', price: '550', note: '' },
+        { id: 'i6', name: 'なす田楽', price: '770', note: '' },
+        { id: 'i7', name: 'だし巻き卵', price: '680', note: '' },
+        { id: 'i8', name: '赤ウインナーケチャップ炒め', price: '680', note: '' },
+        { id: 'i9', name: 'ポテトフライ', price: '660', note: '' },
+        { id: 'i10', name: 'モッツァレラわさび醤油漬け', price: '770', note: '' },
+        { id: 'i11', name: '鶏のから揚げ', price: '800', note: '' },
+        { id: 'i12', name: '手羽から揚げ', price: '980', note: '' },
+        { id: 'i13', name: 'とり天', price: '1200', note: '' },
+        { id: 'i14', name: 'たこわさ', price: '660', note: '' },
+        { id: 'i15', name: 'たこから揚げ', price: '550', note: '' },
+        { id: 'i16', name: '合がもスモーク', price: '550', note: '' },
+        { id: 'i17', name: 'エイヒレ炙り', price: '550', note: '' },
+      ]
+    },
+    {
+      id: 'topping',
+      name: 'トッピング',
+      subtitle: '',
+      uniformPrice: '50', // 一括「各五〇円」
+      items: [
+        { id: 't1', name: '梅', price: '' },
+        { id: 't2', name: 'チーズ', price: '' },
+        { id: 't3', name: '山わさび', price: '' },
+      ]
+    },
+    {
+      id: 'salad',
+      name: 'サラダ',
+      subtitle: '',
+      uniformPrice: '',
+      items: [
+        { id: 's1', name: 'シーザーサラダ', price: '750', note: '' },
+        { id: 's2', name: '和風サラダ', price: '750', note: '' },
+      ]
+    },
+    {
+      id: 'gohan',
+      name: 'ご飯もの',
+      subtitle: '',
+      uniformPrice: '',
+      items: [
+        { id: 'g1', name: 'ライス', price: '250', note: '' },
+        { id: 'g2', name: 'おにぎり（梅・かつお）', price: '300', note: '' },
+        { id: 'g3', name: '焼きおにぎり（二ヶ）', price: '550', note: '' },
+        { id: 'g4', name: '特製納豆めし', price: '600', note: '' },
+        { id: 'g5', name: '山わさびめし', price: '550', note: '' },
+        { id: 'g6', name: '海苔茶漬け', price: '550', note: '' },
+      ]
+    }
+  ]
+};

@@ -1,0 +1,560 @@
+<template>
+  <div class="space-y-4">
+    <!-- Top Action Toolbar (Hidden on Print) -->
+    <div
+      class="no-print bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-stone-200 flex flex-wrap items-center justify-between gap-3"
+    >
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 text-xs font-bold">
+          グランドメニュー（2段組・定番）
+        </span>
+        <span class="text-xs text-stone-500 hidden sm:inline">
+          A4横置き・全48品レイアウト
+        </span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2">
+        <!-- Save as PNG button -->
+        <button
+          @click="saveAsImage"
+          type="button"
+          :disabled="isGeneratingImage"
+          class="px-3 py-2 bg-stone-100 hover:bg-stone-200 active:scale-95 text-stone-800 font-bold rounded-xl text-xs sm:text-sm border border-stone-300 flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+        >
+          <Loader2 v-if="isGeneratingImage" class="w-4 h-4 animate-spin text-amber-600" />
+          <ImageIcon v-else class="w-4 h-4 text-stone-600" />
+          <span class="hidden sm:inline">画像保存 (PNG)</span>
+          <span class="sm:hidden">画像</span>
+        </button>
+
+        <!-- Print PDF Button -->
+        <button
+          @click="triggerPrint"
+          type="button"
+          class="px-4 py-2 bg-amber-500 hover:bg-amber-400 active:scale-95 text-stone-950 font-black rounded-xl text-xs sm:text-sm shadow-md flex items-center gap-1.5 transition cursor-pointer"
+        >
+          <Printer class="w-4 h-4" />
+          <span>印刷する (PDF)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile swipe hint -->
+    <div
+      class="no-print lg:hidden text-center text-xs text-stone-500 flex items-center justify-center gap-1.5 py-1"
+    >
+      <ArrowLeftRight class="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+      <span>左右にスクロールして全体を確認・文字編集できます</span>
+    </div>
+
+    <!-- Paper Scroll Container -->
+    <div
+      ref="scrollContainer"
+      class="preview-scroll w-full overflow-x-auto pb-8 flex justify-start lg:justify-center px-1 sm:px-2 print:p-0 print:overflow-visible print:block print:h-full"
+    >
+      <div
+        ref="printSheetRef"
+        :class="[
+          'print-sheet shrink-0 shadow-2xl transition-all relative select-none border border-current/20 print:shadow-none print:border-none print:min-w-0 print:max-w-none print:w-full print:h-full print:min-h-0 print:p-2 sm:print:p-3 overflow-hidden',
+          fontClass,
+          sheetDimensionClasses
+        ]"
+        :style="sheetStyle"
+      >
+        <!-- Inner Menu Container (A4 Landscape, 2段組) -->
+        <div class="w-full h-full flex flex-col justify-between relative z-10 p-3 sm:p-5 print:p-2">
+          
+          <!-- ==============================================
+               上段 (Top Half): 焼き物 / トッピング / サラダ
+               ============================================== -->
+          <div class="vertical-rl h-[48%] flex flex-row items-stretch justify-start overflow-hidden border-b border-stone-800/20 pb-2">
+            
+            <!-- 1. 焼き物ブロック (右端) -->
+            <div v-if="yakimonoSection" class="flex flex-row items-stretch h-full pl-2 sm:pl-3">
+              <!-- 大見出し「焼き物」＋サブ「一本 塩・タレ」 -->
+              <div class="flex flex-col justify-start items-center shrink-0 pr-1 pl-2 sm:pl-3 border-l border-current/20">
+                <h2
+                  contenteditable="true"
+                  @blur="onTextBlur(yakimonoSection, 'name', $event)"
+                  class="editable-field text-xl sm:text-2xl font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                >
+                  {{ yakimonoSection.name }}
+                </h2>
+                <span
+                  v-if="yakimonoSection.subtitle"
+                  contenteditable="true"
+                  @blur="onTextBlur(yakimonoSection, 'subtitle', $event)"
+                  class="editable-field text-[10px] sm:text-xs opacity-80 tracking-wider mt-2 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                >
+                  {{ yakimonoSection.subtitle }}
+                </span>
+              </div>
+
+              <!-- 焼き物 品目群 (20品) -->
+              <div class="flex flex-row items-stretch h-full">
+                <div
+                  v-for="(item, idx) in yakimonoSection.items"
+                  :key="item.id || idx"
+                  class="flex flex-row justify-between h-full px-1 sm:px-1.5 min-w-[20px] sm:min-w-[25px]"
+                >
+                  <!-- 品名 (上部) -->
+                  <div class="pt-0.5">
+                    <span
+                      contenteditable="true"
+                      @blur="onTextBlur(item, 'name', $event)"
+                      class="editable-field text-xs sm:text-sm font-bold tracking-normal leading-snug whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                    >
+                      <span v-if="menuData.showDotPrefix" class="text-[10px] opacity-70 mr-0.5">・</span>{{ item.name }}
+                    </span>
+                  </div>
+
+                  <!-- 価格 (下部) -->
+                  <div class="self-end pb-0.5">
+                    <span
+                      contenteditable="true"
+                      @blur="onPriceBlur(item, $event)"
+                      class="editable-field text-xs sm:text-sm font-bold tracking-tighter whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                    >
+                      {{ formatPrice(item.price, menuData.priceFormat, true) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. トッピングブロック (中央上) -->
+            <div v-if="toppingSection" class="flex flex-row items-stretch h-full px-3 sm:px-5 border-r border-current/25 pl-4 sm:pl-6">
+              <!-- 見出し「トッピング」 -->
+              <div class="flex flex-col justify-start items-center shrink-0 pr-1 pl-2">
+                <h3
+                  contenteditable="true"
+                  @blur="onTextBlur(toppingSection, 'name', $event)"
+                  class="editable-field text-lg sm:text-xl font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                >
+                  {{ toppingSection.name }}
+                </h3>
+              </div>
+
+              <!-- トッピング品目群（梅、チーズ、山わさび） -->
+              <div class="flex flex-row items-stretch h-full">
+                <div
+                  v-for="(item, idx) in toppingSection.items"
+                  :key="item.id || idx"
+                  class="flex flex-row justify-start h-full px-1.5 sm:px-2 min-w-[20px] sm:min-w-[24px]"
+                >
+                  <div class="pt-0.5">
+                    <span
+                      contenteditable="true"
+                      @blur="onTextBlur(item, 'name', $event)"
+                      class="editable-field text-xs sm:text-sm font-bold tracking-normal leading-snug whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                    >
+                      <span v-if="menuData.showDotPrefix" class="text-[10px] opacity-70 mr-0.5">・</span>{{ item.name }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 一括価格「各五〇円」 -->
+                <div class="self-end pb-1 pr-1">
+                  <span
+                    contenteditable="true"
+                    @blur="onTextBlur(toppingSection, 'uniformPrice', $event)"
+                    class="editable-field text-xs sm:text-sm font-bold tracking-tight whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                  >
+                    各{{ formatPrice(toppingSection.uniformPrice || '50', menuData.priceFormat, true) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. サラダブロック (左手上) -->
+            <div v-if="saladSection" class="flex flex-row items-stretch h-full px-3 sm:px-5 pl-4 sm:pl-6">
+              <!-- 見出し「サラダ」 -->
+              <div class="flex flex-col justify-start items-center shrink-0 pr-1 pl-2">
+                <h3
+                  contenteditable="true"
+                  @blur="onTextBlur(saladSection, 'name', $event)"
+                  class="editable-field text-lg sm:text-xl font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                >
+                  {{ saladSection.name }}
+                </h3>
+              </div>
+
+              <!-- サラダ品目 (2品) -->
+              <div class="flex flex-row items-stretch h-full">
+                <div
+                  v-for="(item, idx) in saladSection.items"
+                  :key="item.id || idx"
+                  class="flex flex-row justify-between h-full px-1.5 sm:px-2 min-w-[22px] sm:min-w-[26px]"
+                >
+                  <div class="pt-0.5">
+                    <span
+                      contenteditable="true"
+                      @blur="onTextBlur(item, 'name', $event)"
+                      class="editable-field text-xs sm:text-sm font-bold tracking-normal leading-snug whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                    >
+                      <span v-if="menuData.showDotPrefix" class="text-[10px] opacity-70 mr-0.5">・</span>{{ item.name }}
+                    </span>
+                  </div>
+                  <div class="self-end pb-0.5">
+                    <span
+                      contenteditable="true"
+                      @blur="onPriceBlur(item, $event)"
+                      class="editable-field text-xs sm:text-sm font-bold tracking-tighter whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                    >
+                      {{ formatPrice(item.price, menuData.priceFormat, true) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ==============================================
+               下段 (Bottom Half): 一品 / ご飯もの / ロゴ＆案内
+               ============================================== -->
+          <div class="vertical-rl h-[48%] flex flex-row items-stretch justify-start overflow-hidden pt-2">
+            
+            <!-- 1. 一品料理ブロック (右端) -->
+            <div v-if="ippinSection" class="flex flex-row items-stretch h-full pl-2 sm:pl-3">
+              <!-- 大見出し「一品」 -->
+              <div class="flex flex-col justify-start items-center shrink-0 pr-1 pl-2 sm:pl-3 border-l border-current/20">
+                <h2
+                  contenteditable="true"
+                  @blur="onTextBlur(ippinSection, 'name', $event)"
+                  class="editable-field text-xl sm:text-2xl font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                >
+                  {{ ippinSection.name }}
+                </h2>
+              </div>
+
+              <!-- 一品 品目群 (17品) -->
+              <div class="flex flex-row items-stretch h-full">
+                <div
+                  v-for="(item, idx) in ippinSection.items"
+                  :key="item.id || idx"
+                  class="flex flex-row justify-between h-full px-1 sm:px-1.5 min-w-[20px] sm:min-w-[25px]"
+                >
+                  <!-- 品名 (上部) -->
+                  <div class="pt-0.5">
+                    <span
+                      contenteditable="true"
+                      @blur="onTextBlur(item, 'name', $event)"
+                      class="editable-field text-xs sm:text-sm font-bold tracking-normal leading-snug whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                    >
+                      <span v-if="menuData.showDotPrefix" class="text-[10px] opacity-70 mr-0.5">・</span>{{ item.name }}
+                    </span>
+                  </div>
+
+                  <!-- 価格 (下部) -->
+                  <div class="self-end pb-0.5">
+                    <span
+                      contenteditable="true"
+                      @blur="onPriceBlur(item, $event)"
+                      class="editable-field text-xs sm:text-sm font-bold tracking-tighter whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                    >
+                      {{ formatPrice(item.price, menuData.priceFormat, true) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. ご飯ものブロック (中央〜左) -->
+            <div v-if="gohanSection" class="flex flex-row items-stretch h-full px-3 sm:px-5 border-r border-current/25 pl-4 sm:pl-6">
+              <!-- 見出し「ご飯もの」 -->
+              <div class="flex flex-col justify-start items-center shrink-0 pr-1 pl-2">
+                <h3
+                  contenteditable="true"
+                  @blur="onTextBlur(gohanSection, 'name', $event)"
+                  class="editable-field text-lg sm:text-xl font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                >
+                  {{ gohanSection.name }}
+                </h3>
+              </div>
+
+              <!-- ご飯もの品目群 (6品) -->
+              <div class="flex flex-row items-stretch h-full">
+                <div
+                  v-for="(item, idx) in gohanSection.items"
+                  :key="item.id || idx"
+                  class="flex flex-row justify-between h-full px-1.5 sm:px-2 min-w-[21px] sm:min-w-[25px]"
+                >
+                  <div class="pt-0.5">
+                    <span
+                      contenteditable="true"
+                      @blur="onTextBlur(item, 'name', $event)"
+                      class="editable-field text-xs sm:text-sm font-bold tracking-normal leading-snug whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                    >
+                      <span v-if="menuData.showDotPrefix" class="text-[10px] opacity-70 mr-0.5">・</span>{{ item.name }}
+                    </span>
+                  </div>
+                  <div class="self-end pb-0.5">
+                    <span
+                      contenteditable="true"
+                      @blur="onPriceBlur(item, $event)"
+                      class="editable-field text-xs sm:text-sm font-bold tracking-tighter whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                    >
+                      {{ formatPrice(item.price, menuData.priceFormat, true) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. 店舗ロゴ & 営業案内ブロック (左端・実写真再現) -->
+            <div
+              v-if="menuData.noticeBlock && menuData.noticeBlock.show"
+              class="flex flex-row items-stretch h-full pl-4 sm:pl-8 pr-2"
+            >
+              <!-- 案内文 (3行) -->
+              <div class="flex flex-row justify-center items-start h-full gap-2 sm:gap-2.5 text-[10px] sm:text-xs leading-relaxed opacity-85 pt-1">
+                <div
+                  v-for="(line, lIdx) in menuData.noticeBlock.lines"
+                  :key="lIdx"
+                  contenteditable="true"
+                  @blur="onNoticeBlur(lIdx, $event)"
+                  class="editable-field whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                >
+                  {{ line }}
+                </div>
+              </div>
+
+              <!-- 店舗ロゴ「もず」 -->
+              <div class="flex items-center justify-center pl-3 sm:pl-5 self-center">
+                <MozuLogo wrapper-class="w-20 h-20 sm:w-24 sm:h-24 text-stone-900" />
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div
+      v-if="showImageModal"
+      class="no-print fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+      @click.self="showImageModal = false"
+    >
+      <div class="bg-white rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
+        <div class="flex items-center justify-between pb-3 border-b border-stone-200">
+          <div class="flex items-center gap-2">
+            <ImageIcon class="w-5 h-5 text-amber-600" />
+            <h3 class="font-bold text-stone-900 text-base">生成されたグランドメニュー画像</h3>
+          </div>
+          <button
+            @click="showImageModal = false"
+            class="text-stone-400 hover:text-stone-700 p-1.5 rounded-lg hover:bg-stone-100 transition cursor-pointer"
+          >
+            <X class="w-5 h-5" />
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-auto py-4 flex items-center justify-center bg-stone-100 rounded-xl my-3">
+          <img
+            :src="generatedImageUrl"
+            alt="グランドメニュー画像"
+            class="max-h-[60vh] max-w-full rounded shadow-md object-contain"
+          />
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button
+            @click="showImageModal = false"
+            class="px-4 py-2 text-stone-600 hover:bg-stone-100 rounded-xl text-sm font-bold transition cursor-pointer"
+          >
+            閉じる
+          </button>
+          <button
+            @click="downloadGeneratedImage"
+            class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-stone-950 rounded-xl text-sm font-black shadow-sm flex items-center gap-1.5 transition cursor-pointer"
+          >
+            <Download class="w-4 h-4" />
+            <span>保存する</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, nextTick } from 'vue'
+import { formatPrice } from '../utils/formatters'
+import MozuLogo from './MozuLogo.vue'
+import { Printer, ArrowLeftRight, Image as ImageIcon, Loader2, Download, X } from '@lucide/vue'
+import { toPng } from 'html-to-image'
+
+const props = defineProps({
+  menuData: {
+    type: Object,
+    required: true,
+  }
+})
+
+const scrollContainer = ref(null)
+const printSheetRef = ref(null)
+const isGeneratingImage = ref(false)
+const generatedImageUrl = ref(null)
+const showImageModal = ref(false)
+
+onMounted(() => {
+  nextTick(() => {
+    // 縦書きなので初期位置を右端にする
+    if (scrollContainer.value) {
+      scrollContainer.value.scrollLeft = scrollContainer.value.scrollWidth
+    }
+  })
+})
+
+const yakimonoSection = computed(() => {
+  return props.menuData.sections?.find(s => s.id === 'yakimono' || s.name.includes('焼き'))
+})
+
+const ippinSection = computed(() => {
+  return props.menuData.sections?.find(s => s.id === 'ippin' || s.name.includes('一品'))
+})
+
+const toppingSection = computed(() => {
+  return props.menuData.sections?.find(s => s.id === 'topping' || s.name.includes('トッピング'))
+})
+
+const saladSection = computed(() => {
+  return props.menuData.sections?.find(s => s.id === 'salad' || s.name.includes('サラダ'))
+})
+
+const gohanSection = computed(() => {
+  return props.menuData.sections?.find(s => s.id === 'gohan' || s.name.includes('ご飯'))
+})
+
+const fontClass = computed(() => {
+  switch (props.menuData.fontFamily) {
+    case 'brush':
+      return 'font-brush'
+    case 'gothic':
+      return 'font-gothic'
+    case 'mincho':
+    default:
+      return 'font-mincho'
+  }
+})
+
+// A4 横置き（1.414 : 1）のプロポーション
+const sheetDimensionClasses = computed(() => {
+  return 'min-w-[840px] max-w-[1140px] w-full min-h-[560px] sm:min-h-[640px]'
+})
+
+const bgToneStyle = computed(() => {
+  const color = props.menuData.bgColor || '#e3ebdc'
+  const pattern = props.menuData.bgPattern || 'washi'
+
+  let backgroundImage = 'none'
+  let backgroundSize = 'auto'
+
+  switch (pattern) {
+    case 'cloud':
+      backgroundImage = 'radial-gradient(rgba(120, 100, 70, 0.16) 0.8px, transparent 0.8px), radial-gradient(rgba(140, 120, 90, 0.11) 0.6px, transparent 0.6px)'
+      backgroundSize = '24px 24px, 16px 16px'
+      break
+    case 'washi':
+      backgroundImage = 'radial-gradient(rgba(80, 100, 70, 0.14) 0.6px, transparent 0.6px)'
+      backgroundSize = '16px 16px'
+      break
+    case 'grid':
+      backgroundImage = 'linear-gradient(rgba(100, 120, 90, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(100, 120, 90, 0.08) 1px, transparent 1px)'
+      backgroundSize = '32px 32px'
+      break
+    case 'none':
+    default:
+      backgroundImage = 'none'
+      break
+  }
+
+  return {
+    backgroundColor: color,
+    backgroundImage,
+    backgroundSize,
+  }
+})
+
+const sheetStyle = computed(() => {
+  return {
+    ...bgToneStyle.value,
+    color: props.menuData.textColor || '#1a1f1b',
+    boxSizing: 'border-box'
+  }
+})
+
+function onTextBlur(targetObj, key, event) {
+  const text = event.target.innerText.trim()
+  targetObj[key] = text
+}
+
+function onPriceBlur(item, event) {
+  const rawText = event.target.innerText.trim()
+  const cleaned = rawText.replace(/円/g, '').trim()
+  if (cleaned) {
+    item.price = cleaned
+  }
+}
+
+function onNoticeBlur(index, event) {
+  const text = event.target.innerText.trim()
+  if (props.menuData.noticeBlock?.lines) {
+    props.menuData.noticeBlock.lines[index] = text
+  }
+}
+
+function triggerPrint() {
+  window.print()
+}
+
+async function saveAsImage() {
+  if (!printSheetRef.value || isGeneratingImage.value) return
+  isGeneratingImage.value = true
+  try {
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready
+    }
+    await new Promise((resolve) => setTimeout(resolve, 150))
+    const dataUrl = await toPng(printSheetRef.value, {
+      quality: 0.95,
+      pixelRatio: 2,
+      cacheBust: true,
+    })
+    generatedImageUrl.value = dataUrl
+    showImageModal.value = true
+  } catch (error) {
+    console.error('画像生成に失敗しました:', error)
+    alert('画像の生成中にエラーが発生しました。もう一度お試しください。')
+  } finally {
+    isGeneratingImage.value = false
+  }
+}
+
+function downloadGeneratedImage() {
+  if (!generatedImageUrl.value) return
+  const filename = `グランドメニュー_${new Date().toISOString().slice(0, 10)}.png`
+  const link = document.createElement('a')
+  link.download = filename
+  link.href = generatedImageUrl.value
+  link.click()
+}
+</script>
+
+<style scoped>
+.editable-field:focus {
+  outline: 2px solid #d97706;
+  outline-offset: 1px;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 6mm;
+  }
+}
+</style>
