@@ -73,7 +73,6 @@ export const INITIAL_MENU_STATE = {
   subtitle: '炭火焼き・季節の一品',
   footerNote: '※価格はすべて税込表示となっております。仕入れ状況により売り切れの際はご容赦ください。',
   storeName: '',
-  stampText: '名物', // 伝統的な赤印鑑テキスト（名物、厳選、もず、など）
   dateText: '本日のお品書き',
   layout: 'vertical', // 'vertical' | 'horizontal'
   fontFamily: 'brush', // 'brush' | 'mincho' | 'gothic'

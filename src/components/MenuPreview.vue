@@ -354,40 +354,27 @@ function closeImageModal() {
               verticalContentHeightClass
             ]"
           >
-            <!-- 1. Right Header Section (Title & Subtitle & Stamp ONLY - Soft refined border) -->
-            <div class="flex flex-row justify-between pl-6 sm:pl-8 border-l border-current/30 shrink-0 h-full">
-              <div>
-                <!-- Subtitle (Editable) -->
-                <div
-                  contenteditable="true"
-                  @blur="onTextBlur(menuData, 'subtitle', $event)"
-                  class="editable-field text-xs sm:text-sm opacity-75 font-bold tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
-                  title="タップして編集"
-                >
-                  {{ menuData.subtitle }}
-                </div>
-
-                <!-- Main Title (Editable) -->
-                <h1
-                  contenteditable="true"
-                  @blur="onTextBlur(menuData, 'title', $event)"
-                  class="editable-field text-3xl sm:text-4xl font-black tracking-widest mt-2 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
-                  title="タップして編集"
-                >
-                  {{ menuData.title }}
-                </h1>
-              </div>
-
-              <!-- Traditional Red Stamp Seal (Editable - can display store name or stamp text) -->
+            <!-- 1. Right Header Section (Title & Subtitle ONLY - Soft refined border) -->
+            <div class="pl-6 sm:pl-8 border-l border-current/30 shrink-0 h-full">
+              <!-- Subtitle (Editable) -->
               <div
-                v-if="menuData.stampText && menuData.stampText.trim()"
                 contenteditable="true"
-                @blur="onTextBlur(menuData, 'stampText', $event)"
-                class="editable-field border-2 border-red-700 text-red-700 font-bold text-xs p-1.5 rounded-xs tracking-tighter self-end select-none outline-none hover:bg-red-50 focus:ring-1 focus:ring-red-600 cursor-text"
-                title="タップして印鑑文字を変更（文字を消すと非表示になります）"
+                @blur="onTextBlur(menuData, 'subtitle', $event)"
+                class="editable-field text-xs sm:text-sm opacity-75 font-bold tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
+                title="タップして編集"
               >
-                {{ menuData.stampText }}
+                {{ menuData.subtitle }}
               </div>
+
+              <!-- Main Title (Editable) -->
+              <h1
+                contenteditable="true"
+                @blur="onTextBlur(menuData, 'title', $event)"
+                class="editable-field text-3xl sm:text-4xl font-black tracking-widest mt-2 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
+                title="タップして編集"
+              >
+                {{ menuData.title }}
+              </h1>
             </div>
 
             <!-- 2. Middle Items Section (Flows from Right to Left, Side-by-Side!) -->
@@ -497,7 +484,7 @@ function closeImageModal() {
               >
                 {{ menuData.subtitle }}
               </div>
-              <div class="flex items-center justify-center gap-3">
+              <div class="flex items-center justify-center">
                 <h1
                   contenteditable="true"
                   @blur="onTextBlur(menuData, 'title', $event)"
@@ -505,15 +492,6 @@ function closeImageModal() {
                 >
                   {{ menuData.title }}
                 </h1>
-                <div
-                  v-if="menuData.stampText && menuData.stampText.trim()"
-                  contenteditable="true"
-                  @blur="onTextBlur(menuData, 'stampText', $event)"
-                  class="editable-field border-2 border-red-700 text-red-700 font-bold text-[10px] px-1 py-0.5 rounded-xs outline-none hover:bg-red-50 cursor-text"
-                  title="タップして印鑑文字を変更（文字を消すと非表示になります）"
-                >
-                  {{ menuData.stampText }}
-                </div>
               </div>
               <div
                 v-if="menuData.storeName"
