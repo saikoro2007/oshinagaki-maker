@@ -105,6 +105,9 @@ const itemClasses = computed(() => {
         name: 'text-sm sm:text-base tracking-normal leading-snug',
         note: 'text-[9px] px-0.5 py-0.5 mt-1',
         price: 'text-xs sm:text-sm tracking-tighter',
+        hRow: 'py-1 sm:py-1.5',
+        hName: 'text-sm sm:text-base font-bold',
+        hPrice: 'text-sm sm:text-base font-bold',
       }
     case 'normal':
       return {
@@ -112,6 +115,9 @@ const itemClasses = computed(() => {
         name: 'text-base sm:text-lg tracking-wider leading-snug',
         note: 'text-[10px] px-0.5 py-1 mt-1.5',
         price: 'text-sm sm:text-base tracking-normal',
+        hRow: 'py-2 sm:py-2.5',
+        hName: 'text-base sm:text-lg font-bold',
+        hPrice: 'text-base sm:text-lg font-bold',
       }
     case 'spacious':
     default:
@@ -120,6 +126,9 @@ const itemClasses = computed(() => {
         name: 'text-lg sm:text-xl tracking-widest leading-tight',
         note: 'text-[11px] px-1 py-1 mt-2',
         price: 'text-base sm:text-lg tracking-wider',
+        hRow: 'py-2.5 sm:py-3.5',
+        hName: 'text-lg sm:text-xl font-bold',
+        hPrice: 'text-lg sm:text-xl font-bold',
       }
   }
 })
@@ -208,12 +217,6 @@ function triggerPrint() {
         ]"
         style="box-sizing: border-box;"
       >
-        <!-- Paper Size Badge (Screen Only) -->
-        <div class="no-print absolute top-2.5 right-2.5 text-[10px] text-stone-500 font-sans tracking-wide bg-stone-100/90 border border-stone-200/90 px-2 py-0.5 rounded shadow-2xs pointer-events-none select-none flex items-center gap-1">
-          <span>📄</span>
-          <span>{{ menuData.paperSize || 'A4' }}・{{ isLandscape ? '横' : '縦' }}</span>
-        </div>
-
         <!-- Outer Frame -->
         <div
           :class="[
@@ -405,18 +408,24 @@ function triggerPrint() {
               </div>
             </div>
 
-            <!-- Horizontal Items Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-3.5 py-6">
+            <!-- Horizontal Items List (1 item per row, full width) -->
+            <div class="flex-1 flex flex-col justify-around py-4 sm:py-6 px-2 sm:px-6 divide-y divide-stone-200/70">
               <div
                 v-for="(item, idx) in menuData.items"
                 :key="item.id || idx"
-                class="flex items-baseline justify-between border-b border-stone-200 pb-1.5"
+                :class="[
+                  'flex items-baseline justify-between transition-all',
+                  itemClasses.hRow
+                ]"
               >
-                <div class="flex items-center gap-2">
+                <div class="flex items-baseline gap-2.5 flex-wrap">
                   <span
                     contenteditable="true"
                     @blur="onTextBlur(item, 'name', $event)"
-                    class="editable-field text-base font-bold text-stone-900 outline-none hover:bg-amber-100/60 cursor-text"
+                    :class="[
+                      'editable-field text-stone-900 tracking-wide outline-none hover:bg-amber-100/60 cursor-text',
+                      itemClasses.hName
+                    ]"
                   >
                     {{ item.name }}
                   </span>
@@ -424,7 +433,7 @@ function triggerPrint() {
                     v-if="menuData.showNotes && item.note"
                     contenteditable="true"
                     @blur="onTextBlur(item, 'note', $event)"
-                    class="editable-field text-[11px] text-stone-600 bg-stone-100 border border-stone-300 px-1 rounded-xs outline-none hover:bg-amber-100/60 cursor-text"
+                    class="editable-field text-xs text-stone-600 bg-stone-100 border border-stone-300 px-1.5 py-0.5 rounded-xs outline-none hover:bg-amber-100/60 cursor-text"
                   >
                     {{ item.note }}
                   </span>
@@ -441,7 +450,10 @@ function triggerPrint() {
                 <div
                   contenteditable="true"
                   @blur="onPriceBlur(item, $event)"
-                  class="editable-field font-bold text-sm sm:text-base text-stone-900 whitespace-nowrap pl-2 outline-none hover:bg-amber-100/60 cursor-text"
+                  :class="[
+                    'editable-field text-stone-900 whitespace-nowrap pl-4 outline-none hover:bg-amber-100/60 cursor-text',
+                    itemClasses.hPrice
+                  ]"
                 >
                   {{ formatPrice(item.price, menuData.priceFormat, false) }}
                 </div>
