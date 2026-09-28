@@ -1,7 +1,8 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { formatPrice } from '../utils/formatters'
-import { Printer, Edit3, ArrowLeftRight } from '@lucide/vue'
+import { Printer, Edit3, ArrowLeftRight, Download, Image as ImageIcon, Loader2, X } from '@lucide/vue'
+import { toPng } from 'html-to-image'
 
 const props = defineProps({
   menuData: {
@@ -11,6 +12,10 @@ const props = defineProps({
 })
 
 const scrollContainer = ref(null)
+const printSheetRef = ref(null)
+const isGeneratingImage = ref(false)
+const generatedImageUrl = ref(null)
+const showImageModal = ref(false)
 
 onMounted(() => {
   nextTick(() => {
@@ -49,13 +54,13 @@ const fontClass = computed(() => {
 const frameClasses = computed(() => {
   switch (props.menuData.frameStyle) {
     case 'traditional':
-      return 'border-[3px] border-stone-900 outline outline-1 outline-stone-900 outline-offset-3'
+      return 'border-[3px] border-current outline outline-1 outline-current outline-offset-3'
     case 'minimal':
-      return 'border-2 border-stone-800'
+      return 'border-2 border-current'
     case 'none':
       return 'border-0'
     default:
-      return 'border-2 border-stone-900'
+      return 'border-2 border-current'
   }
 })
 
@@ -123,6 +128,15 @@ const bgToneStyle = computed(() => {
   }
 })
 
+// 用紙全体の統合スタイル（背景色・和紙模様・文字色）
+const sheetStyle = computed(() => {
+  return {
+    ...bgToneStyle.value,
+    color: props.menuData.textColor || '#1c1917',
+    boxSizing: 'border-box'
+  }
+})
+
 // 2. 文字サイズ・密度の動的計算（自動または手動設定）
 const effectiveDensity = computed(() => {
   if (props.menuData.density && props.menuData.density !== 'auto') {
@@ -187,6 +201,56 @@ function onPriceBlur(item, event) {
 function triggerPrint() {
   window.print()
 }
+
+// SNS・Instagram用 PNG画像書き出し
+async function saveAsImage() {
+  if (!printSheetRef.value || isGeneratingImage.value) return
+  isGeneratingImage.value = true
+  try {
+    // Webフォント読み込み完了を待機
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready
+    }
+
+    // レンダリング安定のための微小待機
+    await new Promise((resolve) => setTimeout(resolve, 150))
+
+    // 高精細（pixelRatio: 2）で美しいPNG画像を生成
+    const dataUrl = await toPng(printSheetRef.value, {
+      quality: 0.95,
+      pixelRatio: 2,
+      cacheBust: true,
+    })
+
+    generatedImageUrl.value = dataUrl
+    showImageModal.value = true
+
+    // PC向けに自動ダウンロードも実行
+    const filename = `${props.menuData.title || 'お品書き'}_${new Date().toISOString().slice(0, 10)}.png`
+    const link = document.createElement('a')
+    link.download = filename
+    link.href = dataUrl
+    link.click()
+  } catch (error) {
+    console.error('画像生成に失敗しました:', error)
+    alert('画像の生成中にエラーが発生しました。もう一度お試しください。')
+  } finally {
+    isGeneratingImage.value = false
+  }
+}
+
+function downloadGeneratedImage() {
+  if (!generatedImageUrl.value) return
+  const filename = `${props.menuData.title || 'お品書き'}_${new Date().toISOString().slice(0, 10)}.png`
+  const link = document.createElement('a')
+  link.download = filename
+  link.href = generatedImageUrl.value
+  link.click()
+}
+
+function closeImageModal() {
+  showImageModal.value = false
+}
 </script>
 
 <template>
@@ -223,12 +287,24 @@ function triggerPrint() {
 
       <div class="flex items-center gap-2">
         <button
+          @click="saveAsImage"
+          type="button"
+          :disabled="isGeneratingImage"
+          class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold rounded-xl text-sm shadow-md flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          title="SNS・Instagram投稿用の高解像度PNG画像を保存"
+        >
+          <Loader2 v-if="isGeneratingImage" class="w-4 h-4 animate-spin" />
+          <ImageIcon v-else class="w-4 h-4" />
+          <span>{{ isGeneratingImage ? '生成中...' : '画像保存 (PNG)' }}</span>
+        </button>
+
+        <button
           @click="triggerPrint"
           type="button"
-          class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-stone-950 font-black rounded-xl text-sm shadow-md flex items-center gap-2 transition cursor-pointer"
+          class="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-stone-950 font-black rounded-xl text-sm shadow-md flex items-center gap-1.5 transition cursor-pointer"
         >
           <Printer class="w-4 h-4" />
-          <span>印刷する (PDF保存)</span>
+          <span>印刷する (PDF)</span>
         </button>
       </div>
     </div>
@@ -247,12 +323,13 @@ function triggerPrint() {
       class="preview-scroll w-full overflow-x-auto pb-8 flex justify-start lg:justify-center px-1 sm:px-2 print:p-0 print:overflow-visible print:block print:h-full"
     >
       <div
+        ref="printSheetRef"
         :class="[
-          'print-sheet shrink-0 text-stone-950 shadow-2xl transition-all relative select-none border border-stone-300/60 print:shadow-none print:border-none print:min-w-0 print:max-w-none print:w-full print:h-full print:min-h-0 print:p-3 sm:print:p-4 overflow-hidden',
+          'print-sheet shrink-0 shadow-2xl transition-all relative select-none border border-current/20 print:shadow-none print:border-none print:min-w-0 print:max-w-none print:w-full print:h-full print:min-h-0 print:p-3 sm:print:p-4 overflow-hidden',
           fontClass,
           sheetDimensionClasses
         ]"
-        :style="[bgToneStyle, { boxSizing: 'border-box' }]"
+        :style="sheetStyle"
       >
         <!-- Outer Frame -->
         <div
@@ -263,10 +340,10 @@ function triggerPrint() {
         >
           <!-- Corner Accents (if traditional frame) -->
           <template v-if="menuData.frameStyle === 'traditional'">
-            <div class="absolute -top-1.5 -left-1.5 w-3 h-3 bg-stone-900"></div>
-            <div class="absolute -top-1.5 -right-1.5 w-3 h-3 bg-stone-900"></div>
-            <div class="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-stone-900"></div>
-            <div class="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-stone-900"></div>
+            <div class="absolute -top-1.5 -left-1.5 w-3 h-3 bg-current"></div>
+            <div class="absolute -top-1.5 -right-1.5 w-3 h-3 bg-current"></div>
+            <div class="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-current"></div>
+            <div class="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-current"></div>
           </template>
 
           <!-- VERTICAL WRITING LAYOUT (縦書き・メニューが横に流れる) -->
@@ -278,13 +355,13 @@ function triggerPrint() {
             ]"
           >
             <!-- 1. Right Header Section (Title & Subtitle & Stamp ONLY - Soft refined border) -->
-            <div class="flex flex-row justify-between pl-6 sm:pl-8 border-l border-stone-300 shrink-0 h-full">
+            <div class="flex flex-row justify-between pl-6 sm:pl-8 border-l border-current/30 shrink-0 h-full">
               <div>
                 <!-- Subtitle (Editable) -->
                 <div
                   contenteditable="true"
                   @blur="onTextBlur(menuData, 'subtitle', $event)"
-                  class="editable-field text-xs sm:text-sm text-stone-600 font-bold tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
+                  class="editable-field text-xs sm:text-sm opacity-75 font-bold tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
                   title="タップして編集"
                 >
                   {{ menuData.subtitle }}
@@ -294,7 +371,7 @@ function triggerPrint() {
                 <h1
                   contenteditable="true"
                   @blur="onTextBlur(menuData, 'title', $event)"
-                  class="editable-field text-3xl sm:text-4xl font-black tracking-widest text-stone-950 mt-2 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
+                  class="editable-field text-3xl sm:text-4xl font-black tracking-widest mt-2 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
                   title="タップして編集"
                 >
                   {{ menuData.title }}
@@ -320,7 +397,7 @@ function triggerPrint() {
                 :class="[
                   'flex flex-row justify-between h-full py-1 relative group transition-all',
                   itemClasses.col,
-                  menuData.showDividers ? 'border-l border-stone-200' : ''
+                  menuData.showDividers ? 'border-l border-current/20' : ''
                 ]"
               >
                 <!-- Item Name & Tag (Top of vertical column) -->
@@ -330,7 +407,7 @@ function triggerPrint() {
                     contenteditable="true"
                     @blur="onTextBlur(item, 'name', $event)"
                     :class="[
-                      'editable-field font-bold text-stone-900 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text',
+                      'editable-field font-bold outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text',
                       itemClasses.name
                     ]"
                     title="タップして品名を編集"
@@ -344,7 +421,7 @@ function triggerPrint() {
                     contenteditable="true"
                     @blur="onTextBlur(item, 'note', $event)"
                     :class="[
-                      'editable-field text-stone-600 tracking-tighter bg-stone-100 border border-stone-300 rounded-xs outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text',
+                      'editable-field tracking-tighter opacity-85 bg-current/10 border border-current/25 rounded-xs outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text',
                       itemClasses.note
                     ]"
                     title="タップして補足を編集"
@@ -357,7 +434,7 @@ function triggerPrint() {
                     v-if="menuData.showEnglish && item.translation"
                     contenteditable="true"
                     @blur="onTextBlur(item, 'translation', $event)"
-                    class="editable-field text-[9px] text-stone-500 font-sans tracking-tight opacity-80 mt-1 outline-none hover:bg-amber-100/60 cursor-text"
+                    class="editable-field text-[9px] font-sans tracking-tight opacity-70 mt-1 outline-none hover:bg-amber-100/60 cursor-text"
                     title="タップして翻訳を編集"
                   >
                     {{ item.translation }}
@@ -370,7 +447,7 @@ function triggerPrint() {
                     contenteditable="true"
                     @blur="onPriceBlur(item, $event)"
                     :class="[
-                      'editable-field font-bold text-stone-900 whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text',
+                      'editable-field font-bold whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text',
                       itemClasses.price
                     ]"
                     title="タップして価格を編集"
@@ -382,12 +459,12 @@ function triggerPrint() {
             </div>
 
             <!-- 3. Left Footer Section (Clean footer with optional store signature & tax note) -->
-            <div class="flex flex-row justify-between pr-2 sm:pr-4 shrink-0 h-full text-stone-700">
+            <div class="flex flex-row justify-between pr-2 sm:pr-4 shrink-0 h-full">
               <div
                 v-if="menuData.storeName"
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'storeName', $event)"
-                class="editable-field text-xs font-bold text-stone-600 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text self-start pt-1"
+                class="editable-field text-xs font-bold opacity-90 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text self-start pt-1"
                 title="タップして店名を編集"
               >
                 {{ menuData.storeName }}
@@ -397,7 +474,7 @@ function triggerPrint() {
               <div
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'footerNote', $event)"
-                class="editable-field text-[10px] text-stone-400 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text self-end pb-1"
+                class="editable-field text-[10px] opacity-65 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text self-end pb-1"
                 title="タップして注記を編集"
               >
                 {{ menuData.footerNote }}
@@ -411,11 +488,11 @@ function triggerPrint() {
             class="w-full flex-1 flex flex-col justify-between print:h-full"
           >
             <!-- Header -->
-            <div class="text-center pb-5 border-b border-stone-300">
+            <div class="text-center pb-5 border-b border-current/30">
               <div
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'subtitle', $event)"
-                class="editable-field text-xs text-stone-600 font-bold tracking-widest mb-1 outline-none hover:bg-amber-100/60 cursor-text"
+                class="editable-field text-xs opacity-75 font-bold tracking-widest mb-1 outline-none hover:bg-amber-100/60 cursor-text"
               >
                 {{ menuData.subtitle }}
               </div>
@@ -423,7 +500,7 @@ function triggerPrint() {
                 <h1
                   contenteditable="true"
                   @blur="onTextBlur(menuData, 'title', $event)"
-                  class="editable-field text-2xl sm:text-3xl font-black tracking-widest text-stone-950 outline-none hover:bg-amber-100/60 cursor-text"
+                  class="editable-field text-2xl sm:text-3xl font-black tracking-widest outline-none hover:bg-amber-100/60 cursor-text"
                 >
                   {{ menuData.title }}
                 </h1>
@@ -439,14 +516,14 @@ function triggerPrint() {
                 v-if="menuData.storeName"
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'storeName', $event)"
-                class="editable-field text-xs text-stone-700 font-bold tracking-wider mt-1 outline-none hover:bg-amber-100/60 cursor-text"
+                class="editable-field text-xs opacity-90 font-bold tracking-wider mt-1 outline-none hover:bg-amber-100/60 cursor-text"
               >
                 {{ menuData.storeName }}
               </div>
             </div>
 
             <!-- Horizontal Items List (1 item per row, full width) -->
-            <div class="flex-1 flex flex-col justify-around py-4 sm:py-6 px-2 sm:px-6 divide-y divide-stone-200/70">
+            <div class="flex-1 flex flex-col justify-around py-4 sm:py-6 px-2 sm:px-6 divide-y divide-current/15">
               <div
                 v-for="(item, idx) in menuData.items"
                 :key="item.id || idx"
@@ -460,7 +537,7 @@ function triggerPrint() {
                     contenteditable="true"
                     @blur="onTextBlur(item, 'name', $event)"
                     :class="[
-                      'editable-field text-stone-900 tracking-wide outline-none hover:bg-amber-100/60 cursor-text',
+                      'editable-field tracking-wide outline-none hover:bg-amber-100/60 cursor-text',
                       itemClasses.hName
                     ]"
                   >
@@ -470,7 +547,7 @@ function triggerPrint() {
                     v-if="menuData.showNotes && item.note"
                     contenteditable="true"
                     @blur="onTextBlur(item, 'note', $event)"
-                    class="editable-field text-xs text-stone-600 bg-stone-100 border border-stone-300 px-1.5 py-0.5 rounded-xs outline-none hover:bg-amber-100/60 cursor-text"
+                    class="editable-field text-xs opacity-85 bg-current/10 border border-current/25 px-1.5 py-0.5 rounded-xs outline-none hover:bg-amber-100/60 cursor-text"
                   >
                     {{ item.note }}
                   </span>
@@ -478,7 +555,7 @@ function triggerPrint() {
                     v-if="menuData.showEnglish && item.translation"
                     contenteditable="true"
                     @blur="onTextBlur(item, 'translation', $event)"
-                    class="editable-field text-xs text-stone-400 font-sans outline-none hover:bg-amber-100/60 cursor-text"
+                    class="editable-field text-xs opacity-70 font-sans outline-none hover:bg-amber-100/60 cursor-text"
                   >
                     ({{ item.translation }})
                   </span>
@@ -488,7 +565,7 @@ function triggerPrint() {
                   contenteditable="true"
                   @blur="onPriceBlur(item, $event)"
                   :class="[
-                    'editable-field text-stone-900 whitespace-nowrap pl-4 outline-none hover:bg-amber-100/60 cursor-text',
+                    'editable-field whitespace-nowrap pl-4 outline-none hover:bg-amber-100/60 cursor-text',
                     itemClasses.hPrice
                   ]"
                 >
@@ -498,7 +575,7 @@ function triggerPrint() {
             </div>
 
             <!-- Footer -->
-            <div class="pt-4 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-500 gap-1">
+            <div class="pt-4 border-t border-current/20 flex flex-col sm:flex-row items-center justify-between text-xs opacity-75 gap-1">
               <div
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'footerNote', $event)"
@@ -510,7 +587,7 @@ function triggerPrint() {
                 v-if="menuData.storeName"
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'storeName', $event)"
-                class="editable-field font-bold text-stone-700 tracking-wider outline-none hover:bg-amber-100/60 cursor-text"
+                class="editable-field font-bold opacity-90 tracking-wider outline-none hover:bg-amber-100/60 cursor-text"
               >
                 {{ menuData.storeName }}
               </div>
@@ -519,5 +596,80 @@ function triggerPrint() {
         </div>
       </div>
     </div>
+
+    <!-- Image Export Modal (SNS / Instagram用) -->
+    <Teleport to="body">
+      <div
+        v-if="showImageModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-xs animate-in fade-in duration-200"
+        @click.self="closeImageModal"
+      >
+        <div
+          class="bg-stone-900 border border-stone-700 text-stone-100 rounded-2xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden"
+        >
+          <!-- Modal Header -->
+          <div class="px-4 py-3 border-b border-stone-800 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="text-emerald-400 font-bold flex items-center gap-1.5 text-sm sm:text-base">
+                <ImageIcon class="w-4 h-4" /> お品書き画像の書き出し完了
+              </span>
+            </div>
+            <button
+              @click="closeImageModal"
+              type="button"
+              class="p-1 rounded-lg text-stone-400 hover:text-white hover:bg-stone-800 transition"
+              title="閉じる"
+            >
+              <X class="w-5 h-5" />
+            </button>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="p-4 overflow-y-auto space-y-3 flex-1 flex flex-col items-center">
+            <!-- Mobile Guidance Banner -->
+            <div class="w-full bg-emerald-950/70 border border-emerald-700/60 rounded-xl p-3 text-xs sm:text-sm text-emerald-200 flex items-start gap-2.5">
+              <span class="text-base shrink-0">📱</span>
+              <div>
+                <p class="font-bold text-white mb-0.5">スマートフォンでご利用の場合</p>
+                <p class="leading-relaxed opacity-90 text-[11px] sm:text-xs">
+                  下の画像を<strong class="text-emerald-300">「長押し」</strong>して<strong class="text-white">「写真に追加」</strong>または<strong class="text-white">「画像を保存」</strong>を選ぶとカメラロールに保存されます。Instagramの投稿やストーリー、LINE配信にそのままお使いいただけます。
+                </p>
+              </div>
+            </div>
+
+            <!-- Image Container -->
+            <div class="w-full flex justify-center bg-stone-950 p-2 sm:p-3 rounded-xl border border-stone-800 overflow-hidden">
+              <img
+                :src="generatedImageUrl"
+                alt="生成されたお品書き画像"
+                class="max-h-[50vh] sm:max-h-[55vh] w-auto max-w-full object-contain rounded shadow-lg border border-stone-800/80 select-auto"
+              />
+            </div>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="px-4 py-3 bg-stone-950/80 border-t border-stone-800 flex items-center justify-between gap-2 shrink-0">
+            <span class="text-xs text-stone-400 hidden sm:inline">高解像度 PNG形式</span>
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+              <button
+                @click="downloadGeneratedImage"
+                type="button"
+                class="flex-1 sm:flex-initial px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold rounded-xl text-xs sm:text-sm shadow flex items-center justify-center gap-1.5 transition cursor-pointer"
+              >
+                <Download class="w-4 h-4" />
+                <span>PNG画像を再ダウンロード</span>
+              </button>
+              <button
+                @click="closeImageModal"
+                type="button"
+                class="px-4 py-2 bg-stone-800 hover:bg-stone-700 active:scale-95 text-stone-300 hover:text-white rounded-xl text-xs sm:text-sm transition cursor-pointer"
+              >
+                閉じる
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>

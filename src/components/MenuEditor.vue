@@ -502,6 +502,111 @@ function selectLayout(mode) {
               </button>
             </div>
           </div>
+
+          <!-- 3. Text Color -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="font-semibold text-stone-700 flex items-center gap-1 text-xs">
+                <Type class="w-3.5 h-3.5 text-stone-500" /> 文字・フォント色
+              </label>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[11px] text-stone-400">自由選択:</span>
+                <input
+                  type="color"
+                  v-model="menuData.textColor"
+                  class="w-6 h-6 rounded border border-stone-300 cursor-pointer p-0 bg-transparent"
+                  title="好きな文字色を選ぶ"
+                />
+              </div>
+            </div>
+
+            <!-- Quick Text Color Palette -->
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+              <button
+                type="button"
+                @click="menuData.textColor = '#1c1917'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
+                  (!menuData.textColor || menuData.textColor.toLowerCase() === '#1c1917')
+                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
+                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+                ]"
+              >
+                <span class="w-3 h-3 rounded-full bg-[#1c1917] border border-stone-400 shrink-0"></span>
+                <span>墨色 (黒)</span>
+              </button>
+
+              <button
+                type="button"
+                @click="menuData.textColor = '#451a03'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
+                  menuData.textColor?.toLowerCase() === '#451a03'
+                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
+                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+                ]"
+              >
+                <span class="w-3 h-3 rounded-full bg-[#451a03] border border-amber-900 shrink-0"></span>
+                <span>濃茶</span>
+              </button>
+
+              <button
+                type="button"
+                @click="menuData.textColor = '#0f172a'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
+                  menuData.textColor?.toLowerCase() === '#0f172a'
+                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
+                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+                ]"
+              >
+                <span class="w-3 h-3 rounded-full bg-[#0f172a] border border-slate-700 shrink-0"></span>
+                <span>濃紺</span>
+              </button>
+
+              <button
+                type="button"
+                @click="menuData.textColor = '#064e3b'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
+                  menuData.textColor?.toLowerCase() === '#064e3b'
+                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
+                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+                ]"
+              >
+                <span class="w-3 h-3 rounded-full bg-[#064e3b] border border-emerald-800 shrink-0"></span>
+                <span>深緑</span>
+              </button>
+
+              <button
+                type="button"
+                @click="menuData.textColor = '#7f1d1d'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
+                  menuData.textColor?.toLowerCase() === '#7f1d1d'
+                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
+                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+                ]"
+              >
+                <span class="w-3 h-3 rounded-full bg-[#7f1d1d] border border-rose-800 shrink-0"></span>
+                <span>赤褐色</span>
+              </button>
+
+              <button
+                type="button"
+                @click="menuData.textColor = '#ffffff'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
+                  menuData.textColor?.toLowerCase() === '#ffffff'
+                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
+                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+                ]"
+              >
+                <span class="w-3 h-3 rounded-full bg-white border border-stone-400 shrink-0"></span>
+                <span>白文字</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- JSON Backup / Restore -->
