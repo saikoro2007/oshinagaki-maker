@@ -33,7 +33,7 @@ const emit = defineEmits([
   'reset-default'
 ])
 
-const showSettings = ref(false)
+const showSettings = ref(typeof window !== 'undefined' && window.innerWidth >= 1024)
 const fileInput = ref(null)
 
 function addNewItem() {

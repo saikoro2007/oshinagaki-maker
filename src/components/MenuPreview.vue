@@ -135,7 +135,7 @@ function triggerPrint() {
     </component>
 
     <!-- Screen-only Control Bar -->
-    <div class="no-print bg-stone-900 text-white rounded-2xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-3 max-w-5xl mx-auto">
+    <div class="no-print bg-stone-900 text-white rounded-2xl p-3.5 sm:p-4 shadow-lg flex flex-wrap items-center justify-between gap-3 w-full">
       <div>
         <div class="font-bold text-sm sm:text-base flex items-center gap-1.5">
           <span>🖨️</span>
@@ -164,7 +164,7 @@ function triggerPrint() {
 
     <!-- Mobile swipe hint -->
     <div
-      class="no-print sm:hidden text-center text-xs text-stone-500 flex items-center justify-center gap-1.5 py-1"
+      class="no-print lg:hidden text-center text-xs text-stone-500 flex items-center justify-center gap-1.5 py-1"
     >
       <ArrowLeftRight class="w-3.5 h-3.5 text-amber-600 animate-pulse" />
       <span>左右にスクロールして全体を確認・文字編集できます</span>
@@ -173,15 +173,15 @@ function triggerPrint() {
     <!-- Paper Scroll Container -->
     <div
       ref="scrollContainer"
-      class="preview-scroll w-full overflow-x-auto pb-8 flex justify-start sm:justify-center px-2 sm:px-4 print:p-0 print:overflow-visible print:block print:h-full"
+      class="preview-scroll w-full overflow-x-auto pb-8 flex justify-start lg:justify-center px-1 sm:px-2 print:p-0 print:overflow-visible print:block print:h-full"
     >
       <div
         :class="[
           'print-sheet shrink-0 bg-[#fffdfa] text-stone-950 shadow-2xl transition-all relative select-none border border-stone-300/60 print:shadow-none print:border-none print:min-w-0 print:max-w-none print:w-full print:h-full print:min-h-0 print:p-3 sm:print:p-4',
           fontClass,
           isLandscape
-            ? 'min-w-[820px] max-w-[1080px] w-full min-h-[500px] sm:min-h-[560px] p-6 sm:p-10'
-            : 'min-w-[340px] max-w-[750px] w-full min-h-[640px] p-6 sm:p-8',
+            ? 'min-w-[720px] max-w-[1040px] w-full min-h-[480px] sm:min-h-[520px] p-5 sm:p-8'
+            : 'min-w-[340px] max-w-[750px] w-full min-h-[640px] p-5 sm:p-8',
         ]"
         style="box-sizing: border-box;"
       >

@@ -136,8 +136,8 @@ function triggerPrint() {
         </div>
       </div>
 
-      <!-- Segmented Tab Controls -->
-      <div class="max-w-3xl mx-auto px-4 pb-2.5 flex">
+      <!-- Segmented Tab Controls (Mobile only) -->
+      <div class="max-w-3xl mx-auto px-4 pb-2.5 flex lg:hidden">
         <div class="bg-stone-800 p-1 rounded-xl w-full grid grid-cols-2 gap-1">
           <button
             type="button"
@@ -171,19 +171,32 @@ function triggerPrint() {
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-1 w-full mx-auto p-3 sm:p-6 transition-all print:p-0 print:m-0 print:w-full print:max-w-none print:h-full" :class="activeTab === 'preview' ? 'max-w-6xl' : 'max-w-2xl'">
-      <!-- Editor View -->
-      <div v-show="activeTab === 'editor'" class="no-print">
-        <MenuEditor
-          :menu-data="menuData"
-          @open-presets="showPresetModal = true"
-          @reset-default="handleResetDefault"
-        />
-      </div>
+    <main class="flex-1 w-full mx-auto p-3 sm:p-6 transition-all print:p-0 print:m-0 print:w-full print:max-w-none print:h-full max-w-[1680px]">
+      <!-- Screen Layout: 2-column split view on lg+, single tab view on mobile -->
+      <div class="no-print lg:grid lg:grid-cols-12 lg:gap-6 xl:gap-8 items-start">
+        <!-- Left: Editor Column -->
+        <div
+          :class="[
+            'lg:col-span-5 xl:col-span-5',
+            activeTab === 'editor' ? 'block' : 'hidden lg:block'
+          ]"
+        >
+          <MenuEditor
+            :menu-data="menuData"
+            @open-presets="showPresetModal = true"
+            @reset-default="handleResetDefault"
+          />
+        </div>
 
-      <!-- Preview View (Screen) -->
-      <div v-show="activeTab === 'preview'" class="no-print">
-        <MenuPreview :menu-data="menuData" />
+        <!-- Right: Live Preview Column (Sticky on PC) -->
+        <div
+          :class="[
+            'lg:col-span-7 xl:col-span-7 lg:sticky lg:top-20',
+            activeTab === 'preview' ? 'block' : 'hidden lg:block'
+          ]"
+        >
+          <MenuPreview :menu-data="menuData" />
+        </div>
       </div>
 
       <!-- Always in DOM for Print (@media print) -->
