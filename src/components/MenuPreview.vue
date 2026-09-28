@@ -86,33 +86,40 @@ const verticalContentHeightClass = computed(() => {
   }
 })
 
-// 和紙トーン・背景スタイル
+// 背景色と和紙テクスチャ模様の合成スタイル
 const bgToneStyle = computed(() => {
-  switch (props.menuData.bgTone) {
-    case 'pure-white':
-      return {
-        backgroundColor: '#ffffff',
-        backgroundImage: 'none',
-      }
+  const color = props.menuData.bgColor || '#ffffff'
+  const pattern = props.menuData.bgPattern || 'none'
+
+  let backgroundImage = 'none'
+  let backgroundSize = 'auto'
+
+  switch (pattern) {
     case 'cloud':
-      return {
-        backgroundColor: '#fbf9f4',
-        backgroundImage: 'radial-gradient(#d8d0bf 0.8px, transparent 0.8px), radial-gradient(#e4dcce 0.6px, #fbf9f4 0.6px)',
-        backgroundSize: '24px 24px, 16px 16px',
-      }
-    case 'craft':
-      return {
-        backgroundColor: '#f2ece0',
-        backgroundImage: 'radial-gradient(#d3c7b2 0.75px, transparent 0.75px)',
-        backgroundSize: '20px 20px',
-      }
-    case 'natural':
+      // 雲竜・和紙繊維調
+      backgroundImage = 'radial-gradient(rgba(120, 100, 70, 0.16) 0.8px, transparent 0.8px), radial-gradient(rgba(140, 120, 90, 0.11) 0.6px, transparent 0.6px)'
+      backgroundSize = '24px 24px, 16px 16px'
+      break
+    case 'washi':
+      // 和紙の微細粒
+      backgroundImage = 'radial-gradient(rgba(100, 90, 80, 0.13) 0.6px, transparent 0.6px)'
+      backgroundSize = '18px 18px'
+      break
+    case 'grid':
+      // 和風格子（上品な薄い格子）
+      backgroundImage = 'linear-gradient(rgba(130, 110, 80, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(130, 110, 80, 0.08) 1px, transparent 1px)'
+      backgroundSize = '32px 32px'
+      break
+    case 'none':
     default:
-      return {
-        backgroundColor: '#faf7f0',
-        backgroundImage: 'radial-gradient(#e8dfcf 0.6px, transparent 0.6px)',
-        backgroundSize: '28px 28px',
-      }
+      backgroundImage = 'none'
+      break
+  }
+
+  return {
+    backgroundColor: color,
+    backgroundImage,
+    backgroundSize,
   }
 })
 
@@ -247,19 +254,6 @@ function triggerPrint() {
         ]"
         :style="[bgToneStyle, { boxSizing: 'border-box' }]"
       >
-        <!-- Custom Background Watermark Image Layer -->
-        <div
-          v-if="menuData.customBgImage"
-          class="absolute inset-0 pointer-events-none select-none flex items-center justify-center p-8 overflow-hidden z-0"
-        >
-          <img
-            :src="menuData.customBgImage"
-            alt="透かし画像"
-            class="max-w-[70%] max-h-[70%] object-contain"
-            :style="{ opacity: (menuData.customBgOpacity || 12) / 100 }"
-          />
-        </div>
-
         <!-- Outer Frame -->
         <div
           :class="[

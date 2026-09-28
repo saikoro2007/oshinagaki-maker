@@ -18,9 +18,7 @@ import {
   Stamp,
   Sliders,
   AlignRight,
-  Palette,
-  Image as ImageIcon,
-  X
+  Palette
 } from '@lucide/vue'
 
 const props = defineProps({
@@ -103,23 +101,7 @@ function selectLayout(mode) {
   }
 }
 
-function handleBgImageUpload(event) {
-  const file = event.target.files?.[0]
-  if (!file) return
-  if (file.size > 5 * 1024 * 1024) {
-    alert('画像サイズが大きすぎます。5MB以下の画像を選択してください。')
-    return
-  }
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    props.menuData.customBgImage = e.target.result
-    if (!props.menuData.customBgOpacity) {
-      props.menuData.customBgOpacity = 12
-    }
-  }
-  reader.readAsDataURL(file)
-  event.target.value = ''
-}
+
 </script>
 
 <template>
@@ -354,110 +336,170 @@ function handleBgImageUpload(event) {
           </label>
         </div>
 
-        <!-- Background & Paper Texture Options -->
-        <div class="pt-2 border-t border-stone-200">
-          <label class="font-semibold text-stone-700 block mb-1.5 flex items-center gap-1">
-            <Palette class="w-3.5 h-3.5 text-stone-500" /> 用紙の背景・和紙質感
-          </label>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <button
-              type="button"
-              @click="menuData.bgTone = 'natural'"
-              :class="[
-                'py-2 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1.5 text-xs',
-                (!menuData.bgTone || menuData.bgTone === 'natural')
-                  ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
-                  : 'bg-[#faf7f0] text-stone-700 border-stone-300 hover:border-amber-600'
-              ]"
-            >
-              <span class="w-2.5 h-2.5 rounded-full bg-[#faf7f0] border border-stone-400 shrink-0"></span>
-              <span>生成り和紙</span>
-            </button>
-            <button
-              type="button"
-              @click="menuData.bgTone = 'pure-white'"
-              :class="[
-                'py-2 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1.5 text-xs',
-                menuData.bgTone === 'pure-white'
-                  ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
-                  : 'bg-white text-stone-700 border-stone-300 hover:border-amber-600'
-              ]"
-            >
-              <span class="w-2.5 h-2.5 rounded-full bg-white border border-stone-400 shrink-0"></span>
-              <span>純白 (白無地)</span>
-            </button>
-            <button
-              type="button"
-              @click="menuData.bgTone = 'cloud'"
-              :class="[
-                'py-2 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1.5 text-xs',
-                menuData.bgTone === 'cloud'
-                  ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
-                  : 'bg-[#fbf9f4] text-stone-700 border-stone-300 hover:border-amber-600'
-              ]"
-            >
-              <span class="w-2.5 h-2.5 rounded-full bg-[#fbf9f4] border border-stone-400 shrink-0"></span>
-              <span>雲竜 (繊維調)</span>
-            </button>
-            <button
-              type="button"
-              @click="menuData.bgTone = 'craft'"
-              :class="[
-                'py-2 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1.5 text-xs',
-                menuData.bgTone === 'craft'
-                  ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
-                  : 'bg-[#f2ece0] text-stone-700 border-stone-300 hover:border-amber-600'
-              ]"
-            >
-              <span class="w-2.5 h-2.5 rounded-full bg-[#f2ece0] border border-stone-400 shrink-0"></span>
-              <span>クラフト・淡茶</span>
-            </button>
-          </div>
-
-          <!-- Custom Logo / Watermark Image Upload -->
-          <div class="mt-2.5 p-2.5 bg-white rounded-lg border border-stone-200">
-            <div class="flex items-center justify-between">
+        <!-- Background Color & Paper Texture Options -->
+        <div class="pt-2 border-t border-stone-200 space-y-3">
+          <!-- 1. Background Color -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
               <label class="font-semibold text-stone-700 flex items-center gap-1 text-xs">
-                <ImageIcon class="w-3.5 h-3.5 text-stone-500" /> 店舗ロゴ・透かし画像
+                <Palette class="w-3.5 h-3.5 text-stone-500" /> 用紙の背景色
               </label>
-              <span class="text-[10px] text-stone-400">背景中央にうっすら配置</span>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[11px] text-stone-400">自由選択:</span>
+                <input
+                  type="color"
+                  v-model="menuData.bgColor"
+                  class="w-6 h-6 rounded border border-stone-300 cursor-pointer p-0 bg-transparent"
+                  title="好きな色を選ぶ"
+                />
+              </div>
             </div>
 
-            <div class="mt-2 flex flex-wrap items-center gap-2">
-              <label class="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded-md text-stone-700 text-xs font-bold cursor-pointer transition flex items-center gap-1 shrink-0">
-                <Upload class="w-3 h-3" />
-                <span>{{ menuData.customBgImage ? '画像を変更' : '画像をアップロード' }}</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  class="hidden"
-                  @change="handleBgImageUpload"
-                />
-              </label>
-
+            <!-- Quick Color Palette -->
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
               <button
-                v-if="menuData.customBgImage"
                 type="button"
-                @click="menuData.customBgImage = ''"
-                class="text-xs text-rose-600 hover:text-rose-700 font-medium transition flex items-center gap-0.5"
+                @click="menuData.bgColor = '#ffffff'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
+                  (!menuData.bgColor || menuData.bgColor.toLowerCase() === '#ffffff')
+                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
+                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+                ]"
               >
-                <X class="w-3 h-3" />
-                <span>削除</span>
+                <span class="w-3 h-3 rounded-full bg-white border border-stone-400 shrink-0"></span>
+                <span>純白</span>
               </button>
 
-              <!-- Opacity slider if image uploaded -->
-              <div v-if="menuData.customBgImage" class="flex-1 min-w-[140px] flex items-center gap-1.5 ml-auto">
-                <span class="text-stone-500 text-[10px] whitespace-nowrap">濃さ:</span>
-                <input
-                  type="range"
-                  min="5"
-                  max="40"
-                  step="1"
-                  v-model.number="menuData.customBgOpacity"
-                  class="w-full accent-amber-900 cursor-pointer"
-                />
-                <span class="text-stone-600 text-xs font-mono w-7 text-right">{{ menuData.customBgOpacity || 12 }}%</span>
-              </div>
+              <button
+                type="button"
+                @click="menuData.bgColor = '#faf7f0'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
+                  menuData.bgColor?.toLowerCase() === '#faf7f0'
+                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
+                    : 'bg-[#faf7f0] text-stone-700 border-stone-300 hover:border-stone-400'
+                ]"
+              >
+                <span class="w-3 h-3 rounded-full bg-[#faf7f0] border border-stone-400 shrink-0"></span>
+                <span>生成り</span>
+              </button>
+
+              <button
+                type="button"
+                @click="menuData.bgColor = '#fdf6f6'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
+                  menuData.bgColor?.toLowerCase() === '#fdf6f6'
+                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
+                    : 'bg-[#fdf6f6] text-stone-700 border-stone-300 hover:border-stone-400'
+                ]"
+              >
+                <span class="w-3 h-3 rounded-full bg-[#fdf6f6] border border-rose-300 shrink-0"></span>
+                <span>桜色</span>
+              </button>
+
+              <button
+                type="button"
+                @click="menuData.bgColor = '#f5f7f2'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
+                  menuData.bgColor?.toLowerCase() === '#f5f7f2'
+                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
+                    : 'bg-[#f5f7f2] text-stone-700 border-stone-300 hover:border-stone-400'
+                ]"
+              >
+                <span class="w-3 h-3 rounded-full bg-[#f5f7f2] border border-emerald-300 shrink-0"></span>
+                <span>うぐいす</span>
+              </button>
+
+              <button
+                type="button"
+                @click="menuData.bgColor = '#f4eee2'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
+                  menuData.bgColor?.toLowerCase() === '#f4eee2'
+                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
+                    : 'bg-[#f4eee2] text-stone-700 border-stone-300 hover:border-stone-400'
+                ]"
+              >
+                <span class="w-3 h-3 rounded-full bg-[#f4eee2] border border-amber-300 shrink-0"></span>
+                <span>麦色</span>
+              </button>
+
+              <button
+                type="button"
+                @click="menuData.bgColor = '#f3f6f9'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
+                  menuData.bgColor?.toLowerCase() === '#f3f6f9'
+                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
+                    : 'bg-[#f3f6f9] text-stone-700 border-stone-300 hover:border-stone-400'
+                ]"
+              >
+                <span class="w-3 h-3 rounded-full bg-[#f3f6f9] border border-sky-300 shrink-0"></span>
+                <span>藍白</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Paper Pattern / Texture -->
+          <div>
+            <label class="font-semibold text-stone-700 block mb-1.5 text-xs">
+              和紙の模様（テクスチャ）
+            </label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              <button
+                type="button"
+                @click="menuData.bgPattern = 'none'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition text-xs font-medium',
+                  (!menuData.bgPattern || menuData.bgPattern === 'none')
+                    ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
+                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+                ]"
+              >
+                無地（模様なし）
+              </button>
+
+              <button
+                type="button"
+                @click="menuData.bgPattern = 'cloud'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition text-xs font-medium',
+                  menuData.bgPattern === 'cloud'
+                    ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
+                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+                ]"
+              >
+                雲竜（繊維調）
+              </button>
+
+              <button
+                type="button"
+                @click="menuData.bgPattern = 'washi'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition text-xs font-medium',
+                  menuData.bgPattern === 'washi'
+                    ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
+                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+                ]"
+              >
+                和紙（微細粒）
+              </button>
+
+              <button
+                type="button"
+                @click="menuData.bgPattern = 'grid'"
+                :class="[
+                  'py-1.5 px-2 rounded-lg border text-center transition text-xs font-medium',
+                  menuData.bgPattern === 'grid'
+                    ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
+                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+                ]"
+              >
+                和風格子（薄枠）
+              </button>
             </div>
           </div>
         </div>

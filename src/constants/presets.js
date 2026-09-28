@@ -86,9 +86,8 @@ export const INITIAL_MENU_STATE = {
   density: 'auto', // 'auto' (品数に応じて自動) | 'spacious' (ゆったり大) | 'normal' (標準中) | 'compact' (すっきり小)
   showDividers: false, // 区切り線（デフォルトOFFで無駄な線を排除）
   storeNamePosition: 'header', // 'header' (右側タイトル付近) | 'footer' (左端注記横) | 'none'
-  bgTone: 'natural', // 'natural' (生成り和紙) | 'pure-white' (純白) | 'cloud' (雲竜和紙) | 'craft' (クラフト・淡茶)
-  customBgImage: '', // Base64透かし画像
-  customBgOpacity: 12, // 5% - 40% (透かし濃度)
+  bgColor: '#ffffff', // 背景色（デフォルト純白）
+  bgPattern: 'none', // 'none' (無地) | 'cloud' (雲竜繊維) | 'washi' (和紙粒) | 'grid' (和風格子)
   items: [
     { id: '1', name: 'とり精肉', price: '180', note: '塩・タレ', translation: 'Chicken Thigh' },
     { id: '2', name: '豚精肉', price: '190', note: '北海道産豚', translation: 'Pork Skewer' },
