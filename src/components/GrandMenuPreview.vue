@@ -79,7 +79,7 @@
               :key="section.id || sIdx"
               :class="[
                 'flex flex-col items-stretch h-full shrink-0',
-                sIdx === 0 ? 'pl-0.5' : 'pl-1.5 sm:pl-2'
+                sIdx === 0 ? 'pl-0.5' : 'pl-3 sm:pl-4 lg:pl-5'
               ]"
             >
               <!-- 見出し列（カテゴリ名 ＋ サブ注記） -->
@@ -161,7 +161,7 @@
               :key="section.id || sIdx"
               :class="[
                 'flex flex-col items-stretch h-full shrink-0',
-                sIdx === 0 ? 'pl-0.5' : 'pl-1.5 sm:pl-2'
+                sIdx === 0 ? 'pl-0.5' : 'pl-3 sm:pl-4 lg:pl-5'
               ]"
             >
               <!-- 見出し列（一品 等） -->
@@ -233,7 +233,7 @@
             <!-- 店舗案内・営業ルール（下段左寄り・実写真スタイル） -->
             <div
               v-if="menuData.noticeBlock && menuData.noticeBlock.show"
-              class="flex flex-col items-stretch h-full pl-5 sm:pl-8 pr-1 shrink-0"
+              class="flex flex-col items-stretch h-full pl-6 sm:pl-10 lg:pl-12 pr-1 shrink-0"
             >
               <!-- 案内文（実写真同様、2行ずつゆったり縦書き配置） -->
               <div class="flex flex-col justify-center items-start h-full gap-1.5 sm:gap-2 text-[8.5px] sm:text-[9.5px] leading-relaxed opacity-90">
