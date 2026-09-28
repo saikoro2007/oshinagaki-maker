@@ -125,14 +125,35 @@
       >
         <!-- Category Header -->
         <div class="w-full px-3.5 py-3 flex items-center justify-between bg-stone-50/80 border-b border-stone-100 gap-2">
+          <!-- Checkbox: メニューに表示する -->
+          <label
+            @click.stop
+            class="flex items-center gap-1.5 cursor-pointer select-none p-1 rounded hover:bg-stone-200/60 transition shrink-0"
+            title="メニューに表示 / 非表示を切り替え"
+          >
+            <input
+              type="checkbox"
+              :checked="section.visible !== false"
+              @change="toggleSectionVisible(section, $event)"
+              class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer"
+            />
+            <span class="text-xs text-stone-600 font-bold hidden sm:inline">表示</span>
+          </label>
+
           <!-- Left: Title & Status -->
           <div
             @click="toggleSection(section.id)"
-            class="flex-1 flex items-center gap-2 cursor-pointer select-none overflow-hidden"
+            :class="[
+              'flex-1 flex items-center gap-2 cursor-pointer select-none overflow-hidden transition-opacity',
+              section.visible === false ? 'opacity-50' : 'opacity-100'
+            ]"
           >
-            <span class="w-2 h-4 bg-emerald-600 rounded-full shrink-0"></span>
+            <span class="w-2 h-4 rounded-full shrink-0" :class="section.visible === false ? 'bg-stone-300' : 'bg-emerald-600'"></span>
             <span class="font-bold text-stone-900 text-sm truncate">
               {{ section.name || '（名称未設定）' }}
+            </span>
+            <span v-if="section.visible === false" class="text-[10px] px-1.5 py-0.5 bg-stone-200 text-stone-600 rounded font-bold shrink-0">
+              非表示
             </span>
             <span class="text-[11px] px-2 py-0.5 bg-stone-200 text-stone-700 rounded-full font-medium shrink-0">
               {{ section.items?.length || 0 }}品
@@ -149,41 +170,42 @@
           </div>
 
           <!-- Right: Category Order & Delete Controls -->
-          <div class="flex items-center gap-1 shrink-0">
-            <!-- Move Category Up -->
+          <div class="flex items-center gap-1.5 shrink-0 pl-1">
+            <!-- Move Category Up (矢印アイコン ArrowUp で開閉と明確に区別) -->
             <button
               type="button"
               @click="moveSection(sIdx, -1)"
               :disabled="sIdx === 0"
-              class="p-1.5 text-stone-400 hover:text-stone-800 disabled:opacity-20 transition rounded hover:bg-stone-200/60"
+              class="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-200/80 active:scale-95 disabled:opacity-20 transition rounded-lg"
               title="カテゴリを前へ"
             >
-              <ChevronUp class="w-4 h-4" />
+              <ArrowUp class="w-4 h-4" />
             </button>
-            <!-- Move Category Down -->
+            <!-- Move Category Down (矢印アイコン ArrowDown で開閉と明確に区別) -->
             <button
               type="button"
               @click="moveSection(sIdx, 1)"
               :disabled="sIdx === menuData.sections.length - 1"
-              class="p-1.5 text-stone-400 hover:text-stone-800 disabled:opacity-20 transition rounded hover:bg-stone-200/60"
+              class="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-200/80 active:scale-95 disabled:opacity-20 transition rounded-lg"
               title="カテゴリを次へ"
             >
-              <ChevronDown class="w-4 h-4" />
+              <ArrowDown class="w-4 h-4" />
             </button>
             <!-- Delete Category -->
             <button
               type="button"
               @click="removeCategory(sIdx)"
-              class="p-1.5 text-stone-400 hover:text-red-600 transition rounded hover:bg-red-50"
+              class="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 active:scale-95 transition rounded-lg ml-0.5"
               title="カテゴリを削除"
             >
               <Trash2 class="w-4 h-4" />
             </button>
-            <!-- Accordion Toggle Chevron -->
+            <!-- Accordion Toggle Chevron (独立した専用開閉ボタン) -->
             <button
               type="button"
               @click="toggleSection(section.id)"
-              class="p-1.5 text-stone-500 hover:text-stone-900 transition rounded hover:bg-stone-200/60 ml-1"
+              class="p-1.5 text-stone-600 hover:text-stone-950 hover:bg-stone-200/80 active:scale-95 transition rounded-lg ml-1 bg-stone-100 border border-stone-200/60"
+              title="詳細を開閉"
             >
               <component
                 :is="isSectionOpen(section.id) ? ChevronUp : ChevronDown"
@@ -198,6 +220,20 @@
           
           <!-- Category Settings (Name, Subtitle, Uniform Price for ALL categories) -->
           <div class="bg-stone-50 p-3 rounded-xl border border-stone-200/70 space-y-2.5 text-xs">
+            <!-- 表示チェックボックス -->
+            <div class="flex items-center justify-between pb-2 border-b border-stone-200/60">
+              <label class="flex items-center gap-2 cursor-pointer text-stone-800 font-bold select-none">
+                <input
+                  type="checkbox"
+                  :checked="section.visible !== false"
+                  @change="toggleSectionVisible(section, $event)"
+                  class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4"
+                />
+                <span>メニューにこのカテゴリを表示する</span>
+              </label>
+              <span class="text-[11px] text-stone-400">チェックを外すと印刷・プレビューから非表示になります</span>
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div>
                 <label class="block text-stone-600 font-medium mb-1">カテゴリ名</label>
@@ -293,29 +329,30 @@
               </div>
 
               <!-- Actions (Reorder & Delete) -->
-              <div class="flex items-center gap-0.5 shrink-0">
+              <div class="flex items-center gap-1 shrink-0">
+                <!-- 品目の上下移動ボタン: 矢印アイコン ArrowUp / ArrowDown -->
                 <button
                   type="button"
                   @click="moveItem(section, idx, -1)"
                   :disabled="idx === 0"
-                  class="p-1 text-stone-400 hover:text-stone-700 disabled:opacity-20 transition"
+                  class="p-1.5 text-stone-400 hover:text-stone-800 disabled:opacity-20 hover:bg-stone-100 rounded transition"
                   title="前へ"
                 >
-                  <ChevronUp class="w-3.5 h-3.5" />
+                  <ArrowUp class="w-3.5 h-3.5" />
                 </button>
                 <button
                   type="button"
                   @click="moveItem(section, idx, 1)"
                   :disabled="idx === section.items.length - 1"
-                  class="p-1 text-stone-400 hover:text-stone-700 disabled:opacity-20 transition"
+                  class="p-1.5 text-stone-400 hover:text-stone-800 disabled:opacity-20 hover:bg-stone-100 rounded transition"
                   title="次へ"
                 >
-                  <ChevronDown class="w-3.5 h-3.5" />
+                  <ArrowDown class="w-3.5 h-3.5" />
                 </button>
                 <button
                   type="button"
                   @click="removeItem(section, idx)"
-                  class="p-1 text-stone-300 hover:text-red-600 transition"
+                  class="p-1.5 text-stone-300 hover:text-red-600 hover:bg-red-50 rounded transition"
                   title="削除"
                 >
                   <Trash2 class="w-3.5 h-3.5" />
@@ -364,21 +401,68 @@
       </div>
 
       <div v-if="menuData.noticeBlock.show" class="space-y-3">
-        <!-- Lines list -->
-        <div class="space-y-2">
-          <label class="block text-xs font-medium text-stone-500">案内文（縦書きで表示）</label>
-          <div
-            v-for="(line, lIdx) in menuData.noticeBlock.lines"
-            :key="lIdx"
-            class="flex items-center gap-2 min-w-0"
-          >
-            <span class="text-xs text-stone-400 font-mono w-4 shrink-0">{{ lIdx + 1 }}</span>
-            <input
-              v-model="menuData.noticeBlock.lines[lIdx]"
-              type="text"
-              class="flex-1 min-w-0 px-3 py-1.5 border border-stone-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 outline-none"
-            />
+        <!-- Lines list (自由に追加・削除・並び替え可能) -->
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-medium text-stone-500">案内文（縦書きで表示、自由に追加可能）</label>
+            <span class="text-[11px] text-stone-400">現在 {{ menuData.noticeBlock.lines?.length || 0 }}行</span>
           </div>
+
+          <div class="space-y-2">
+            <div
+              v-for="(line, lIdx) in menuData.noticeBlock.lines"
+              :key="lIdx"
+              class="flex items-center gap-2 min-w-0 bg-stone-50/70 p-1.5 rounded-xl border border-stone-200/80"
+            >
+              <span class="text-xs text-stone-400 font-mono w-4 text-center shrink-0">{{ lIdx + 1 }}</span>
+              <input
+                v-model="menuData.noticeBlock.lines[lIdx]"
+                type="text"
+                placeholder="案内文を入力"
+                class="flex-1 min-w-0 px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 outline-none"
+              />
+              
+              <!-- 並び替え・削除ボタン -->
+              <div class="flex items-center gap-0.5 shrink-0">
+                <button
+                  type="button"
+                  @click="moveNoticeLine(lIdx, -1)"
+                  :disabled="lIdx === 0"
+                  class="p-1.5 text-stone-400 hover:text-stone-800 disabled:opacity-20 hover:bg-stone-200/60 rounded transition"
+                  title="行を前へ"
+                >
+                  <ArrowUp class="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  @click="moveNoticeLine(lIdx, 1)"
+                  :disabled="lIdx === (menuData.noticeBlock.lines?.length || 1) - 1"
+                  class="p-1.5 text-stone-400 hover:text-stone-800 disabled:opacity-20 hover:bg-stone-200/60 rounded transition"
+                  title="行を次へ"
+                >
+                  <ArrowDown class="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  @click="removeNoticeLine(lIdx)"
+                  class="p-1.5 text-stone-300 hover:text-red-600 hover:bg-red-50 rounded transition"
+                  title="この行を削除"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Line Button -->
+          <button
+            type="button"
+            @click="addNoticeLine"
+            class="w-full py-2 bg-stone-50 hover:bg-stone-100 border border-dashed border-stone-300 rounded-xl text-xs font-bold text-stone-700 flex items-center justify-center gap-1.5 transition cursor-pointer"
+          >
+            <Plus class="w-3.5 h-3.5 text-amber-600" />
+            <span>案内文の行を追加する</span>
+          </button>
         </div>
 
         <!-- 店舗ロゴ画像設定（デフォルト印字なし、ユーザー画像登録のみ） -->
@@ -496,6 +580,8 @@
 <script setup>
 import { ref, computed } from 'vue'
 import {
+  ArrowUp,
+  ArrowDown,
   ChevronUp,
   ChevronDown,
   Plus,
@@ -583,7 +669,34 @@ function removeCategory(index) {
   }
 }
 
-// 新規カテゴリ追加
+function toggleSectionVisible(section, event) {
+  section.visible = event.target.checked
+}
+
+// 案内文の行操作
+function addNoticeLine() {
+  if (!props.menuData.noticeBlock) {
+    props.menuData.noticeBlock = { show: true, lines: [] }
+  }
+  if (!props.menuData.noticeBlock.lines) {
+    props.menuData.noticeBlock.lines = []
+  }
+  props.menuData.noticeBlock.lines.push('')
+}
+
+function removeNoticeLine(index) {
+  props.menuData.noticeBlock.lines.splice(index, 1)
+}
+
+function moveNoticeLine(index, direction) {
+  const target = index + direction
+  const lines = props.menuData.noticeBlock.lines
+  if (!lines || target < 0 || target >= lines.length) return
+  const line = lines.splice(index, 1)[0]
+  lines.splice(target, 0, line)
+}
+
+// 新規カテゴリ追加（常に一番最後・下段末尾に追加）
 function addNewCategory() {
   if (!props.menuData.sections) {
     props.menuData.sections = []
@@ -593,6 +706,8 @@ function addNewCategory() {
     id: newId,
     name: '新しいカテゴリ',
     subtitle: '',
+    placement: 'bottom', // 既に2段表示の際も常に一番最後（下段の末尾）に追加
+    visible: true,
     uniformPrice: '',
     items: [
       { id: Date.now().toString() + '_1', name: 'おすすめ品目', price: '300' }

@@ -485,18 +485,25 @@ function getItemNameClass(name) {
 }
 
 // ==============================================================
-// 汎用動的セクション振り分けエンジン
+// 汎用動的セクション振り分けエンジン（表示ONのカテゴリのみ対象）
 // ==============================================================
 
+// 「メニューに表示する」がON（visible !== false）のカテゴリのみを抽出
+const activeSections = computed(() => {
+  return (props.menuData.sections || []).filter(s => s.visible !== false)
+})
+
 // 横置き（2段組）: placement指定（'top' | 'bottom'）を優先し、未指定時は均等自動分割
+// ※新規追加されたカテゴリは常に一番最後（下段の末尾）に配置される
 const topSections = computed(() => {
-  const secs = props.menuData.sections || []
+  const secs = activeSections.value
   if (secs.length <= 1) return secs
 
   // 明示的な placement 指定があるか判定
   const hasExplicit = secs.some(s => s.placement === 'top' || s.placement === 'bottom')
   if (hasExplicit) {
-    return secs.filter(s => s.placement !== 'bottom')
+    // 上段指定（'top'）のカテゴリのみを上段に配置
+    return secs.filter(s => s.placement === 'top')
   }
 
   // 自動均等分割
@@ -516,10 +523,12 @@ const topSections = computed(() => {
 })
 
 const bottomSections = computed(() => {
-  const secs = props.menuData.sections || []
+  const secs = activeSections.value
   const hasExplicit = secs.some(s => s.placement === 'top' || s.placement === 'bottom')
   if (hasExplicit) {
-    return secs.filter(s => s.placement === 'bottom')
+    // 上段指定以外（'bottom' や未指定で追加されたカテゴリ）はすべて下段へ
+    const topIds = new Set(topSections.value.map(s => s.id))
+    return secs.filter(s => !topIds.has(s.id))
   }
   const topIds = new Set(topSections.value.map(s => s.id))
   return secs.filter(s => !topIds.has(s.id))
@@ -527,7 +536,7 @@ const bottomSections = computed(() => {
 
 // 縦置き（3段組）: 3分割自動振り分け
 const portraitTopSections = computed(() => {
-  const secs = props.menuData.sections || []
+  const secs = activeSections.value
   if (secs.length <= 2) return secs.slice(0, 1)
   const totalItems = secs.reduce((acc, s) => acc + (s.items?.length || 0), 0)
   const target = totalItems / 3
@@ -543,7 +552,7 @@ const portraitTopSections = computed(() => {
 })
 
 const portraitMidSections = computed(() => {
-  const secs = props.menuData.sections || []
+  const secs = activeSections.value
   const topIds = new Set(portraitTopSections.value.map(s => s.id))
   const remaining = secs.filter(s => !topIds.has(s.id))
   if (remaining.length <= 1) return remaining
@@ -561,9 +570,10 @@ const portraitMidSections = computed(() => {
 })
 
 const portraitBottomSections = computed(() => {
+  const secs = activeSections.value
   const topIds = new Set(portraitTopSections.value.map(s => s.id))
   const midIds = new Set(portraitMidSections.value.map(s => s.id))
-  return (props.menuData.sections || []).filter(s => !topIds.has(s.id) && !midIds.has(s.id))
+  return secs.filter(s => !topIds.has(s.id) && !midIds.has(s.id))
 })
 
 const fontClass = computed(() => {
