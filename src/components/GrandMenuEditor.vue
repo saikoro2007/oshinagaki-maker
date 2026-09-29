@@ -219,6 +219,205 @@
       </div>
     </div>
 
+    <!-- Design & Paper Appearance Settings (書体フォント・背景色・和紙風合い・価格表記・中黒) -->
+    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-stone-200 space-y-4">
+      <h3 class="font-bold text-sm text-stone-900 flex items-center justify-between">
+        <span>デザイン・和紙設定</span>
+        <span class="text-[11px] text-stone-400 font-normal">フォント・和紙・色合い</span>
+      </h3>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <!-- Font Family -->
+        <div>
+          <label class="block text-stone-600 mb-1.5 font-medium">書体（フォント）</label>
+          <div class="grid grid-cols-3 gap-1 bg-stone-100 p-1 rounded-xl">
+            <button
+              type="button"
+              @click="menuData.fontFamily = 'brush'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center font-brush transition cursor-pointer text-xs',
+                (!menuData.fontFamily || menuData.fontFamily === 'brush')
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              毛筆風
+            </button>
+            <button
+              type="button"
+              @click="menuData.fontFamily = 'mincho'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center font-mincho transition cursor-pointer text-xs',
+                menuData.fontFamily === 'mincho'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              明朝体
+            </button>
+            <button
+              type="button"
+              @click="menuData.fontFamily = 'gothic'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center font-gothic transition cursor-pointer text-xs',
+                menuData.fontFamily === 'gothic'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              ゴシック
+            </button>
+          </div>
+        </div>
+
+        <!-- Price Format (漢数字 / 数字表記) -->
+        <div>
+          <label class="block text-stone-600 mb-1.5 font-medium">価格の表記</label>
+          <div class="grid grid-cols-2 gap-1 bg-stone-100 p-1 rounded-xl">
+            <button
+              type="button"
+              @click="menuData.priceFormat = 'kanji'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                (!menuData.priceFormat || menuData.priceFormat === 'kanji')
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              漢数字 (五〇〇円)
+            </button>
+            <button
+              type="button"
+              @click="menuData.priceFormat = 'number'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                menuData.priceFormat === 'number'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              算用数字 (500円)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+        <!-- Paper Color -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-stone-600 font-medium">背景色（和紙の色）</label>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[11px] text-stone-400">自由選択:</span>
+              <input
+                type="color"
+                v-model="menuData.bgColor"
+                class="w-6 h-6 rounded border border-stone-300 cursor-pointer p-0 bg-transparent"
+                title="好きな色を選ぶ"
+              />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-1.5 bg-stone-100 p-1 rounded-xl">
+            <button
+              type="button"
+              @click="menuData.bgColor = '#e3ebdc'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs flex items-center justify-center gap-1.5',
+                (!menuData.bgColor || menuData.bgColor === '#e3ebdc')
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+              title="実物メニューの若草色"
+            >
+              <span class="w-2.5 h-2.5 rounded-full bg-[#e3ebdc] border border-stone-300 shrink-0"></span>
+              <span>若草色 {{ !isDrink ? '(定番)' : '' }}</span>
+            </button>
+            <button
+              type="button"
+              @click="menuData.bgColor = '#ffffff'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs flex items-center justify-center gap-1.5',
+                menuData.bgColor === '#ffffff'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              <span class="w-2.5 h-2.5 rounded-full bg-white border border-stone-300 shrink-0"></span>
+              <span>純白 {{ isDrink ? '(定番)' : '' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Paper Texture (風合い) -->
+        <div>
+          <label class="block text-stone-600 mb-1.5 font-medium">和紙の風合い（テクスチャ）</label>
+          <div class="grid grid-cols-4 gap-1 bg-stone-100 p-1 rounded-xl">
+            <button
+              type="button"
+              @click="menuData.bgPattern = 'none'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
+                (!menuData.bgPattern || menuData.bgPattern === 'none')
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              なし
+            </button>
+            <button
+              type="button"
+              @click="menuData.bgPattern = 'washi'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
+                menuData.bgPattern === 'washi'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              和紙調
+            </button>
+            <button
+              type="button"
+              @click="menuData.bgPattern = 'cloud'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
+                menuData.bgPattern === 'cloud'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              雲竜
+            </button>
+            <button
+              type="button"
+              @click="menuData.bgPattern = 'grid'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
+                menuData.bgPattern === 'grid'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              方眼
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dot Prefix toggle -->
+      <div class="pt-2 border-t border-stone-100 flex items-center justify-between">
+        <div>
+          <span class="text-xs text-stone-700 font-medium block">品名の頭に中黒「・」をつける</span>
+          <span class="text-[11px] text-stone-400">実物メニューのような縦書きの箇条書き表現</span>
+        </div>
+        <input
+          type="checkbox"
+          v-model="menuData.showDotPrefix"
+          class="w-4 h-4 rounded border-stone-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
+        />
+      </div>
+    </div>
+
     <!-- Category Sections Accordions (汎用追加・削除・並び替え・全カテゴリ一括価格対応) -->
     <div class="space-y-3">
       <div class="flex items-center justify-between px-1">
@@ -731,113 +930,6 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Design & Paper Appearance Settings -->
-    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-stone-200 space-y-4">
-      <h3 class="font-bold text-sm text-stone-900">
-        デザイン・和紙設定
-      </h3>
-
-      <div class="grid grid-cols-2 gap-3 text-xs">
-        <!-- Paper Color -->
-        <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="text-stone-500 font-medium">背景色（和紙の色）</label>
-            <div class="flex items-center gap-1.5">
-              <span class="text-[11px] text-stone-400">自由選択:</span>
-              <input
-                type="color"
-                v-model="menuData.bgColor"
-                class="w-6 h-6 rounded border border-stone-300 cursor-pointer p-0 bg-transparent"
-                title="好きな色を選ぶ"
-              />
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-1.5 bg-stone-100 p-1 rounded-xl">
-            <button
-              type="button"
-              @click="menuData.bgColor = '#e3ebdc'"
-              :class="[
-                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs flex items-center justify-center gap-1.5',
-                (!menuData.bgColor || menuData.bgColor === '#e3ebdc')
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              ]"
-              title="実物メニューの若草色"
-            >
-              <span class="w-2.5 h-2.5 rounded-full bg-[#e3ebdc] border border-stone-300 shrink-0"></span>
-              <span>若草色 (定番)</span>
-            </button>
-            <button
-              type="button"
-              @click="menuData.bgColor = '#ffffff'"
-              :class="[
-                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs flex items-center justify-center gap-1.5',
-                menuData.bgColor === '#ffffff'
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              ]"
-            >
-              <span class="w-2.5 h-2.5 rounded-full bg-white border border-stone-300 shrink-0"></span>
-              <span>純白</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Font Family -->
-        <div>
-          <label class="block text-stone-500 mb-1.5 font-medium">書体（フォント）</label>
-          <div class="grid grid-cols-3 gap-1 bg-stone-100 p-1 rounded-xl">
-            <button
-              type="button"
-              @click="menuData.fontFamily = 'brush'"
-              :class="[
-                'py-1.5 rounded-lg font-bold text-center font-brush transition cursor-pointer text-xs',
-                (!menuData.fontFamily || menuData.fontFamily === 'brush')
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              ]"
-            >
-              毛筆風
-            </button>
-            <button
-              type="button"
-              @click="menuData.fontFamily = 'mincho'"
-              :class="[
-                'py-1.5 rounded-lg font-bold text-center font-mincho transition cursor-pointer text-xs',
-                menuData.fontFamily === 'mincho'
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              ]"
-            >
-              明朝体
-            </button>
-            <button
-              type="button"
-              @click="menuData.fontFamily = 'gothic'"
-              :class="[
-                'py-1.5 rounded-lg font-bold text-center font-gothic transition cursor-pointer text-xs',
-                menuData.fontFamily === 'gothic'
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              ]"
-            >
-              ゴシック
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Dot Prefix toggle -->
-      <div class="pt-2 border-t border-stone-100 flex items-center justify-between">
-        <span class="text-xs text-stone-700">品名の頭に中黒「・」をつける</span>
-        <input
-          type="checkbox"
-          v-model="menuData.showDotPrefix"
-          class="rounded border-stone-300 text-amber-600 focus:ring-amber-500"
-        />
       </div>
     </div>
   </div>
