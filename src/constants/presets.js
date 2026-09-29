@@ -100,7 +100,7 @@ export const INITIAL_MENU_STATE = {
 
 // やきとりもず 実店舗グランドメニュー（定番メニュー）初期データ（写真完全再現版）
 export const MOZU_GRAND_MENU_STATE = {
-  version: 'v2_photo_matched',
+  version: 'v3_kaitei_pdf_2026',
   menuType: 'grand',
   title: 'やきとりもず 定番お品書き',
   bgColor: '#dde6d5', // 実写真の若草色・淡緑和紙
