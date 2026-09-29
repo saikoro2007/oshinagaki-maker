@@ -731,6 +731,14 @@ function selectLayout(mode) {
           <label class="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
+              v-model="menuData.showDotPrefix"
+              class="rounded border-stone-300 text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer"
+            />
+            <span class="text-stone-700 font-medium">品名の頭に中黒「・」をつける</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
               v-model="menuData.showEnglish"
               class="rounded border-stone-300 text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer"
             />

@@ -69,32 +69,39 @@ export const RESTAURANT_PRESETS = [
 ];
 
 export const INITIAL_MENU_STATE = {
+  version: 'v2_mozu_recommend_2026',
   title: '本日のおすすめ',
-  subtitle: '炭火焼き・季節の一品',
-  footerNote: '※価格はすべて税込表示となっております。仕入れ状況により売り切れの際はご容赦ください。',
+  subtitle: '',
+  footerNote: '',
   storeName: '',
   dateText: '本日のお品書き',
   layout: 'vertical', // 'vertical' | 'horizontal'
   fontFamily: 'brush', // 'brush' | 'mincho' | 'gothic'
-  frameStyle: 'traditional', // 'traditional' | 'minimal' | 'none'
+  frameStyle: 'none', // 写真実物はフレーム枠線なし
   showEnglish: false,
-  showNotes: true,
-  priceFormat: 'kanji', // 'kanji' (例: 一八〇円・和風標準) | 'number' (例: 180円)
+  showNotes: false,
+  showDotPrefix: true, // 品名の頭に中黒「・」をつける（実物写真同様）
+  priceFormat: 'kanji', // 'kanji' (例: 三八〇円)
   paperSize: 'A4', // 'A4' | 'B5'
-  paperOrientation: 'landscape', // 'landscape' (横長用紙・おすすめ・定番) | 'portrait' (縦長用紙)
-  density: 'auto', // 'auto' (品数に応じて自動) | 'spacious' (ゆったり大) | 'normal' (標準中) | 'compact' (すっきり小)
-  showDividers: false, // 区切り線（デフォルトOFFで無駄な線を排除）
-  bgColor: '#ffffff', // 背景色（デフォルト純白）
-  bgPattern: 'none', // 'none' (無地) | 'cloud' (雲竜繊維) | 'washi' (和紙粒) | 'grid' (和風格子)
-  textColor: '#1c1917', // 文字色（デフォルト墨色）
+  paperOrientation: 'landscape', // 横置き
+  density: 'spacious', // 'auto' | 'spacious' | 'normal' | 'compact'
+  showDividers: false, // 区切り線なし（実物同様）
+  bgColor: '#ffffff', // 背景色（純白）
+  bgPattern: 'none', // 無地
+  textColor: '#1c1917', // 墨色
   items: [
-    { id: '1', name: 'とり精肉', price: '180', note: '塩・タレ', translation: 'Chicken Thigh' },
-    { id: '2', name: '豚精肉', price: '190', note: '北海道産豚', translation: 'Pork Skewer' },
-    { id: '3', name: '自家製つくね', price: '220', note: '秘伝ダレ', translation: 'Chicken Meatballs' },
-    { id: '4', name: 'ねぎま', price: '190', note: '香ばしネギ', translation: 'Chicken & Scallion' },
-    { id: '5', name: '鶏皮', price: '160', note: 'パリッと香ばしい', translation: 'Crispy Skin' },
-    { id: '6', name: '鶏レバー', price: '180', note: 'とろける濃厚', translation: 'Chicken Liver' },
-    { id: '7', name: '名物もつ煮込み', price: '520', note: '自慢の一品', translation: 'Simmered Tripe Stew' },
+    { id: '1', name: '豚巻きキムチ串', price: '380', note: '', translation: '' },
+    { id: '2', name: '豚巻きにんにく串(十勝産にんにく)', price: '380', note: '', translation: '' },
+    { id: '3', name: 'にんにくの芽串(二本)', price: '250', note: '', translation: '' },
+    { id: '4', name: 'やげんなんこつ串', price: '330', note: '', translation: '' },
+    { id: '5', name: '八角味噌焼き', price: '980', note: '', translation: '' },
+    { id: '6', name: 'ミノポン', price: '660', note: '', translation: '' },
+    { id: '7', name: 'ガーリックシュリンプ', price: '680', note: '', translation: '' },
+    { id: '8', name: '焼きなす', price: '680', note: '', translation: '' },
+    { id: '9', name: '炭火焼きイカマヨネーズ', price: '770', note: '', translation: '' },
+    { id: '10', name: '揚げ出しなす', price: '770', note: '', translation: '' },
+    { id: '11', name: 'カスベ一夜干し', price: '880', note: '', translation: '' },
+    { id: '12', name: 'サバ串', price: '980', note: '', translation: '' },
   ]
 };
 

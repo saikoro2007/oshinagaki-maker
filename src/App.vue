@@ -56,7 +56,17 @@ onMounted(() => {
 
     const savedDaily = localStorage.getItem(STORAGE_KEY_DAILY)
     if (savedDaily) {
-      Object.assign(dailyMenuData, JSON.parse(savedDaily))
+      const parsedDaily = JSON.parse(savedDaily)
+      if (parsedDaily.version === INITIAL_MENU_STATE.version) {
+        Object.assign(dailyMenuData, parsedDaily)
+      } else {
+        const updatedDaily = JSON.parse(JSON.stringify(INITIAL_MENU_STATE))
+        for (const k of Object.keys(dailyMenuData)) {
+          delete dailyMenuData[k]
+        }
+        Object.assign(dailyMenuData, updatedDaily)
+        localStorage.setItem(STORAGE_KEY_DAILY, JSON.stringify(updatedDaily))
+      }
     }
 
     const savedGrand = localStorage.getItem(STORAGE_KEY_GRAND)

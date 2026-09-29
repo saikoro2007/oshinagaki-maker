@@ -23,7 +23,11 @@
           グランドメニュー（定番）
         </span>
         <span class="text-xs text-stone-500 font-medium">
-          {{ menuData.paperSize || 'A4' }} {{ isLandscape ? '横置き' : '縦置き' }}
+          {{ menuData.paperSize || 'A4' }} {{ isLandscape ? '横置き' : '縦置き' }} · 縦書き
+        </span>
+        <span class="text-[11px] text-stone-500 bg-stone-100 border border-stone-200/80 px-2 py-0.5 rounded-full hidden md:inline-flex items-center gap-1">
+          <Edit3 class="w-3 h-3 text-stone-400" />
+          <span>文字タップで直接編集可能</span>
         </span>
       </div>
 
@@ -506,7 +510,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { formatPrice } from '../utils/formatters'
-import { Printer, Image as ImageIcon, Loader2, Download, X, ArrowLeftRight } from '@lucide/vue'
+import { Printer, Image as ImageIcon, Loader2, Download, X, ArrowLeftRight, Edit3 } from '@lucide/vue'
 import { toPng } from 'html-to-image'
 
 const props = defineProps({

@@ -269,39 +269,44 @@ function closeImageModal() {
       }
     </component>
 
-    <!-- Screen-only Control Bar -->
-    <div class="no-print bg-stone-900 text-white rounded-2xl p-3.5 sm:p-4 shadow-lg flex flex-wrap items-center justify-between gap-3 w-full">
-      <div>
-        <div class="font-bold text-sm sm:text-base flex items-center gap-1.5">
-          <span>🖨️</span>
-          <span>お品書きプレビュー</span>
-          <span class="text-xs font-normal text-amber-300 ml-2 bg-amber-950/80 border border-amber-700/60 px-2 py-0.5 rounded-full flex items-center gap-1">
-            <Edit3 class="w-3 h-3" />
-            <span>文字を直接タップして編集可能</span>
-          </span>
-        </div>
-        <p class="text-xs text-stone-300 mt-1">
-          {{ menuData.paperSize || 'A4' }} ({{ menuData.paperSize === 'B5' ? '182×257mm' : '210×297mm' }})・{{ isLandscape ? '横向き (横長)' : '縦向き (縦長)' }} / {{ menuData.layout === 'vertical' ? '縦書き' : '横書き' }} / {{ menuData.items.length }}品目 ({{ effectiveDensity === 'compact' ? 'すっきり小' : effectiveDensity === 'normal' ? '標準中' : 'ゆったり大' }})
-        </p>
+    <!-- Top Action Toolbar (Hidden on Print) -->
+    <div
+      class="no-print bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-stone-200 flex flex-wrap items-center justify-between gap-3"
+    >
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-100 text-amber-900 text-xs font-bold">
+          本日のおすすめ
+        </span>
+        <span class="text-xs text-stone-500 font-medium">
+          {{ menuData.paperSize || 'A4' }} {{ isLandscape ? '横置き' : '縦置き' }} · {{ menuData.layout === 'vertical' ? '縦書き' : '横書き' }} · {{ menuData.items.length }}品目
+        </span>
+        <span class="text-[11px] text-stone-500 bg-stone-100 border border-stone-200/80 px-2 py-0.5 rounded-full hidden md:inline-flex items-center gap-1">
+          <Edit3 class="w-3 h-3 text-stone-400" />
+          <span>文字タップで直接編集可能</span>
+        </span>
       </div>
 
+      <!-- Action Buttons -->
       <div class="flex items-center gap-2">
+        <!-- Save as PNG button -->
         <button
           @click="saveAsImage"
           type="button"
           :disabled="isGeneratingImage"
-          class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold rounded-xl text-sm shadow-md flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-3 py-2 bg-stone-100 hover:bg-stone-200 active:scale-95 text-stone-800 font-bold rounded-xl text-xs sm:text-sm border border-stone-300 flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
           title="SNS・Instagram投稿用の高解像度PNG画像を保存"
         >
-          <Loader2 v-if="isGeneratingImage" class="w-4 h-4 animate-spin" />
-          <ImageIcon v-else class="w-4 h-4" />
-          <span>{{ isGeneratingImage ? '生成中...' : '画像保存 (PNG)' }}</span>
+          <Loader2 v-if="isGeneratingImage" class="w-4 h-4 animate-spin text-amber-600" />
+          <ImageIcon v-else class="w-4 h-4 text-stone-600" />
+          <span class="hidden sm:inline">{{ isGeneratingImage ? '生成中...' : '画像保存 (PNG)' }}</span>
+          <span class="sm:hidden">画像</span>
         </button>
 
+        <!-- Print PDF Button -->
         <button
           @click="triggerPrint"
           type="button"
-          class="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-stone-950 font-black rounded-xl text-sm shadow-md flex items-center gap-1.5 transition cursor-pointer"
+          class="px-4 py-2 bg-amber-500 hover:bg-amber-400 active:scale-95 text-stone-950 font-black rounded-xl text-xs sm:text-sm shadow-md flex items-center gap-1.5 transition cursor-pointer"
         >
           <Printer class="w-4 h-4" />
           <span>印刷する (PDF)</span>
@@ -354,13 +359,19 @@ function closeImageModal() {
               verticalContentHeightClass
             ]"
           >
-            <!-- 1. Right Header Section (Title & Subtitle ONLY - Soft refined border) -->
-            <div class="pl-6 sm:pl-8 border-l border-current/30 shrink-0 h-full">
+            <!-- 1. Right Header Section (Title & Subtitle ONLY) -->
+            <div
+              :class="[
+                'pl-6 sm:pl-8 shrink-0 h-full flex flex-col justify-start',
+                (menuData.showDividers || menuData.subtitle) ? 'border-l border-current/30' : ''
+              ]"
+            >
               <!-- Subtitle (Editable) -->
               <div
+                v-if="menuData.subtitle"
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'subtitle', $event)"
-                class="editable-field text-xs sm:text-sm opacity-75 font-bold tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
+                class="editable-field text-xs sm:text-sm opacity-75 font-bold tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text mb-1"
                 title="タップして編集"
               >
                 {{ menuData.subtitle }}
@@ -370,7 +381,7 @@ function closeImageModal() {
               <h1
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'title', $event)"
-                class="editable-field text-3xl sm:text-4xl font-black tracking-widest mt-2 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
+                class="editable-field text-3xl sm:text-4xl font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
                 title="タップして編集"
               >
                 {{ menuData.title }}
@@ -395,12 +406,12 @@ function closeImageModal() {
                     contenteditable="true"
                     @blur="onTextBlur(item, 'name', $event)"
                     :class="[
-                      'editable-field font-bold outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text',
+                      'editable-field font-bold outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text whitespace-nowrap',
                       itemClasses.name
                     ]"
                     title="タップして品名を編集"
                   >
-                    {{ item.name }}
+                    <span v-if="menuData.showDotPrefix && !item.name.startsWith('・')" class="text-[0.75em] opacity-80 mr-0.5">・</span>{{ item.name }}
                   </div>
 
                   <!-- Note Badge (e.g. 塩・タレ) (Editable) -->
@@ -522,7 +533,7 @@ function closeImageModal() {
                       itemClasses.hName
                     ]"
                   >
-                    {{ item.name }}
+                    <span v-if="menuData.showDotPrefix && !item.name.startsWith('・')" class="opacity-70 mr-1">・</span>{{ item.name }}
                   </span>
                   <span
                     v-if="menuData.showNotes && item.note"
