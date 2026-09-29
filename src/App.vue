@@ -73,6 +73,11 @@ onMounted(() => {
       }
     }
 
+    const paramModal = urlParams.get('modal')
+    if (paramModal === 'mymenu') {
+      showMyMenusModal.value = true
+    }
+
     // 1. Daily Menu Load & Migration
     const savedDaily = localStorage.getItem(STORAGE_KEY_DAILY)
     if (savedDaily) {
@@ -347,11 +352,11 @@ function triggerPrint() {
             type="button"
             @click="showMyMenusModal = true"
             class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 active:scale-95 text-stone-200 hover:text-white font-bold text-xs rounded-lg border border-stone-700 shadow-xs flex items-center gap-1.5 transition cursor-pointer"
-            title="作成したお品書きを手元に記憶・読み込み"
+            title="作成したメニューをスマホに保存・いつでも呼び出せます"
           >
             <Bookmark class="w-3.5 h-3.5 text-amber-400" />
-            <span class="hidden sm:inline">マイメニュー</span>
-            <span class="sm:hidden">手元保存</span>
+            <span class="hidden sm:inline">メニュー保存・呼出</span>
+            <span class="sm:hidden">保存・呼出</span>
           </button>
 
           <!-- Quick Print Button -->

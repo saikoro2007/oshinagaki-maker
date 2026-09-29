@@ -9,8 +9,8 @@
         <div class="flex items-center gap-2">
           <Bookmark class="w-5 h-5 text-amber-600" />
           <div>
-            <h3 class="font-bold text-stone-900 text-base">手元に記憶（マイメニュー管理）</h3>
-            <p class="text-[11px] text-stone-500">作成したメニューをスマホ内に複数保存・いつでも呼び出せます</p>
+            <h3 class="font-bold text-stone-900 text-base">メニューの保存・呼出（マイメニュー）</h3>
+            <p class="text-[11px] text-stone-500">作成したお品書きをスマホ・PCに保存し、いつでも切り替え・復元できます</p>
           </div>
         </div>
         <button
@@ -175,6 +175,10 @@ import { ref, computed, onMounted } from 'vue'
 import { Bookmark, Save, Trash2, FolderOpen, X } from '@lucide/vue'
 
 const props = defineProps({
+  show: {
+    type: Boolean,
+    default: true
+  },
   currentMenuType: {
     type: String,
     required: true,
