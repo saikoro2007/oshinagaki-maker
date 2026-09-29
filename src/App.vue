@@ -169,18 +169,33 @@ async function checkShareHash() {
 function handleAcceptSharedMenu() {
   if (!incomingShareData.value) return
   const { type, data } = incomingShareData.value
+
+  const incomingLogo = data.logoImage || data.noticeBlock?.logoImage || ''
+
   if (type === 'daily') {
     menuType.value = 'daily'
     for (const k of Object.keys(dailyMenuData)) delete dailyMenuData[k]
     Object.assign(dailyMenuData, data)
   } else if (type === 'drink') {
     menuType.value = 'drink'
+    const existingDrinkLogo = drinkMenuData.logoImage || drinkMenuData.noticeBlock?.logoImage || ''
     for (const k of Object.keys(drinkMenuData)) delete drinkMenuData[k]
     Object.assign(drinkMenuData, data)
+    const finalLogo = incomingLogo || existingDrinkLogo
+    if (finalLogo) {
+      drinkMenuData.logoImage = finalLogo
+      if (drinkMenuData.noticeBlock) drinkMenuData.noticeBlock.logoImage = finalLogo
+    }
   } else {
     menuType.value = 'grand'
+    const existingGrandLogo = grandMenuData.logoImage || grandMenuData.noticeBlock?.logoImage || ''
     for (const k of Object.keys(grandMenuData)) delete grandMenuData[k]
     Object.assign(grandMenuData, data)
+    const finalLogo = incomingLogo || existingGrandLogo
+    if (finalLogo) {
+      grandMenuData.logoImage = finalLogo
+      if (grandMenuData.noticeBlock) grandMenuData.noticeBlock.logoImage = finalLogo
+    }
   }
   showIncomingSharePrompt.value = false
   triggerSaveToast()

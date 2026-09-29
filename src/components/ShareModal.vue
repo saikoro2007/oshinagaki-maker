@@ -32,12 +32,20 @@
         <!-- Target Menu Card -->
         <div class="p-3 bg-stone-50 rounded-xl border border-stone-200/80 flex items-center justify-between gap-3">
           <div class="min-w-0">
-            <span
-              class="inline-block px-2 py-0.5 rounded text-[10px] font-bold mb-1"
-              :class="menuType === 'daily' ? 'bg-amber-100 text-amber-900' : menuType === 'drink' ? 'bg-sky-100 text-sky-800' : 'bg-emerald-100 text-emerald-800'"
-            >
-              {{ menuTypeName }}
-            </span>
+            <div class="flex items-center gap-1.5 mb-1">
+              <span
+                class="inline-block px-2 py-0.5 rounded text-[10px] font-bold"
+                :class="menuType === 'daily' ? 'bg-amber-100 text-amber-900' : menuType === 'drink' ? 'bg-sky-100 text-sky-800' : 'bg-emerald-100 text-emerald-800'"
+              >
+                {{ menuTypeName }}
+              </span>
+              <span
+                v-if="hasLogo"
+                class="inline-block px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-stone-200 text-stone-700"
+              >
+                店舗ロゴ含む
+              </span>
+            </div>
             <div class="font-bold text-stone-900 text-xs truncate">
               {{ currentData.title || menuTypeName }}
             </div>
@@ -183,6 +191,10 @@ const itemCount = computed(() => {
 
 const sectionCount = computed(() => {
   return props.currentData.sections ? props.currentData.sections.length : 0
+})
+
+const hasLogo = computed(() => {
+  return !!(props.currentData.logoImage || props.currentData.noticeBlock?.logoImage)
 })
 
 const canNativeShare = computed(() => {

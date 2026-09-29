@@ -28,13 +28,82 @@ function base64UrlToUint8Array(base64url) {
 }
 
 /**
- * メニューデータをURL共有用にgzip圧縮＋URL-Safe Base64化する
+ * 共有URL用にロゴ画像を軽量リサイズする（URL長が爆発しないように最大200pxに縮小）
+ */
+async function optimizeLogoForShare(dataUrl, maxDim = 200) {
+  if (!dataUrl || !dataUrl.startsWith('data:image')) return dataUrl || '';
+  if (typeof Image === 'undefined' || typeof document === 'undefined') return dataUrl;
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      if (width > height) {
+        if (width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        }
+      } else {
+        if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // WebP または PNG で出力
+      try {
+        const webp = canvas.toDataURL('image/webp', 0.8);
+        if (webp.startsWith('data:image/webp') && webp.length < 15000) {
+          return resolve(webp);
+        }
+      } catch (e) {}
+
+      const png = canvas.toDataURL('image/png');
+      if (png.length < 18000) {
+        return resolve(png);
+      }
+
+      // サイズが大きい場合はJPEG（白背景）に圧縮
+      const jpgCanvas = document.createElement('canvas');
+      jpgCanvas.width = width;
+      jpgCanvas.height = height;
+      const jpgCtx = jpgCanvas.getContext('2d');
+      jpgCtx.fillStyle = '#ffffff';
+      jpgCtx.fillRect(0, 0, width, height);
+      jpgCtx.drawImage(img, 0, 0, width, height);
+      resolve(jpgCanvas.toDataURL('image/jpeg', 0.75));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+/**
+ * メニューデータをURL共有用にgzip圧縮＋URL-Safe Base64化する（ロゴ画像も軽量化して保持）
  */
 export async function compressMenuData(type, menuData) {
-  // 画像などの巨大データを除去したクリーンなオブジェクトを作成
   const cleanData = JSON.parse(JSON.stringify(menuData));
-  if (cleanData.logoImage) cleanData.logoImage = '';
-  if (cleanData.noticeBlock?.logoImage) cleanData.noticeBlock.logoImage = '';
+
+  // ロゴ画像が存在する場合、URLが肥大化しないよう軽量化して共有データに含める
+  const rawLogo = cleanData.logoImage || cleanData.noticeBlock?.logoImage || '';
+  if (rawLogo) {
+    try {
+      const optimizedLogo = await optimizeLogoForShare(rawLogo);
+      cleanData.logoImage = optimizedLogo;
+      if (cleanData.noticeBlock) {
+        cleanData.noticeBlock.logoImage = optimizedLogo;
+      }
+    } catch (e) {
+      console.warn('Failed to optimize logo for share, keeping original:', e);
+    }
+  }
 
   const payload = {
     v: 1,
