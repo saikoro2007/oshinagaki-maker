@@ -99,6 +99,121 @@
       </div>
     </div>
 
+    <!-- Layout & Spacing Settings (カテゴリ間隔・自動均等整列・文字サイズ一括調整) -->
+    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-stone-200 space-y-3">
+      <h3 class="font-bold text-sm text-stone-900 flex items-center justify-between">
+        <span>配置バランス・文字サイズ</span>
+        <span class="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-medium border border-amber-200">
+          用紙に合わせて一括自動調整
+        </span>
+      </h3>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <!-- Section Spacing / Alignment -->
+        <div>
+          <label class="block text-stone-600 mb-1.5 font-medium flex items-center justify-between">
+            <span>カテゴリ間の隙間・整列</span>
+          </label>
+          <div class="grid grid-cols-4 gap-1 bg-stone-100 p-1 rounded-xl">
+            <button
+              type="button"
+              @click="menuData.sectionSpacing = 'auto'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
+                (!menuData.sectionSpacing || menuData.sectionSpacing === 'auto')
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+              title="用紙の幅に合わせて自動で均等に広げます"
+            >
+              自動均等
+            </button>
+            <button
+              type="button"
+              @click="menuData.sectionSpacing = 'normal'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
+                menuData.sectionSpacing === 'normal'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              標準
+            </button>
+            <button
+              type="button"
+              @click="menuData.sectionSpacing = 'spacious'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
+                menuData.sectionSpacing === 'spacious'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              広め
+            </button>
+            <button
+              type="button"
+              @click="menuData.sectionSpacing = 'compact'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
+                menuData.sectionSpacing === 'compact'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              狭め
+            </button>
+          </div>
+        </div>
+
+        <!-- Item Font Size Scaling -->
+        <div>
+          <label class="block text-stone-600 mb-1.5 font-medium flex items-center justify-between">
+            <span>文字サイズ（全体の文字スケール）</span>
+          </label>
+          <div class="grid grid-cols-3 gap-1 bg-stone-100 p-1 rounded-xl">
+            <button
+              type="button"
+              @click="menuData.itemFontSize = 'small'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
+                menuData.itemFontSize === 'small'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              小（すっきり）
+            </button>
+            <button
+              type="button"
+              @click="menuData.itemFontSize = 'normal'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
+                (!menuData.itemFontSize || menuData.itemFontSize === 'normal')
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              中（標準）
+            </button>
+            <button
+              type="button"
+              @click="menuData.itemFontSize = 'large'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
+                menuData.itemFontSize === 'large'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              大（ゆったり）
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Category Sections Accordions (汎用追加・削除・並び替え・全カテゴリ一括価格対応) -->
     <div class="space-y-3">
       <div class="flex items-center justify-between px-1">
@@ -510,6 +625,75 @@
               </button>
             </div>
           </div>
+
+          <!-- ロゴの詳細カスタマイズ（大きさ・上下位置・間隔） -->
+          <div v-if="currentLogoImage" class="mt-3 pt-3 border-t border-stone-200/60 space-y-3 bg-stone-50/70 p-3 rounded-xl">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <!-- ロゴの大きさ -->
+              <div>
+                <label class="block text-stone-600 font-medium mb-1 flex items-center justify-between">
+                  <span>ロゴの大きさ</span>
+                  <span class="font-mono text-stone-500 font-bold">{{ menuData.logoSize || 64 }}px</span>
+                </label>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] text-stone-400">小</span>
+                  <input
+                    type="range"
+                    min="36"
+                    max="120"
+                    step="4"
+                    :value="menuData.logoSize || 64"
+                    @input="menuData.logoSize = Number($event.target.value)"
+                    class="w-full accent-amber-600 cursor-pointer"
+                  />
+                  <span class="text-[10px] text-stone-400">大</span>
+                </div>
+              </div>
+
+              <!-- 上下の位置 -->
+              <div>
+                <label class="block text-stone-600 font-medium mb-1">上下の配置</label>
+                <div class="grid grid-cols-3 gap-1 bg-stone-200/60 p-1 rounded-lg">
+                  <button
+                    type="button"
+                    @click="menuData.logoPosition = 'top'"
+                    :class="[
+                      'py-1 rounded font-bold text-center transition cursor-pointer text-[11px]',
+                      menuData.logoPosition === 'top'
+                        ? 'bg-white text-stone-900 shadow-xs'
+                        : 'text-stone-500 hover:text-stone-800'
+                    ]"
+                  >
+                    上寄せ
+                  </button>
+                  <button
+                    type="button"
+                    @click="menuData.logoPosition = 'center'"
+                    :class="[
+                      'py-1 rounded font-bold text-center transition cursor-pointer text-[11px]',
+                      (!menuData.logoPosition || menuData.logoPosition === 'center')
+                        ? 'bg-white text-stone-900 shadow-xs'
+                        : 'text-stone-500 hover:text-stone-800'
+                    ]"
+                  >
+                    中央
+                  </button>
+                  <button
+                    type="button"
+                    @click="menuData.logoPosition = 'bottom'"
+                    :class="[
+                      'py-1 rounded font-bold text-center transition cursor-pointer text-[11px]',
+                      menuData.logoPosition === 'bottom'
+                        ? 'bg-white text-stone-900 shadow-xs'
+                        : 'text-stone-500 hover:text-stone-800'
+                    ]"
+                  >
+                    下寄せ
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -721,8 +905,17 @@ function addNewCategory() {
 // 一括価格トグル
 function toggleUniformPrice(section, event) {
   if (event.target.checked) {
-    section.uniformPrice = '50'
+    section.uniformPrice = section.uniformPrice || '50'
   } else {
+    // 一括価格をオフにした時、中身のアイテムの金額が空なら一括価格をデフォルト値として代入
+    const previousPrice = section.uniformPrice ? String(section.uniformPrice).trim() : ''
+    if (previousPrice && section.items && section.items.length > 0) {
+      section.items.forEach(item => {
+        if (!item.price || String(item.price).trim() === '') {
+          item.price = previousPrice
+        }
+      })
+    }
     section.uniformPrice = ''
   }
 }

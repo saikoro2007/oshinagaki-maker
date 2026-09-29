@@ -1,5 +1,19 @@
 <template>
-  <div class="space-y-4">
+  <div class="space-y-4 print:space-y-0 print:m-0 print:p-0 print:h-full">
+    <!-- Dynamic Print Page CSS for Landscape vs Portrait (印刷時の2ページ化を完全に防止) -->
+    <component :is="'style'">
+      @media print {
+        @page {
+          size: {{ menuData.paperSize === 'B5' ? '182mm 257mm' : 'A4' }} {{ isLandscape ? 'landscape' : 'portrait' }};
+          margin: 4mm;
+        }
+        .editable-field {
+          outline: none !important;
+          background: transparent !important;
+        }
+      }
+    </component>
+
     <!-- Top Action Toolbar (Hidden on Print) -->
     <div
       class="no-print bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-stone-200 flex flex-wrap items-center justify-between gap-3"
@@ -72,14 +86,18 @@
           <!-- ------------------------------------------------------------
                上段 (Top Half): 焼き物(20品)・トッピング(3品)・サラダ(2品)・ご飯もの(6品)
                ------------------------------------------------------------ -->
-          <div class="vertical-rl h-[48%] flex flex-col justify-start items-stretch pb-1 overflow-visible">
-            
+          <div
+            :class="[
+              'vertical-rl h-[48%] flex flex-col items-stretch pb-1 overflow-visible',
+              containerSpacingClass
+            ]"
+          >
             <div
               v-for="(section, sIdx) in topSections"
               :key="section.id || sIdx"
               :class="[
                 'flex flex-col items-stretch h-full shrink-0',
-                sIdx === 0 ? 'pl-0.5' : 'pl-3 sm:pl-4 lg:pl-5'
+                sectionSpacingClass(sIdx)
               ]"
             >
               <!-- 見出し列（カテゴリ名 ＋ サブ注記） -->
@@ -89,7 +107,7 @@
                   @blur="onTextBlur(section, 'name', $event)"
                   :class="[
                     'editable-field font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 whitespace-nowrap',
-                    section.name === '焼き物' || section.name === 'ご飯もの' ? 'text-base sm:text-lg lg:text-xl' : 'text-sm sm:text-base lg:text-lg'
+                    categoryHeaderClass(section.name)
                   ]"
                 >
                   {{ section.name }}
@@ -130,7 +148,10 @@
                   <span
                     contenteditable="true"
                     @blur="onPriceBlur(item, $event)"
-                    class="editable-field text-[9.5px] sm:text-[10.5px] font-bold tracking-tight outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 font-mono"
+                    :class="[
+                      'editable-field font-bold tracking-tight outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 font-mono',
+                      itemPriceClass
+                    ]"
                   >
                     {{ formatPrice(item.price, menuData.priceFormat, true) }}
                   </span>
@@ -142,7 +163,10 @@
                 <span
                   contenteditable="true"
                   @blur="onTextBlur(section, 'uniformPrice', $event)"
-                  class="editable-field text-[9.5px] sm:text-[10px] font-bold tracking-tight whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                  :class="[
+                    'editable-field font-bold tracking-tight whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5',
+                    itemPriceClass
+                  ]"
                 >
                   各{{ formatPrice(section.uniformPrice, menuData.priceFormat, true) }}
                 </span>
@@ -154,14 +178,18 @@
           <!-- ------------------------------------------------------------
                下段 (Bottom Half): 一品(17品) ＋ 店舗案内・営業ルール
                ------------------------------------------------------------ -->
-          <div class="vertical-rl h-[48%] flex flex-col justify-start items-stretch pt-1 overflow-visible">
-            
+          <div
+            :class="[
+              'vertical-rl h-[48%] flex flex-col items-stretch pt-1 overflow-visible',
+              containerSpacingClass
+            ]"
+          >
             <div
               v-for="(section, sIdx) in bottomSections"
               :key="section.id || sIdx"
               :class="[
                 'flex flex-col items-stretch h-full shrink-0',
-                sIdx === 0 ? 'pl-0.5' : 'pl-3 sm:pl-4 lg:pl-5'
+                sectionSpacingClass(sIdx)
               ]"
             >
               <!-- 見出し列（一品 等） -->
@@ -171,7 +199,7 @@
                   @blur="onTextBlur(section, 'name', $event)"
                   :class="[
                     'editable-field font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 whitespace-nowrap',
-                    section.name === '一品' ? 'text-base sm:text-lg lg:text-xl' : 'text-sm sm:text-base lg:text-lg'
+                    categoryHeaderClass(section.name)
                   ]"
                 >
                   {{ section.name }}
@@ -211,7 +239,10 @@
                   <span
                     contenteditable="true"
                     @blur="onPriceBlur(item, $event)"
-                    class="editable-field text-[9.5px] sm:text-[10.5px] font-bold tracking-tight outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 font-mono"
+                    :class="[
+                      'editable-field font-bold tracking-tight outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 font-mono',
+                      itemPriceClass
+                    ]"
                   >
                     {{ formatPrice(item.price, menuData.priceFormat, true) }}
                   </span>
@@ -223,7 +254,10 @@
                 <span
                   contenteditable="true"
                   @blur="onTextBlur(section, 'uniformPrice', $event)"
-                  class="editable-field text-[9.5px] sm:text-[10px] font-bold tracking-tight whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5"
+                  :class="[
+                    'editable-field font-bold tracking-tight whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5',
+                    itemPriceClass
+                  ]"
                 >
                   各{{ formatPrice(section.uniformPrice, menuData.priceFormat, true) }}
                 </span>
@@ -233,7 +267,10 @@
             <!-- 店舗案内・営業ルール（下段左寄り・実写真スタイル） -->
             <div
               v-if="menuData.noticeBlock && menuData.noticeBlock.show"
-              class="flex flex-col items-stretch h-full pl-6 sm:pl-10 lg:pl-12 pr-1 shrink-0"
+              :class="[
+                'flex flex-col items-stretch h-full pr-1 shrink-0',
+                noticeBlockSpacingClass
+              ]"
             >
               <!-- 案内文（実写真同様、2行ずつゆったり縦書き配置） -->
               <div class="flex flex-col justify-center items-start h-full gap-1.5 sm:gap-2 text-[8.5px] sm:text-[9.5px] leading-relaxed opacity-90">
@@ -251,12 +288,22 @@
                 </div>
               </div>
 
-              <!-- 正式ロゴ画像（ユーザーが登録した場合のみ表示、未設定時は空） -->
-              <div v-if="currentLogoImage" class="flex items-center justify-center pl-3 self-center shrink-0">
+              <!-- 正式ロゴ画像（ユーザーが登録した場合のみ表示、大きさ・上下位置自由調整） -->
+              <div
+                v-if="currentLogoImage"
+                :class="[
+                  'flex items-center pl-3 shrink-0',
+                  menuData.logoPosition === 'top' ? 'self-start pt-2' : menuData.logoPosition === 'bottom' ? 'self-end pb-2' : 'self-center'
+                ]"
+              >
                 <img
                   :src="currentLogoImage"
                   alt="店舗ロゴ"
-                  class="w-14 h-14 sm:w-16 sm:h-16 object-contain rounded-xs"
+                  :style="{
+                    width: (menuData.logoSize || 64) + 'px',
+                    height: (menuData.logoSize || 64) + 'px'
+                  }"
+                  class="object-contain rounded-xs transition-all"
                 />
               </div>
             </div>
@@ -463,6 +510,69 @@ const currentLogoImage = computed(() => {
   return props.menuData.logoImage || props.menuData.noticeBlock?.logoImage || ''
 })
 
+// 配置間隔スタイル（自動均等整列 vs 手動間隔）
+const containerSpacingClass = computed(() => {
+  const spacing = props.menuData.sectionSpacing || 'auto'
+  switch (spacing) {
+    case 'spacious':
+      return 'justify-start gap-4 sm:gap-6 lg:gap-7'
+    case 'compact':
+      return 'justify-start gap-1 sm:gap-2 lg:gap-2.5'
+    case 'normal':
+      return 'justify-start gap-2.5 sm:gap-3.5 lg:gap-4.5'
+    case 'auto':
+    default:
+      // 用紙幅全体に自動均等配置（焼き物・トッピング・サラダ・ご飯ものが均等に配置される）
+      return 'justify-between'
+  }
+})
+
+// セクションごとの間隔クラス（手動時も特定のカテゴリ間だけ狭くなるバグを根絶）
+function sectionSpacingClass(sIdx) {
+  const spacing = props.menuData.sectionSpacing || 'auto'
+  if (spacing === 'auto') {
+    return 'px-0.5'
+  }
+  return ''
+}
+
+// 店舗案内ブロックの間隔
+const noticeBlockSpacingClass = computed(() => {
+  const spacing = props.menuData.sectionSpacing || 'auto'
+  if (spacing === 'auto') {
+    return 'pl-2 sm:pl-3'
+  } else if (spacing === 'compact') {
+    return 'pl-3 sm:pl-5'
+  } else {
+    return 'pl-4 sm:pl-7 lg:pl-9'
+  }
+})
+
+// 見出しの文字サイズ
+function categoryHeaderClass(name) {
+  const isMajor = name === '焼き物' || name === 'ご飯もの' || name === '一品'
+  const size = props.menuData.itemFontSize || 'normal'
+  if (size === 'large') {
+    return isMajor ? 'text-lg sm:text-xl lg:text-2xl' : 'text-base sm:text-lg lg:text-xl'
+  } else if (size === 'small') {
+    return isMajor ? 'text-sm sm:text-base lg:text-lg' : 'text-xs sm:text-sm lg:text-base'
+  } else {
+    return isMajor ? 'text-base sm:text-lg lg:text-xl' : 'text-sm sm:text-base lg:text-lg'
+  }
+}
+
+// 価格文字サイズ
+const itemPriceClass = computed(() => {
+  const size = props.menuData.itemFontSize || 'normal'
+  if (size === 'small') {
+    return 'text-[8.5px] sm:text-[9.5px]'
+  } else if (size === 'large') {
+    return 'text-[10.5px] sm:text-[11.5px]'
+  } else {
+    return 'text-[9.5px] sm:text-[10.5px]'
+  }
+})
+
 onMounted(() => {
   nextTick(() => {
     if (scrollContainer.value) {
@@ -471,15 +581,23 @@ onMounted(() => {
   })
 })
 
-// 品名の文字数に応じたクラス判定（長い品名でも価格を押し出さない！）
+// 品名の文字数および一括フォントサイズ設定に応じたクラス判定
 function getItemNameClass(name) {
   const len = name ? name.length : 0
-  if (len <= 6) {
-    return 'text-[11.5px] sm:text-[13px] tracking-normal'
-  } else if (len <= 8) {
-    return 'text-[10px] sm:text-[11.5px] tracking-tight'
+  const size = props.menuData.itemFontSize || 'normal'
+
+  if (size === 'small') {
+    if (len <= 6) return 'text-[10px] sm:text-[11.5px] tracking-normal'
+    if (len <= 8) return 'text-[9px] sm:text-[10px] tracking-tight'
+    return 'text-[8px] sm:text-[9px] tracking-tighter'
+  } else if (size === 'large') {
+    if (len <= 6) return 'text-[13px] sm:text-[14.5px] tracking-normal'
+    if (len <= 8) return 'text-[11.5px] sm:text-[13px] tracking-tight'
+    return 'text-[10px] sm:text-[11.5px] tracking-tighter'
   } else {
-    // 9文字以上（モッツァレラわさび醤油漬け、つくね（月見・チーズ・梅）など）
+    // normal
+    if (len <= 6) return 'text-[11.5px] sm:text-[13px] tracking-normal'
+    if (len <= 8) return 'text-[10px] sm:text-[11.5px] tracking-tight'
     return 'text-[9px] sm:text-[10px] tracking-tighter'
   }
 }
@@ -706,9 +824,18 @@ function downloadGeneratedImage() {
 }
 
 @media print {
-  @page {
-    size: auto;
-    margin: 4mm;
+  .print-sheet {
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: calc(100vh - 8mm) !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-inside: avoid !important;
+    break-after: avoid !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
   }
 }
 </style>

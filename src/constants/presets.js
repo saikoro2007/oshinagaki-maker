@@ -113,6 +113,10 @@ export const MOZU_GRAND_MENU_STATE = {
   showDotPrefix: true, // 品名の頭に中黒「・」をつける（実写真スタイル）
   frameStyle: 'none', // 写真実物はフレーム枠線なし（用紙周囲の余白のみ）
   storeName: '',
+  sectionSpacing: 'auto', // 'auto' (自動均等整列) | 'compact' (狭め) | 'normal' (標準) | 'spacious' (広め)
+  itemFontSize: 'normal', // 'small' (小) | 'normal' (標準) | 'large' (大)
+  logoSize: 64, // px (40 - 120)
+  logoPosition: 'center', // 'top' | 'center' | 'bottom'
   logoImage: '', // ユーザー「ロゴは無くていい」のため空
   noticeBlock: {
     show: true,
