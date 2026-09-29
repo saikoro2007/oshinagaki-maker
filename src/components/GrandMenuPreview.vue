@@ -100,27 +100,34 @@
                 sectionSpacingClass(sIdx)
               ]"
             >
-              <!-- 見出し列（カテゴリ名 ＋ サブ注記） -->
-              <div class="flex flex-row justify-start items-start h-full px-0.5 shrink-0">
-                <h2
-                  contenteditable="true"
-                  @blur="onTextBlur(section, 'name', $event)"
-                  :class="[
-                    'editable-field font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 whitespace-nowrap',
-                    categoryHeaderClass(section.name)
-                  ]"
-                >
-                  {{ section.name }}
-                </h2>
-                <!-- サブ注記（一本 塩・タレ 等）: 見出しのすぐ左上端に配置 -->
-                <span
+              <!-- 見出しエリア（メイン見出し列 ＋ サブ注記列：横並び＆上端揃え） -->
+              <div class="flex flex-col justify-start items-start h-full shrink-0">
+                <!-- メイン見出し（焼き物 等） -->
+                <div class="flex flex-row justify-start items-start h-full px-0.5 shrink-0">
+                  <h2
+                    contenteditable="true"
+                    @blur="onTextBlur(section, 'name', $event)"
+                    :class="[
+                      'editable-field font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 whitespace-nowrap pt-0.5',
+                      categoryHeaderClass(section.name)
+                    ]"
+                  >
+                    {{ section.name }}
+                  </h2>
+                </div>
+                <!-- サブ注記（一本 塩・タレ 等）: 見出しのすぐ左隣に上端揃えで綺麗に配置 -->
+                <div
                   v-if="section.subtitle"
-                  contenteditable="true"
-                  @blur="onTextBlur(section, 'subtitle', $event)"
-                  class="editable-field text-[8.5px] sm:text-[9.5px] opacity-80 tracking-widest pt-1 pl-0.5 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded whitespace-nowrap"
+                  class="flex flex-row justify-start items-start h-full px-0.5 shrink-0"
                 >
-                  {{ section.subtitle }}
-                </span>
+                  <span
+                    contenteditable="true"
+                    @blur="onTextBlur(section, 'subtitle', $event)"
+                    class="editable-field text-[8.5px] sm:text-[9.5px] opacity-80 tracking-widest pt-0.5 pl-0.5 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded whitespace-nowrap"
+                  >
+                    {{ section.subtitle }}
+                  </span>
+                </div>
               </div>
 
               <!-- 品目列群 -->
@@ -143,13 +150,13 @@
                   </span>
                 </div>
 
-                <!-- 個別価格（一括価格がない場合のみ表示、下端ベースライン揃え） -->
+                <!-- 個別価格（一括価格がない場合のみ表示、下端ベースライン揃え、font-mono除去でフォント統一） -->
                 <div v-if="!section.uniformPrice" class="self-end pb-0.5 whitespace-nowrap shrink-0 leading-none">
                   <span
                     contenteditable="true"
                     @blur="onPriceBlur(item, $event)"
                     :class="[
-                      'editable-field font-bold tracking-tight outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 font-mono',
+                      'editable-field font-bold tracking-tight outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5',
                       itemPriceClass
                     ]"
                   >
@@ -192,26 +199,34 @@
                 sectionSpacingClass(sIdx)
               ]"
             >
-              <!-- 見出し列（一品 等） -->
-              <div class="flex flex-row justify-start items-start h-full px-0.5 shrink-0">
-                <h2
-                  contenteditable="true"
-                  @blur="onTextBlur(section, 'name', $event)"
-                  :class="[
-                    'editable-field font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 whitespace-nowrap',
-                    categoryHeaderClass(section.name)
-                  ]"
-                >
-                  {{ section.name }}
-                </h2>
-                <span
+              <!-- 見出しエリア（メイン見出し列 ＋ サブ注記列：横並び＆上端揃え） -->
+              <div class="flex flex-col justify-start items-start h-full shrink-0">
+                <!-- メイン見出し（一品 等） -->
+                <div class="flex flex-row justify-start items-start h-full px-0.5 shrink-0">
+                  <h2
+                    contenteditable="true"
+                    @blur="onTextBlur(section, 'name', $event)"
+                    :class="[
+                      'editable-field font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 whitespace-nowrap pt-0.5',
+                      categoryHeaderClass(section.name)
+                    ]"
+                  >
+                    {{ section.name }}
+                  </h2>
+                </div>
+                <!-- サブ注記（任意）: 見出しのすぐ左隣に上端揃えで綺麗に配置 -->
+                <div
                   v-if="section.subtitle"
-                  contenteditable="true"
-                  @blur="onTextBlur(section, 'subtitle', $event)"
-                  class="editable-field text-[8.5px] sm:text-[9.5px] opacity-80 tracking-widest pt-1 pl-0.5 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded whitespace-nowrap"
+                  class="flex flex-row justify-start items-start h-full px-0.5 shrink-0"
                 >
-                  {{ section.subtitle }}
-                </span>
+                  <span
+                    contenteditable="true"
+                    @blur="onTextBlur(section, 'subtitle', $event)"
+                    class="editable-field text-[8.5px] sm:text-[9.5px] opacity-80 tracking-widest pt-0.5 pl-0.5 outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded whitespace-nowrap"
+                  >
+                    {{ section.subtitle }}
+                  </span>
+                </div>
               </div>
 
               <!-- 品目列群 -->
@@ -234,13 +249,13 @@
                   </span>
                 </div>
 
-                <!-- 個別価格（下端揃え） -->
+                <!-- 個別価格（下端揃え、font-mono除去でフォント統一） -->
                 <div v-if="!section.uniformPrice" class="self-end pb-0.5 whitespace-nowrap shrink-0 leading-none">
                   <span
                     contenteditable="true"
                     @blur="onPriceBlur(item, $event)"
                     :class="[
-                      'editable-field font-bold tracking-tight outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5 font-mono',
+                      'editable-field font-bold tracking-tight outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 rounded px-0.5',
                       itemPriceClass
                     ]"
                   >
@@ -289,15 +304,15 @@
               </div>
             </div>
 
-            <!-- 正式ロゴ画像（用紙左下・独立エリア：案内文と十分な距離を保ち常に左下に配置） -->
+            <!-- 正式ロゴ画像（用紙左下・独立エリア：案内文と十分な距離を保ち常に左下に堂々と配置） -->
             <div
               v-if="currentLogoImage"
               :class="[
-                'flex flex-col items-center shrink-0 pl-6 sm:pl-10 lg:pl-14 pr-1',
+                'flex flex-col items-center justify-end shrink-0 pl-3 sm:pl-6 lg:pl-8 pr-1',
                 menuData.logoPosition === 'top'
                   ? 'self-start pt-2'
                   : (!menuData.logoPosition || menuData.logoPosition === 'bottom' || menuData.logoPosition === 'bottom-left')
-                    ? 'self-end pb-2 sm:pb-3'
+                    ? 'self-end pb-1'
                     : 'self-center'
               ]"
             >
@@ -305,10 +320,11 @@
                 :src="currentLogoImage"
                 alt="店舗ロゴ"
                 :style="{
-                  width: (menuData.logoSize || 84) + 'px',
-                  height: (menuData.logoSize || 84) + 'px'
+                  width: (menuData.logoSize || 130) + 'px',
+                  height: (menuData.logoSize || 130) + 'px',
+                  maxWidth: 'none'
                 }"
-                class="object-contain rounded-xs transition-all"
+                class="object-contain rounded-xs transition-all select-none"
               />
             </div>
 

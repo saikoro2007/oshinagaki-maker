@@ -631,23 +631,54 @@
           <div v-if="currentLogoImage" class="mt-3 pt-3 border-t border-stone-200/60 space-y-3 bg-stone-50/70 p-3 rounded-xl">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <!-- ロゴの大きさ -->
-              <div>
-                <label class="block text-stone-600 font-medium mb-1 flex items-center justify-between">
+              <div class="space-y-1.5">
+                <label class="block text-stone-600 font-medium flex items-center justify-between">
                   <span>ロゴの大きさ</span>
-                  <span class="font-mono text-stone-500 font-bold">{{ menuData.logoSize || 84 }}px</span>
+                  <span class="font-mono text-amber-700 font-bold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 text-[11px]">{{ menuData.logoSize || 140 }}px</span>
                 </label>
                 <div class="flex items-center gap-2">
-                  <span class="text-[10px] text-stone-400">小</span>
+                  <span class="text-[10px] text-stone-400">40px</span>
                   <input
                     type="range"
                     min="40"
-                    max="140"
+                    max="280"
                     step="4"
-                    :value="menuData.logoSize || 84"
+                    :value="menuData.logoSize || 140"
                     @input="menuData.logoSize = Number($event.target.value)"
                     class="w-full accent-amber-600 cursor-pointer"
                   />
-                  <span class="text-[10px] text-stone-400">大</span>
+                  <span class="text-[10px] text-stone-400">280px</span>
+                </div>
+                <!-- ワンタッチサイズ選択 -->
+                <div class="grid grid-cols-4 gap-1 pt-0.5">
+                  <button
+                    type="button"
+                    @click="menuData.logoSize = 90"
+                    class="py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded text-[10px] font-medium transition cursor-pointer"
+                  >
+                    小 (90px)
+                  </button>
+                  <button
+                    type="button"
+                    @click="menuData.logoSize = 140"
+                    class="py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded text-[10px] font-bold transition cursor-pointer"
+                  >
+                    標準 (140px)
+                  </button>
+                  <button
+                    type="button"
+                    @click="menuData.logoSize = 190"
+                    class="py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded text-[10px] font-medium transition cursor-pointer"
+                  >
+                    特大 (190px)
+                  </button>
+                  <button
+                    type="button"
+                    @click="menuData.logoSize = 240"
+                    class="py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded text-[10px] font-medium transition cursor-pointer"
+                  >
+                    最大 (240px)
+                  </button>
                 </div>
               </div>
 

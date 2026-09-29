@@ -115,7 +115,7 @@ export const MOZU_GRAND_MENU_STATE = {
   storeName: '',
   sectionSpacing: 'spacious', // 'spacious' (広め・ゆったり標準) | 'auto' | 'normal' | 'compact'
   itemFontSize: 'large', // 'large' (大・ゆったり標準) | 'normal' | 'small'
-  logoSize: 84, // px (40 - 120)
+  logoSize: 140, // px (40 - 280)
   logoPosition: 'bottom-left', // 'bottom-left' (常に左下・PDF原本スタイル) | 'center' | 'top'
   logoImage: '', // ユーザー登録画像または空
   noticeBlock: {
