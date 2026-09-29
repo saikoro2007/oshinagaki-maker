@@ -117,10 +117,23 @@
           <div class="grid grid-cols-4 gap-1 bg-stone-100 p-1 rounded-xl">
             <button
               type="button"
+              @click="menuData.sectionSpacing = 'spacious'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
+                (!menuData.sectionSpacing || menuData.sectionSpacing === 'spacious')
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+              title="広めのゆったり配置（おすすめ・標準）"
+            >
+              広め (標準)
+            </button>
+            <button
+              type="button"
               @click="menuData.sectionSpacing = 'auto'"
               :class="[
                 'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
-                (!menuData.sectionSpacing || menuData.sectionSpacing === 'auto')
+                menuData.sectionSpacing === 'auto'
                   ? 'bg-white text-stone-900 shadow-xs'
                   : 'text-stone-500 hover:text-stone-800'
               ]"
@@ -138,19 +151,7 @@
                   : 'text-stone-500 hover:text-stone-800'
               ]"
             >
-              標準
-            </button>
-            <button
-              type="button"
-              @click="menuData.sectionSpacing = 'spacious'"
-              :class="[
-                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
-                menuData.sectionSpacing === 'spacious'
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              ]"
-            >
-              広め
+              普通
             </button>
             <button
               type="button"
@@ -175,6 +176,30 @@
           <div class="grid grid-cols-3 gap-1 bg-stone-100 p-1 rounded-xl">
             <button
               type="button"
+              @click="menuData.itemFontSize = 'large'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
+                (!menuData.itemFontSize || menuData.itemFontSize === 'large')
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              大（ゆったり標準）
+            </button>
+            <button
+              type="button"
+              @click="menuData.itemFontSize = 'normal'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
+                menuData.itemFontSize === 'normal'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              中（標準）
+            </button>
+            <button
+              type="button"
               @click="menuData.itemFontSize = 'small'"
               :class="[
                 'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
@@ -184,30 +209,6 @@
               ]"
             >
               小（すっきり）
-            </button>
-            <button
-              type="button"
-              @click="menuData.itemFontSize = 'normal'"
-              :class="[
-                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
-                (!menuData.itemFontSize || menuData.itemFontSize === 'normal')
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              ]"
-            >
-              中（標準）
-            </button>
-            <button
-              type="button"
-              @click="menuData.itemFontSize = 'large'"
-              :class="[
-                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-[11px]',
-                menuData.itemFontSize === 'large'
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              ]"
-            >
-              大（ゆったり）
             </button>
           </div>
         </div>
@@ -633,16 +634,16 @@
               <div>
                 <label class="block text-stone-600 font-medium mb-1 flex items-center justify-between">
                   <span>ロゴの大きさ</span>
-                  <span class="font-mono text-stone-500 font-bold">{{ menuData.logoSize || 64 }}px</span>
+                  <span class="font-mono text-stone-500 font-bold">{{ menuData.logoSize || 84 }}px</span>
                 </label>
                 <div class="flex items-center gap-2">
                   <span class="text-[10px] text-stone-400">小</span>
                   <input
                     type="range"
-                    min="36"
-                    max="120"
+                    min="40"
+                    max="140"
                     step="4"
-                    :value="menuData.logoSize || 64"
+                    :value="menuData.logoSize || 84"
                     @input="menuData.logoSize = Number($event.target.value)"
                     class="w-full accent-amber-600 cursor-pointer"
                   />
@@ -652,8 +653,32 @@
 
               <!-- 上下の位置 -->
               <div>
-                <label class="block text-stone-600 font-medium mb-1">上下の配置</label>
+                <label class="block text-stone-600 font-medium mb-1">ロゴの配置位置</label>
                 <div class="grid grid-cols-3 gap-1 bg-stone-200/60 p-1 rounded-lg">
+                  <button
+                    type="button"
+                    @click="menuData.logoPosition = 'bottom-left'"
+                    :class="[
+                      'py-1 rounded font-bold text-center transition cursor-pointer text-[11px]',
+                      (!menuData.logoPosition || menuData.logoPosition === 'bottom-left' || menuData.logoPosition === 'bottom')
+                        ? 'bg-white text-stone-900 shadow-xs'
+                        : 'text-stone-500 hover:text-stone-800'
+                    ]"
+                  >
+                    左下 (推奨)
+                  </button>
+                  <button
+                    type="button"
+                    @click="menuData.logoPosition = 'center'"
+                    :class="[
+                      'py-1 rounded font-bold text-center transition cursor-pointer text-[11px]',
+                      menuData.logoPosition === 'center'
+                        ? 'bg-white text-stone-900 shadow-xs'
+                        : 'text-stone-500 hover:text-stone-800'
+                    ]"
+                  >
+                    中央
+                  </button>
                   <button
                     type="button"
                     @click="menuData.logoPosition = 'top'"
@@ -665,30 +690,6 @@
                     ]"
                   >
                     上寄せ
-                  </button>
-                  <button
-                    type="button"
-                    @click="menuData.logoPosition = 'center'"
-                    :class="[
-                      'py-1 rounded font-bold text-center transition cursor-pointer text-[11px]',
-                      (!menuData.logoPosition || menuData.logoPosition === 'center')
-                        ? 'bg-white text-stone-900 shadow-xs'
-                        : 'text-stone-500 hover:text-stone-800'
-                    ]"
-                  >
-                    中央
-                  </button>
-                  <button
-                    type="button"
-                    @click="menuData.logoPosition = 'bottom'"
-                    :class="[
-                      'py-1 rounded font-bold text-center transition cursor-pointer text-[11px]',
-                      menuData.logoPosition === 'bottom'
-                        ? 'bg-white text-stone-900 shadow-xs'
-                        : 'text-stone-500 hover:text-stone-800'
-                    ]"
-                  >
-                    下寄せ
                   </button>
                 </div>
               </div>

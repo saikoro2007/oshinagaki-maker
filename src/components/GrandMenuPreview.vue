@@ -81,7 +81,7 @@
              ============================================================== -->
         <div
           v-if="isLandscape"
-          class="w-full h-full flex flex-col justify-between relative z-10 px-3 py-2.5 sm:px-5 sm:py-3.5 print:p-2 box-border overflow-hidden"
+          class="w-full h-full flex flex-col justify-between relative z-10 px-2.5 py-2 sm:px-4 sm:py-3 print:p-2 box-border overflow-hidden"
         >
           <!-- ------------------------------------------------------------
                上段 (Top Half): 焼き物(20品)・トッピング(3品)・サラダ(2品)・ご飯もの(6品)
@@ -264,7 +264,7 @@
               </div>
             </div>
 
-            <!-- 店舗案内・営業ルール（下段左寄り・実写真スタイル） -->
+            <!-- 店舗案内・営業ルール（下段中央寄り・実写真スタイル） -->
             <div
               v-if="menuData.noticeBlock && menuData.noticeBlock.show"
               :class="[
@@ -272,7 +272,7 @@
                 noticeBlockSpacingClass
               ]"
             >
-              <!-- 案内文（実写真同様、2行ずつゆったり縦書き配置） -->
+              <!-- 案内文（実写真・PDF同様、2行ずつゆったり縦書き配置） -->
               <div class="flex flex-col justify-center items-start h-full gap-1.5 sm:gap-2 text-[8.5px] sm:text-[9.5px] leading-relaxed opacity-90">
                 <div
                   v-for="(line, lIdx) in menuData.noticeBlock.lines"
@@ -287,25 +287,29 @@
                   {{ line }}
                 </div>
               </div>
+            </div>
 
-              <!-- 正式ロゴ画像（ユーザーが登録した場合のみ表示、大きさ・上下位置自由調整） -->
-              <div
-                v-if="currentLogoImage"
-                :class="[
-                  'flex items-center pl-3 shrink-0',
-                  menuData.logoPosition === 'top' ? 'self-start pt-2' : menuData.logoPosition === 'bottom' ? 'self-end pb-2' : 'self-center'
-                ]"
-              >
-                <img
-                  :src="currentLogoImage"
-                  alt="店舗ロゴ"
-                  :style="{
-                    width: (menuData.logoSize || 64) + 'px',
-                    height: (menuData.logoSize || 64) + 'px'
-                  }"
-                  class="object-contain rounded-xs transition-all"
-                />
-              </div>
+            <!-- 正式ロゴ画像（用紙左下・独立エリア：案内文と十分な距離を保ち常に左下に配置） -->
+            <div
+              v-if="currentLogoImage"
+              :class="[
+                'flex flex-col items-center shrink-0 pl-6 sm:pl-10 lg:pl-14 pr-1',
+                menuData.logoPosition === 'top'
+                  ? 'self-start pt-2'
+                  : (!menuData.logoPosition || menuData.logoPosition === 'bottom' || menuData.logoPosition === 'bottom-left')
+                    ? 'self-end pb-2 sm:pb-3'
+                    : 'self-center'
+              ]"
+            >
+              <img
+                :src="currentLogoImage"
+                alt="店舗ロゴ"
+                :style="{
+                  width: (menuData.logoSize || 84) + 'px',
+                  height: (menuData.logoSize || 84) + 'px'
+                }"
+                class="object-contain rounded-xs transition-all"
+              />
             </div>
 
           </div>
@@ -515,7 +519,7 @@ const containerSpacingClass = computed(() => {
   const spacing = props.menuData.sectionSpacing || 'auto'
   switch (spacing) {
     case 'spacious':
-      return 'justify-start gap-4 sm:gap-6 lg:gap-7'
+      return 'justify-start gap-3 sm:gap-4.5 lg:gap-5.5'
     case 'compact':
       return 'justify-start gap-1 sm:gap-2 lg:gap-2.5'
     case 'normal':

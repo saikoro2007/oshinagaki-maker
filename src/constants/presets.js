@@ -113,11 +113,11 @@ export const MOZU_GRAND_MENU_STATE = {
   showDotPrefix: true, // 品名の頭に中黒「・」をつける（実写真スタイル）
   frameStyle: 'none', // 写真実物はフレーム枠線なし（用紙周囲の余白のみ）
   storeName: '',
-  sectionSpacing: 'auto', // 'auto' (自動均等整列) | 'compact' (狭め) | 'normal' (標準) | 'spacious' (広め)
-  itemFontSize: 'normal', // 'small' (小) | 'normal' (標準) | 'large' (大)
-  logoSize: 64, // px (40 - 120)
-  logoPosition: 'center', // 'top' | 'center' | 'bottom'
-  logoImage: '', // ユーザー「ロゴは無くていい」のため空
+  sectionSpacing: 'spacious', // 'spacious' (広め・ゆったり標準) | 'auto' | 'normal' | 'compact'
+  itemFontSize: 'large', // 'large' (大・ゆったり標準) | 'normal' | 'small'
+  logoSize: 84, // px (40 - 120)
+  logoPosition: 'bottom-left', // 'bottom-left' (常に左下・PDF原本スタイル) | 'center' | 'top'
+  logoImage: '', // ユーザー登録画像または空
   noticeBlock: {
     show: true,
     logoText: '',
@@ -140,25 +140,26 @@ export const MOZU_GRAND_MENU_STATE = {
       uniformPrice: '',
       items: [
         { id: 'y1', name: 'とりもも', price: '250', note: '' },
-        { id: 'y2', name: 'レバー', price: '220', note: '' },
-        { id: 'y3', name: 'ハツ', price: '220', note: '' },
+        { id: 'y2', name: 'ハツ', price: '220', note: '' },
+        { id: 'y3', name: 'レバー', price: '220', note: '' },
         { id: 'y4', name: 'すなぎも', price: '220', note: '' },
         { id: 'y5', name: 'かわ', price: '220', note: '' },
-        { id: 'y6', name: '小肉', price: '220', note: '' },
-        { id: 'y7', name: 'ぼんじり', price: '250', note: '' },
+        { id: 'y6', name: '小肉', price: '250', note: '' },
+        { id: 'y7', name: 'ぽんじり', price: '220', note: '' },
         { id: 'y8', name: 'ささみ', price: '220', note: '' },
-        { id: 'y9', name: '手羽先（二ヶ）', price: '220', note: '' },
-        { id: 'y10', name: 'つくね（月見・チーズ・梅）', price: '380', note: '' },
-        { id: 'y11', name: '豚ハラミ', price: '440', note: '' },
-        { id: 'y12', name: '豚タン', price: '350', note: '' },
-        { id: 'y13', name: 'ガツ', price: '280', note: '' },
-        { id: 'y14', name: 'ねぎ塩ホルモン', price: '280', note: '' },
-        { id: 'y15', name: '合がも', price: '350', note: '' },
-        { id: 'y16', name: '明太子（二本）', price: '440', note: '' },
-        { id: 'y17', name: '長ねぎ（二本）', price: '350', note: '' },
-        { id: 'y18', name: 'しいたけ（二本）', price: '350', note: '' },
-        { id: 'y19', name: 'ししとう（二本）', price: '350', note: '' },
-        { id: 'y20', name: 'トマト（二本）', price: '350', note: '' },
+        { id: 'y9', name: '手羽先（二ヶ）', price: '380', note: '' },
+        { id: 'y10', name: 'つくね（月見・チーズ・梅）', price: '440', note: '' },
+        { id: 'y11', name: '豚', price: '250', note: '' },
+        { id: 'y12', name: '豚ハラミ', price: '350', note: '' },
+        { id: 'y13', name: '豚タン', price: '280', note: '' },
+        { id: 'y14', name: 'ガツ', price: '280', note: '' },
+        { id: 'y15', name: 'ねぎ塩ホルモン', price: '250', note: '' },
+        { id: 'y16', name: '合がも', price: '350', note: '' },
+        { id: 'y17', name: '明太子（二本）', price: '440', note: '' },
+        { id: 'y18', name: '長ねぎ（二本）', price: '350', note: '' },
+        { id: 'y19', name: 'しいたけ（二本）', price: '350', note: '' },
+        { id: 'y20', name: 'ししとう（二本）', price: '350', note: '' },
+        { id: 'y21', name: 'トマト（二本）', price: '350', note: '' },
       ]
     },
     {
@@ -209,11 +210,11 @@ export const MOZU_GRAND_MENU_STATE = {
         { id: 'i1', name: 'ねぎ山わさび', price: '350', note: '' },
         { id: 'i2', name: '冷やっこ', price: '480', note: '' },
         { id: 'i3', name: 'えだまめ', price: '440', note: '' },
-        { id: 'i4', name: '塩こぶピーマン', price: '450', note: '' },
-        { id: 'i5', name: '揚げ出し豆腐', price: '700', note: '' },
+        { id: 'i4', name: '塩こぶピーマン', price: '550', note: '' },
+        { id: 'i5', name: '揚げ出し豆腐', price: '770', note: '' },
         { id: 'i6', name: 'なす田楽', price: '680', note: '' },
         { id: 'i7', name: '赤ウインナーケチャップ炒め', price: '680', note: '' },
-        { id: 'i8', name: 'だし巻き卵', price: '800', note: '' },
+        { id: 'i8', name: 'だし巻き卵', price: '660', note: '' },
         { id: 'i9', name: 'ポテトフライ', price: '550', note: '' },
         { id: 'i10', name: 'モッツァレラわさび醤油漬け', price: '770', note: '' },
         { id: 'i11', name: '鶏のから揚げ', price: '800', note: '' },
