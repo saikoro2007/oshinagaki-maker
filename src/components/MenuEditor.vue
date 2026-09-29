@@ -3,21 +3,21 @@ import { ref } from 'vue'
 import {
   Plus,
   Trash2,
-  ChevronUp,
-  ChevronDown,
+  ArrowUp,
+  ArrowDown,
   Settings2,
-  BookOpen,
   RotateCcw,
   Sparkles,
   Type,
   Layout,
-  Globe,
   Coins,
   Download,
   Upload,
   Sliders,
-  AlignRight,
-  Palette
+  Palette,
+  FileText,
+  ChevronDown,
+  ChevronUp
 } from '@lucide/vue'
 
 const props = defineProps({
@@ -33,7 +33,7 @@ const emit = defineEmits([
   'reset-default'
 ])
 
-const showSettings = ref(typeof window !== 'undefined' && window.innerWidth >= 1024)
+const showDesignSettings = ref(false)
 const fileInput = ref(null)
 
 function addNewItem() {
@@ -99,96 +99,315 @@ function selectLayout(mode) {
     props.menuData.priceFormat = 'number'
   }
 }
-
-
 </script>
 
+
 <template>
-  <div class="space-y-4 max-w-2xl mx-auto pb-24">
-    <!-- Header Title & Basic Info Card -->
-    <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-xs border border-stone-200">
-      <div class="flex items-center justify-between mb-3 pb-2 border-b border-stone-100">
-        <h2 class="font-bold text-stone-800 text-base flex items-center gap-2">
-          <span>📋</span> 基本設定
-        </h2>
-        <div class="flex items-center gap-1.5">
-          <button
-            type="button"
-            @click="showSettings = !showSettings"
-            :class="[
-              'text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition font-medium',
-              showSettings
-                ? 'bg-amber-50 text-amber-900 border-amber-300'
-                : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
-            ]"
-          >
-            <Settings2 class="w-3.5 h-3.5" />
-            <span>{{ showSettings ? '設定を閉じる' : '書体・レイアウト設定' }}</span>
-          </button>
+  <div class="space-y-5 pb-24">
+    <!-- Header Card -->
+    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-stone-200">
+      <div class="flex items-start sm:items-center justify-between gap-2 mb-2">
+        <div class="min-w-0 flex-1">
+          <span class="inline-block px-2.5 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-900 mb-1">
+            本日のおすすめ（日替わり・限定品）
+          </span>
+          <h2 class="text-base sm:text-lg font-bold text-stone-900">
+            本日のおすすめ編集
+          </h2>
         </div>
+
+        <button
+          type="button"
+          @click="$emit('reset-default')"
+          class="shrink-0 px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-lg text-xs font-medium flex items-center gap-1 transition cursor-pointer"
+          title="本日のおすすめを初期状態に戻す"
+        >
+          <RotateCcw class="w-3.5 h-3.5" />
+          <span class="hidden sm:inline">初期データに戻す</span>
+          <span class="sm:hidden">初期化</span>
+        </button>
       </div>
 
-      <!-- Advanced Style Settings Drawer -->
-      <div v-if="showSettings" class="p-3.5 mb-4 bg-stone-50 rounded-xl border border-stone-200 text-xs space-y-3 animate-in fade-in duration-150">
-        <!-- Writing Orientation -->
+      <p class="text-xs text-stone-500 leading-relaxed">
+        本日のおすすめ品目や価格、レイアウト・デザインを編集できます。変更は自動保存されます。
+      </p>
+    </div>
+
+    <!-- Paper Format & Orientation Settings -->
+    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-stone-200 space-y-3">
+      <h3 class="font-bold text-sm text-stone-900 flex items-center justify-between">
+        <span>用紙サイズ・向き</span>
+      </h3>
+
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <!-- Paper Orientation -->
         <div>
-          <label class="font-semibold text-stone-700 block mb-1.5 flex items-center gap-1">
-            <Layout class="w-3.5 h-3.5 text-stone-500" /> 文字方向
-          </label>
-          <div class="grid grid-cols-2 gap-2">
+          <label class="block text-stone-500 mb-1.5 font-medium">用紙の向き</label>
+          <div class="grid grid-cols-2 gap-1.5 bg-stone-100 p-1 rounded-xl">
             <button
               type="button"
-              @click="selectLayout('vertical')"
+              @click="menuData.paperOrientation = 'landscape'"
               :class="[
-                'py-2 px-3 rounded-lg border text-center font-bold transition',
-                menuData.layout === 'vertical'
-                  ? 'bg-amber-900 text-white border-amber-900 shadow-xs'
-                  : 'bg-white text-stone-700 border-stone-200'
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                menuData.paperOrientation !== 'portrait'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
               ]"
             >
-              縦書き（和風短冊・おすすめ）
+              横置き (定番)
             </button>
             <button
               type="button"
-              @click="selectLayout('horizontal')"
+              @click="menuData.paperOrientation = 'portrait'"
               :class="[
-                'py-2 px-3 rounded-lg border text-center font-bold transition',
-                menuData.layout === 'horizontal'
-                  ? 'bg-amber-900 text-white border-amber-900 shadow-xs'
-                  : 'bg-white text-stone-700 border-stone-200'
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                menuData.paperOrientation === 'portrait'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
               ]"
             >
-              横書き
+              縦置き
             </button>
           </div>
         </div>
 
-        <!-- Font Choice -->
+        <!-- Paper Size -->
         <div>
-          <label class="font-semibold text-stone-700 block mb-1.5 flex items-center gap-1">
-            <Type class="w-3.5 h-3.5 text-stone-500" /> 書体（フォント）
-          </label>
-          <div class="grid grid-cols-3 gap-2">
+          <label class="block text-stone-500 mb-1.5 font-medium">用紙サイズ</label>
+          <div class="grid grid-cols-2 gap-1.5 bg-stone-100 p-1 rounded-xl">
+            <button
+              type="button"
+              @click="menuData.paperSize = 'A4'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                menuData.paperSize !== 'B5'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              A4
+            </button>
+            <button
+              type="button"
+              @click="menuData.paperSize = 'B5'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                menuData.paperSize === 'B5'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              B5
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layout & Spacing Settings (文字サイズ・密度、区切り線、価格表記、文字方向) -->
+    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-stone-200 space-y-3">
+      <h3 class="font-bold text-sm text-stone-900 flex items-center justify-between">
+        <span>配置バランス・文字サイズ</span>
+        <span class="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-medium border border-amber-200">
+          用紙に合わせて自動最適化
+        </span>
+      </h3>
+
+      <div class="space-y-3 text-xs">
+        <!-- Density / Font Size -->
+        <div>
+          <label class="block text-stone-600 mb-1.5 font-medium">文字サイズ・品目密度</label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 bg-stone-100 p-1 rounded-xl">
+            <button
+              type="button"
+              @click="menuData.density = 'auto'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                (!menuData.density || menuData.density === 'auto')
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              自動調整
+            </button>
+            <button
+              type="button"
+              @click="menuData.density = 'spacious'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                menuData.density === 'spacious'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              ゆったり大
+            </button>
+            <button
+              type="button"
+              @click="menuData.density = 'normal'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                menuData.density === 'normal'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              標準
+            </button>
+            <button
+              type="button"
+              @click="menuData.density = 'compact'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                menuData.density === 'compact'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              すっきり小
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <!-- Writing Orientation -->
+          <div>
+            <label class="block text-stone-600 mb-1.5 font-medium">文字方向</label>
+            <div class="grid grid-cols-2 gap-1 bg-stone-100 p-1 rounded-xl">
+              <button
+                type="button"
+                @click="selectLayout('vertical')"
+                :class="[
+                  'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                  menuData.layout !== 'horizontal'
+                    ? 'bg-white text-stone-900 shadow-xs'
+                    : 'text-stone-500 hover:text-stone-800'
+                ]"
+              >
+                縦書き
+              </button>
+              <button
+                type="button"
+                @click="selectLayout('horizontal')"
+                :class="[
+                  'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                  menuData.layout === 'horizontal'
+                    ? 'bg-white text-stone-900 shadow-xs'
+                    : 'text-stone-500 hover:text-stone-800'
+                ]"
+              >
+                横書き
+              </button>
+            </div>
+          </div>
+
+          <!-- Price Format -->
+          <div>
+            <label class="block text-stone-600 mb-1.5 font-medium">価格の表記</label>
+            <div class="grid grid-cols-2 gap-1 bg-stone-100 p-1 rounded-xl">
+              <button
+                type="button"
+                @click="menuData.priceFormat = 'kanji'"
+                :class="[
+                  'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                  (!menuData.priceFormat || menuData.priceFormat === 'kanji')
+                    ? 'bg-white text-stone-900 shadow-xs'
+                    : 'text-stone-500 hover:text-stone-800'
+                ]"
+              >
+                漢数字
+              </button>
+              <button
+                type="button"
+                @click="menuData.priceFormat = 'number'"
+                :class="[
+                  'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                  menuData.priceFormat === 'number'
+                    ? 'bg-white text-stone-900 shadow-xs'
+                    : 'text-stone-500 hover:text-stone-800'
+                ]"
+              >
+                数字表記
+              </button>
+            </div>
+          </div>
+
+          <!-- Item Dividers -->
+          <div>
+            <label class="block text-stone-600 mb-1.5 font-medium">品目間の区切り線</label>
+            <div class="grid grid-cols-2 gap-1 bg-stone-100 p-1 rounded-xl">
+              <button
+                type="button"
+                @click="menuData.showDividers = false"
+                :class="[
+                  'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                  !menuData.showDividers
+                    ? 'bg-white text-stone-900 shadow-xs'
+                    : 'text-stone-500 hover:text-stone-800'
+                ]"
+              >
+                なし
+              </button>
+              <button
+                type="button"
+                @click="menuData.showDividers = true"
+                :class="[
+                  'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                  menuData.showDividers
+                    ? 'bg-white text-stone-900 shadow-xs'
+                    : 'text-stone-500 hover:text-stone-800'
+                ]"
+              >
+                線あり
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Design, Font & Paper Texture Settings -->
+    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-stone-200 space-y-4">
+      <div class="flex items-center justify-between pb-1 border-b border-stone-100">
+        <h3 class="font-bold text-sm text-stone-900">
+          デザイン・和紙設定
+        </h3>
+        <button
+          type="button"
+          @click="showDesignSettings = !showDesignSettings"
+          class="text-xs text-stone-500 hover:text-stone-800 flex items-center gap-1 font-medium transition cursor-pointer"
+        >
+          <span>{{ showDesignSettings ? '詳細設定を閉じる' : '詳細設定を開く' }}</span>
+          <component :is="showDesignSettings ? ChevronUp : ChevronDown" class="w-4 h-4" />
+        </button>
+      </div>
+
+      <!-- Quick font & frame settings -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <!-- Font Family -->
+        <div>
+          <label class="block text-stone-600 mb-1.5 font-medium">書体（フォント）</label>
+          <div class="grid grid-cols-3 gap-1 bg-stone-100 p-1 rounded-xl">
             <button
               type="button"
               @click="menuData.fontFamily = 'brush'"
               :class="[
-                'py-2 px-2 rounded-lg border text-center font-brush transition',
-                menuData.fontFamily === 'brush'
-                  ? 'bg-amber-900 text-white border-amber-900 font-bold'
-                  : 'bg-white text-stone-700 border-stone-200'
+                'py-1.5 rounded-lg font-bold text-center font-brush transition cursor-pointer text-xs',
+                (!menuData.fontFamily || menuData.fontFamily === 'brush')
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
               ]"
             >
-              毛筆風（筆文字）
+              毛筆風
             </button>
             <button
               type="button"
               @click="menuData.fontFamily = 'mincho'"
               :class="[
-                'py-2 px-2 rounded-lg border text-center font-mincho transition',
+                'py-1.5 rounded-lg font-bold text-center font-mincho transition cursor-pointer text-xs',
                 menuData.fontFamily === 'mincho'
-                  ? 'bg-amber-900 text-white border-amber-900 font-bold'
-                  : 'bg-white text-stone-700 border-stone-200'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
               ]"
             >
               伝統明朝
@@ -197,121 +416,323 @@ function selectLayout(mode) {
               type="button"
               @click="menuData.fontFamily = 'gothic'"
               :class="[
-                'py-2 px-2 rounded-lg border text-center font-gothic transition',
+                'py-1.5 rounded-lg font-bold text-center font-gothic transition cursor-pointer text-xs',
                 menuData.fontFamily === 'gothic'
-                  ? 'bg-amber-900 text-white border-amber-900 font-bold'
-                  : 'bg-white text-stone-700 border-stone-200'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
               ]"
             >
-              モダンゴシック
+              ゴシック
             </button>
           </div>
         </div>
 
-        <!-- Density & Size Options (Requirement 2) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <div>
-            <label class="font-semibold text-stone-700 block mb-1 flex items-center gap-1">
-              <Sliders class="w-3.5 h-3.5 text-stone-500" /> 文字サイズ・品目密度
-            </label>
-            <select
-              v-model="menuData.density"
-              class="w-full bg-white border border-stone-300 rounded-lg py-1.5 px-2 text-stone-800"
-            >
-              <option value="auto">自動調整（品数に合わせて最適化）</option>
-              <option value="spacious">ゆったり大文字（少品目向け）</option>
-              <option value="normal">標準（中文字）</option>
-              <option value="compact">すっきり小文字（多品目収容）</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="font-semibold text-stone-700 block mb-1">品目間の区切り線</label>
-            <select
-              v-model="menuData.showDividers"
-              class="w-full bg-white border border-stone-300 rounded-lg py-1.5 px-2 text-stone-800"
-            >
-              <option :value="false">線なし（すっきり和風・推奨）</option>
-              <option :value="true">細い区切り線あり</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Price Display format -->
+        <!-- Frame Style -->
         <div>
-          <label class="font-semibold text-stone-700 block mb-1.5 flex items-center gap-1">
-            <Coins class="w-3.5 h-3.5 text-stone-500" /> 価格の表記
-          </label>
-          <div class="grid grid-cols-2 gap-2">
+          <label class="block text-stone-600 mb-1.5 font-medium">外枠デザイン</label>
+          <div class="grid grid-cols-3 gap-1 bg-stone-100 p-1 rounded-xl">
             <button
               type="button"
-              @click="menuData.priceFormat = 'kanji'"
+              @click="menuData.frameStyle = 'traditional'"
               :class="[
-                'py-1.5 px-3 rounded-lg border text-center transition font-medium',
-                menuData.priceFormat === 'kanji'
-                  ? 'bg-amber-900 text-white border-amber-900'
-                  : 'bg-white text-stone-700 border-stone-200'
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                (!menuData.frameStyle || menuData.frameStyle === 'traditional')
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
               ]"
             >
-              漢数字（例: 一八〇円・和風推奨）
+              二重和枠
             </button>
             <button
               type="button"
-              @click="menuData.priceFormat = 'number'"
+              @click="menuData.frameStyle = 'minimal'"
               :class="[
-                'py-1.5 px-3 rounded-lg border text-center transition font-medium',
-                menuData.priceFormat === 'number'
-                  ? 'bg-amber-900 text-white border-amber-900'
-                  : 'bg-white text-stone-700 border-stone-200'
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                menuData.frameStyle === 'minimal'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
               ]"
             >
-              数字表記（例: 180円）
+              実線枠
+            </button>
+            <button
+              type="button"
+              @click="menuData.frameStyle = 'none'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                menuData.frameStyle === 'none'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              枠なし
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Collapsible Detailed Settings -->
+      <div v-if="showDesignSettings" class="space-y-4 pt-3 border-t border-stone-100 animate-in fade-in duration-150 text-xs">
+        <!-- 1. Background Color -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="font-medium text-stone-600 flex items-center gap-1">
+              <Palette class="w-3.5 h-3.5 text-stone-500" /> 用紙の背景色
+            </label>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[11px] text-stone-400">自由選択:</span>
+              <input
+                type="color"
+                v-model="menuData.bgColor"
+                class="w-6 h-6 rounded border border-stone-300 cursor-pointer p-0 bg-transparent"
+                title="好きな色を選ぶ"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+            <button
+              type="button"
+              @click="menuData.bgColor = '#ffffff'"
+              :class="[
+                'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 cursor-pointer',
+                (!menuData.bgColor || menuData.bgColor.toLowerCase() === '#ffffff')
+                  ? 'border-amber-600 bg-amber-50 font-bold text-stone-900 ring-1 ring-amber-600'
+                  : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+              ]"
+            >
+              <span class="w-3 h-3 rounded-full bg-white border border-stone-400 shrink-0"></span>
+              <span>純白</span>
+            </button>
+            <button
+              type="button"
+              @click="menuData.bgColor = '#faf7f0'"
+              :class="[
+                'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 cursor-pointer',
+                menuData.bgColor?.toLowerCase() === '#faf7f0'
+                  ? 'border-amber-600 bg-amber-50 font-bold text-stone-900 ring-1 ring-amber-600'
+                  : 'bg-[#faf7f0] text-stone-700 border-stone-300 hover:border-stone-400'
+              ]"
+            >
+              <span class="w-3 h-3 rounded-full bg-[#faf7f0] border border-stone-400 shrink-0"></span>
+              <span>生成り</span>
+            </button>
+            <button
+              type="button"
+              @click="menuData.bgColor = '#fdf6f6'"
+              :class="[
+                'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 cursor-pointer',
+                menuData.bgColor?.toLowerCase() === '#fdf6f6'
+                  ? 'border-amber-600 bg-amber-50 font-bold text-stone-900 ring-1 ring-amber-600'
+                  : 'bg-[#fdf6f6] text-stone-700 border-stone-300 hover:border-stone-400'
+              ]"
+            >
+              <span class="w-3 h-3 rounded-full bg-[#fdf6f6] border border-rose-300 shrink-0"></span>
+              <span>桜色</span>
+            </button>
+            <button
+              type="button"
+              @click="menuData.bgColor = '#f5f7f2'"
+              :class="[
+                'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 cursor-pointer',
+                menuData.bgColor?.toLowerCase() === '#f5f7f2'
+                  ? 'border-amber-600 bg-amber-50 font-bold text-stone-900 ring-1 ring-amber-600'
+                  : 'bg-[#f5f7f2] text-stone-700 border-stone-300 hover:border-stone-400'
+              ]"
+            >
+              <span class="w-3 h-3 rounded-full bg-[#f5f7f2] border border-emerald-300 shrink-0"></span>
+              <span>うぐいす</span>
+            </button>
+            <button
+              type="button"
+              @click="menuData.bgColor = '#f4eee2'"
+              :class="[
+                'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 cursor-pointer',
+                menuData.bgColor?.toLowerCase() === '#f4eee2'
+                  ? 'border-amber-600 bg-amber-50 font-bold text-stone-900 ring-1 ring-amber-600'
+                  : 'bg-[#f4eee2] text-stone-700 border-stone-300 hover:border-stone-400'
+              ]"
+            >
+              <span class="w-3 h-3 rounded-full bg-[#f4eee2] border border-amber-300 shrink-0"></span>
+              <span>麦色</span>
+            </button>
+            <button
+              type="button"
+              @click="menuData.bgColor = '#f3f6f9'"
+              :class="[
+                'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 cursor-pointer',
+                menuData.bgColor?.toLowerCase() === '#f3f6f9'
+                  ? 'border-amber-600 bg-amber-50 font-bold text-stone-900 ring-1 ring-amber-600'
+                  : 'bg-[#f3f6f9] text-stone-700 border-stone-300 hover:border-stone-400'
+              ]"
+            >
+              <span class="w-3 h-3 rounded-full bg-[#f3f6f9] border border-sky-300 shrink-0"></span>
+              <span>藍白</span>
             </button>
           </div>
         </div>
 
-        <!-- Paper orientation & size & border options -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
-          <div>
-            <label class="font-semibold text-stone-700 block mb-1">用紙の向き</label>
-            <select
-              v-model="menuData.paperOrientation"
-              class="w-full bg-white border border-stone-300 rounded-lg py-1.5 px-2 text-stone-800 font-bold"
+        <!-- 2. Washi Pattern -->
+        <div>
+          <label class="block text-stone-600 mb-1.5 font-medium">和紙の模様（テクスチャ）</label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 bg-stone-100 p-1 rounded-xl">
+            <button
+              type="button"
+              @click="menuData.bgPattern = 'none'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                (!menuData.bgPattern || menuData.bgPattern === 'none')
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
             >
-              <option value="landscape">横向き（推奨・定番）</option>
-              <option value="portrait">縦向き</option>
-            </select>
-          </div>
-          <div>
-            <label class="font-semibold text-stone-700 block mb-1">用紙サイズ</label>
-            <select
-              v-model="menuData.paperSize"
-              class="w-full bg-white border border-stone-300 rounded-lg py-1.5 px-2 text-stone-800"
+              無地
+            </button>
+            <button
+              type="button"
+              @click="menuData.bgPattern = 'cloud'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                menuData.bgPattern === 'cloud'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
             >
-              <option value="A4">A4 用紙</option>
-              <option value="B5">B5 用紙</option>
-            </select>
-          </div>
-          <div>
-            <label class="font-semibold text-stone-700 block mb-1">外枠デザイン</label>
-            <select
-              v-model="menuData.frameStyle"
-              class="w-full bg-white border border-stone-300 rounded-lg py-1.5 px-2 text-stone-800"
+              雲竜
+            </button>
+            <button
+              type="button"
+              @click="menuData.bgPattern = 'washi'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                menuData.bgPattern === 'washi'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
             >
-              <option value="traditional">二重和枠（おすすめ）</option>
-              <option value="minimal">シンプル実線</option>
-              <option value="none">外枠なし</option>
-            </select>
+              和紙
+            </button>
+            <button
+              type="button"
+              @click="menuData.bgPattern = 'grid'"
+              :class="[
+                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
+                menuData.bgPattern === 'grid'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-500 hover:text-stone-800'
+              ]"
+            >
+              和風格子
+            </button>
           </div>
         </div>
 
-        <!-- Toggles: Multi-language & notes -->
-        <div class="flex items-center gap-4 pt-2 border-t border-stone-200">
+        <!-- 3. Text Color -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="font-medium text-stone-600 flex items-center gap-1">
+              <Type class="w-3.5 h-3.5 text-stone-500" /> 文字・フォント色
+            </label>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[11px] text-stone-400">自由選択:</span>
+              <input
+                type="color"
+                v-model="menuData.textColor"
+                class="w-6 h-6 rounded border border-stone-300 cursor-pointer p-0 bg-transparent"
+                title="好きな文字色を選ぶ"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+            <button
+              type="button"
+              @click="menuData.textColor = '#1c1917'"
+              :class="[
+                'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 cursor-pointer',
+                (!menuData.textColor || menuData.textColor.toLowerCase() === '#1c1917')
+                  ? 'border-amber-600 bg-amber-50 font-bold text-stone-900 ring-1 ring-amber-600'
+                  : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+              ]"
+            >
+              <span class="w-3 h-3 rounded-full bg-[#1c1917] border border-stone-400 shrink-0"></span>
+              <span>墨色 (黒)</span>
+            </button>
+            <button
+              type="button"
+              @click="menuData.textColor = '#451a03'"
+              :class="[
+                'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 cursor-pointer',
+                menuData.textColor?.toLowerCase() === '#451a03'
+                  ? 'border-amber-600 bg-amber-50 font-bold text-stone-900 ring-1 ring-amber-600'
+                  : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+              ]"
+            >
+              <span class="w-3 h-3 rounded-full bg-[#451a03] border border-amber-900 shrink-0"></span>
+              <span>濃茶</span>
+            </button>
+            <button
+              type="button"
+              @click="menuData.textColor = '#0f172a'"
+              :class="[
+                'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 cursor-pointer',
+                menuData.textColor?.toLowerCase() === '#0f172a'
+                  ? 'border-amber-600 bg-amber-50 font-bold text-stone-900 ring-1 ring-amber-600'
+                  : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+              ]"
+            >
+              <span class="w-3 h-3 rounded-full bg-[#0f172a] border border-slate-700 shrink-0"></span>
+              <span>濃紺</span>
+            </button>
+            <button
+              type="button"
+              @click="menuData.textColor = '#064e3b'"
+              :class="[
+                'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 cursor-pointer',
+                menuData.textColor?.toLowerCase() === '#064e3b'
+                  ? 'border-amber-600 bg-amber-50 font-bold text-stone-900 ring-1 ring-amber-600'
+                  : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+              ]"
+            >
+              <span class="w-3 h-3 rounded-full bg-[#064e3b] border border-emerald-800 shrink-0"></span>
+              <span>深緑</span>
+            </button>
+            <button
+              type="button"
+              @click="menuData.textColor = '#7f1d1d'"
+              :class="[
+                'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 cursor-pointer',
+                menuData.textColor?.toLowerCase() === '#7f1d1d'
+                  ? 'border-amber-600 bg-amber-50 font-bold text-stone-900 ring-1 ring-amber-600'
+                  : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+              ]"
+            >
+              <span class="w-3 h-3 rounded-full bg-[#7f1d1d] border border-rose-800 shrink-0"></span>
+              <span>赤褐色</span>
+            </button>
+            <button
+              type="button"
+              @click="menuData.textColor = '#ffffff'"
+              :class="[
+                'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 cursor-pointer',
+                menuData.textColor?.toLowerCase() === '#ffffff'
+                  ? 'border-amber-600 bg-amber-50 font-bold text-stone-900 ring-1 ring-amber-600'
+                  : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+              ]"
+            >
+              <span class="w-3 h-3 rounded-full bg-white border border-stone-400 shrink-0"></span>
+              <span>白文字</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Toggles -->
+        <div class="flex flex-wrap items-center gap-4 pt-2 border-t border-stone-100">
           <label class="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
               v-model="menuData.showEnglish"
-              class="rounded border-stone-300 text-amber-900 focus:ring-amber-900 w-4 h-4"
+              class="rounded border-stone-300 text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer"
             />
             <span class="text-stone-700 font-medium">英語（多言語）入力欄を表示</span>
           </label>
@@ -319,293 +740,20 @@ function selectLayout(mode) {
             <input
               type="checkbox"
               v-model="menuData.showNotes"
-              class="rounded border-stone-300 text-amber-900 focus:ring-amber-900 w-4 h-4"
+              class="rounded border-stone-300 text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer"
             />
             <span class="text-stone-700 font-medium">補足説明を表示</span>
           </label>
         </div>
 
-        <!-- Background Color & Paper Texture Options -->
-        <div class="pt-2 border-t border-stone-200 space-y-3">
-          <!-- 1. Background Color -->
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label class="font-semibold text-stone-700 flex items-center gap-1 text-xs">
-                <Palette class="w-3.5 h-3.5 text-stone-500" /> 用紙の背景色
-              </label>
-              <div class="flex items-center gap-1.5">
-                <span class="text-[11px] text-stone-400">自由選択:</span>
-                <input
-                  type="color"
-                  v-model="menuData.bgColor"
-                  class="w-6 h-6 rounded border border-stone-300 cursor-pointer p-0 bg-transparent"
-                  title="好きな色を選ぶ"
-                />
-              </div>
-            </div>
-
-            <!-- Quick Color Palette -->
-            <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-              <button
-                type="button"
-                @click="menuData.bgColor = '#ffffff'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
-                  (!menuData.bgColor || menuData.bgColor.toLowerCase() === '#ffffff')
-                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
-                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
-                ]"
-              >
-                <span class="w-3 h-3 rounded-full bg-white border border-stone-400 shrink-0"></span>
-                <span>純白</span>
-              </button>
-
-              <button
-                type="button"
-                @click="menuData.bgColor = '#faf7f0'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
-                  menuData.bgColor?.toLowerCase() === '#faf7f0'
-                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
-                    : 'bg-[#faf7f0] text-stone-700 border-stone-300 hover:border-stone-400'
-                ]"
-              >
-                <span class="w-3 h-3 rounded-full bg-[#faf7f0] border border-stone-400 shrink-0"></span>
-                <span>生成り</span>
-              </button>
-
-              <button
-                type="button"
-                @click="menuData.bgColor = '#fdf6f6'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
-                  menuData.bgColor?.toLowerCase() === '#fdf6f6'
-                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
-                    : 'bg-[#fdf6f6] text-stone-700 border-stone-300 hover:border-stone-400'
-                ]"
-              >
-                <span class="w-3 h-3 rounded-full bg-[#fdf6f6] border border-rose-300 shrink-0"></span>
-                <span>桜色</span>
-              </button>
-
-              <button
-                type="button"
-                @click="menuData.bgColor = '#f5f7f2'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
-                  menuData.bgColor?.toLowerCase() === '#f5f7f2'
-                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
-                    : 'bg-[#f5f7f2] text-stone-700 border-stone-300 hover:border-stone-400'
-                ]"
-              >
-                <span class="w-3 h-3 rounded-full bg-[#f5f7f2] border border-emerald-300 shrink-0"></span>
-                <span>うぐいす</span>
-              </button>
-
-              <button
-                type="button"
-                @click="menuData.bgColor = '#f4eee2'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
-                  menuData.bgColor?.toLowerCase() === '#f4eee2'
-                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
-                    : 'bg-[#f4eee2] text-stone-700 border-stone-300 hover:border-stone-400'
-                ]"
-              >
-                <span class="w-3 h-3 rounded-full bg-[#f4eee2] border border-amber-300 shrink-0"></span>
-                <span>麦色</span>
-              </button>
-
-              <button
-                type="button"
-                @click="menuData.bgColor = '#f3f6f9'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
-                  menuData.bgColor?.toLowerCase() === '#f3f6f9'
-                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
-                    : 'bg-[#f3f6f9] text-stone-700 border-stone-300 hover:border-stone-400'
-                ]"
-              >
-                <span class="w-3 h-3 rounded-full bg-[#f3f6f9] border border-sky-300 shrink-0"></span>
-                <span>藍白</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- 2. Paper Pattern / Texture -->
-          <div>
-            <label class="font-semibold text-stone-700 block mb-1.5 text-xs">
-              和紙の模様（テクスチャ）
-            </label>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-              <button
-                type="button"
-                @click="menuData.bgPattern = 'none'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition text-xs font-medium',
-                  (!menuData.bgPattern || menuData.bgPattern === 'none')
-                    ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
-                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
-                ]"
-              >
-                無地（模様なし）
-              </button>
-
-              <button
-                type="button"
-                @click="menuData.bgPattern = 'cloud'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition text-xs font-medium',
-                  menuData.bgPattern === 'cloud'
-                    ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
-                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
-                ]"
-              >
-                雲竜（繊維調）
-              </button>
-
-              <button
-                type="button"
-                @click="menuData.bgPattern = 'washi'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition text-xs font-medium',
-                  menuData.bgPattern === 'washi'
-                    ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
-                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
-                ]"
-              >
-                和紙（微細粒）
-              </button>
-
-              <button
-                type="button"
-                @click="menuData.bgPattern = 'grid'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition text-xs font-medium',
-                  menuData.bgPattern === 'grid'
-                    ? 'bg-amber-900 text-white border-amber-900 font-bold shadow-xs'
-                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
-                ]"
-              >
-                和風格子（薄枠）
-              </button>
-            </div>
-          </div>
-
-          <!-- 3. Text Color -->
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label class="font-semibold text-stone-700 flex items-center gap-1 text-xs">
-                <Type class="w-3.5 h-3.5 text-stone-500" /> 文字・フォント色
-              </label>
-              <div class="flex items-center gap-1.5">
-                <span class="text-[11px] text-stone-400">自由選択:</span>
-                <input
-                  type="color"
-                  v-model="menuData.textColor"
-                  class="w-6 h-6 rounded border border-stone-300 cursor-pointer p-0 bg-transparent"
-                  title="好きな文字色を選ぶ"
-                />
-              </div>
-            </div>
-
-            <!-- Quick Text Color Palette -->
-            <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-              <button
-                type="button"
-                @click="menuData.textColor = '#1c1917'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
-                  (!menuData.textColor || menuData.textColor.toLowerCase() === '#1c1917')
-                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
-                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
-                ]"
-              >
-                <span class="w-3 h-3 rounded-full bg-[#1c1917] border border-stone-400 shrink-0"></span>
-                <span>墨色 (黒)</span>
-              </button>
-
-              <button
-                type="button"
-                @click="menuData.textColor = '#451a03'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
-                  menuData.textColor?.toLowerCase() === '#451a03'
-                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
-                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
-                ]"
-              >
-                <span class="w-3 h-3 rounded-full bg-[#451a03] border border-amber-900 shrink-0"></span>
-                <span>濃茶</span>
-              </button>
-
-              <button
-                type="button"
-                @click="menuData.textColor = '#0f172a'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
-                  menuData.textColor?.toLowerCase() === '#0f172a'
-                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
-                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
-                ]"
-              >
-                <span class="w-3 h-3 rounded-full bg-[#0f172a] border border-slate-700 shrink-0"></span>
-                <span>濃紺</span>
-              </button>
-
-              <button
-                type="button"
-                @click="menuData.textColor = '#064e3b'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
-                  menuData.textColor?.toLowerCase() === '#064e3b'
-                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
-                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
-                ]"
-              >
-                <span class="w-3 h-3 rounded-full bg-[#064e3b] border border-emerald-800 shrink-0"></span>
-                <span>深緑</span>
-              </button>
-
-              <button
-                type="button"
-                @click="menuData.textColor = '#7f1d1d'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
-                  menuData.textColor?.toLowerCase() === '#7f1d1d'
-                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
-                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
-                ]"
-              >
-                <span class="w-3 h-3 rounded-full bg-[#7f1d1d] border border-rose-800 shrink-0"></span>
-                <span>赤褐色</span>
-              </button>
-
-              <button
-                type="button"
-                @click="menuData.textColor = '#ffffff'"
-                :class="[
-                  'py-1.5 px-2 rounded-lg border text-center transition flex items-center justify-center gap-1 text-xs',
-                  menuData.textColor?.toLowerCase() === '#ffffff'
-                    ? 'border-amber-800 bg-amber-50 font-bold text-amber-950 ring-1 ring-amber-800'
-                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
-                ]"
-              >
-                <span class="w-3 h-3 rounded-full bg-white border border-stone-400 shrink-0"></span>
-                <span>白文字</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- JSON Backup / Restore -->
-        <div class="pt-2 border-t border-stone-200 flex items-center justify-between">
+        <!-- 5. Backup / Restore -->
+        <div class="flex items-center justify-between pt-2 border-t border-stone-100">
           <span class="text-stone-500 font-medium">データバックアップ:</span>
           <div class="flex items-center gap-2">
             <button
               type="button"
               @click="exportJson"
-              class="px-2.5 py-1 bg-white hover:bg-stone-100 border border-stone-200 rounded-md text-stone-700 flex items-center gap-1 transition"
+              class="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 rounded-lg text-stone-700 flex items-center gap-1 transition cursor-pointer text-xs font-medium"
             >
               <Download class="w-3.5 h-3.5 text-stone-500" />
               <span>保存 (JSON)</span>
@@ -613,7 +761,7 @@ function selectLayout(mode) {
             <button
               type="button"
               @click="triggerImport"
-              class="px-2.5 py-1 bg-white hover:bg-stone-100 border border-stone-200 rounded-md text-stone-700 flex items-center gap-1 transition"
+              class="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 rounded-lg text-stone-700 flex items-center gap-1 transition cursor-pointer text-xs font-medium"
             >
               <Upload class="w-3.5 h-3.5 text-stone-500" />
               <span>読込</span>
@@ -628,36 +776,42 @@ function selectLayout(mode) {
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Main Title Input -->
-      <div class="space-y-3">
+    <!-- Basic Info Card (Title, Subtitle, Store Name) -->
+    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-stone-200 space-y-3">
+      <h3 class="font-bold text-sm text-stone-900">
+        表題・店名情報
+      </h3>
+
+      <div class="space-y-3 text-xs">
         <div>
-          <label class="block text-xs font-bold text-stone-600 mb-1">メニュー表題（メインタイトル）</label>
+          <label class="block text-stone-600 mb-1 font-medium">メニュー表題（メインタイトル）</label>
           <input
             v-model="menuData.title"
             type="text"
             placeholder="本日のおすすめ / お品書き など"
-            class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-stone-900 text-base font-bold focus:ring-2 focus:ring-amber-800 focus:border-amber-800 transition"
+            class="w-full px-3 py-2 bg-white border border-stone-300 rounded-xl text-stone-900 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none transition"
           />
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-stone-500 mb-1">肩書き / サブタイトル</label>
+            <label class="block text-stone-600 mb-1 font-medium">肩書き / サブタイトル</label>
             <input
               v-model="menuData.subtitle"
               type="text"
               placeholder="炭火焼き・季節の一品"
-              class="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-sm focus:ring-2 focus:ring-amber-800 transition"
+              class="w-full px-3 py-2 bg-white border border-stone-300 rounded-xl text-stone-900 text-xs focus:ring-2 focus:ring-amber-500 outline-none transition"
             />
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-500 mb-1">店名 / 日付等</label>
+            <label class="block text-stone-600 mb-1 font-medium">店名 / 日付等</label>
             <input
               v-model="menuData.storeName"
               type="text"
-              placeholder="店名（例: 御食事処 〇〇）"
-              class="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-sm focus:ring-2 focus:ring-amber-800 transition"
+              placeholder="店名（例: やきとりもず）"
+              class="w-full px-3 py-2 bg-white border border-stone-300 rounded-xl text-stone-900 text-xs focus:ring-2 focus:ring-amber-500 outline-none transition"
             />
           </div>
         </div>
@@ -665,11 +819,11 @@ function selectLayout(mode) {
     </div>
 
     <!-- Quick Action Bar -->
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2.5">
       <button
         type="button"
         @click="addNewItem"
-        class="flex-1 py-3 px-4 bg-amber-900 hover:bg-amber-950 text-white font-bold rounded-xl shadow-xs flex items-center justify-center gap-2 text-sm transition active:scale-[0.98]"
+        class="flex-1 py-3 px-4 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl shadow-xs flex items-center justify-center gap-2 text-sm transition active:scale-[0.98] cursor-pointer"
       >
         <Plus class="w-4 h-4" />
         <span>1行追加</span>
@@ -678,22 +832,25 @@ function selectLayout(mode) {
       <button
         type="button"
         @click="emit('open-presets')"
-        class="py-3 px-4 bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold rounded-xl border border-amber-300 shadow-xs flex items-center justify-center gap-1.5 text-sm transition active:scale-[0.98]"
+        class="py-3 px-4 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold rounded-xl border border-amber-200 shadow-xs flex items-center justify-center gap-1.5 text-sm transition active:scale-[0.98] cursor-pointer"
       >
         <span>🏮</span>
-        <span>定番から追加</span>
+        <span>定番から選ぶ</span>
       </button>
     </div>
 
     <!-- Items List -->
-    <div class="space-y-2.5">
+    <div class="space-y-3">
       <div class="flex items-center justify-between px-1">
-        <span class="text-xs font-bold text-stone-500">品目一覧（現在 {{ menuData.items.length }} 品）</span>
+        <h3 class="font-bold text-sm text-stone-900 flex items-center gap-2">
+          <span>品目一覧</span>
+          <span class="text-xs text-stone-500 font-normal">({{ menuData.items?.length || 0 }}品)</span>
+        </h3>
         <button
-          v-if="menuData.items.length > 0"
+          v-if="menuData.items?.length > 0"
           type="button"
           @click="emit('reset-default')"
-          class="text-xs text-stone-400 hover:text-stone-700 flex items-center gap-1 transition"
+          class="text-xs text-stone-400 hover:text-stone-700 flex items-center gap-1 transition cursor-pointer"
         >
           <RotateCcw class="w-3 h-3" />
           <span>初期化</span>
@@ -701,7 +858,7 @@ function selectLayout(mode) {
       </div>
 
       <div
-        v-if="menuData.items.length === 0"
+        v-if="!menuData.items || menuData.items.length === 0"
         class="bg-white rounded-2xl p-8 text-center border-2 border-dashed border-stone-200"
       >
         <p class="text-stone-400 text-sm mb-3">メニュー品目がまだありません</p>
@@ -709,14 +866,14 @@ function selectLayout(mode) {
           <button
             type="button"
             @click="addNewItem"
-            class="px-4 py-2 bg-stone-800 text-white rounded-lg text-xs font-bold"
+            class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold cursor-pointer"
           >
             手動で追加
           </button>
           <button
             type="button"
             @click="emit('open-presets')"
-            class="px-4 py-2 bg-amber-800 text-white rounded-lg text-xs font-bold"
+            class="px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold cursor-pointer"
           >
             定番から選ぶ
           </button>
@@ -726,46 +883,46 @@ function selectLayout(mode) {
       <div
         v-for="(item, index) in menuData.items"
         :key="item.id || index"
-        class="bg-white rounded-xl p-3 shadow-xs border border-stone-200 hover:border-stone-300 transition"
+        class="bg-white rounded-2xl p-3.5 shadow-sm border border-stone-200 hover:border-stone-300 transition"
       >
-        <div class="flex items-start gap-2">
+        <div class="flex items-start gap-2.5">
           <!-- Reorder buttons -->
-          <div class="flex flex-col gap-0.5 pt-1 text-stone-400">
+          <div class="flex flex-col gap-0.5 pt-0.5 text-stone-400 shrink-0">
             <button
               type="button"
               :disabled="index === 0"
               @click="moveItem(index, -1)"
-              class="p-1 hover:text-stone-800 disabled:opacity-20 disabled:hover:text-stone-400 transition"
+              class="p-1 hover:text-stone-800 disabled:opacity-20 disabled:hover:text-stone-400 hover:bg-stone-100 rounded transition cursor-pointer"
               title="上へ"
             >
-              <ChevronUp class="w-4 h-4" />
+              <ArrowUp class="w-4 h-4" />
             </button>
             <button
               type="button"
               :disabled="index === menuData.items.length - 1"
               @click="moveItem(index, 1)"
-              class="p-1 hover:text-stone-800 disabled:opacity-20 disabled:hover:text-stone-400 transition"
+              class="p-1 hover:text-stone-800 disabled:opacity-20 disabled:hover:text-stone-400 hover:bg-stone-100 rounded transition cursor-pointer"
               title="下へ"
             >
-              <ChevronDown class="w-4 h-4" />
+              <ArrowDown class="w-4 h-4" />
             </button>
           </div>
 
           <!-- Main Input Fields -->
-          <div class="flex-1 space-y-2">
+          <div class="flex-1 space-y-2 min-w-0">
             <div class="flex gap-2">
               <input
                 v-model="item.name"
                 type="text"
-                placeholder="品名（例: とり精肉）"
-                class="flex-1 px-3 py-2 text-stone-900 font-bold text-sm rounded-lg border border-stone-200 focus:ring-2 focus:ring-amber-800 focus:border-amber-800"
+                placeholder="品名（例: 本日のお刺身三種盛り）"
+                class="flex-1 min-w-0 px-3 py-2 text-stone-900 font-bold text-sm bg-white rounded-xl border border-stone-300 focus:ring-2 focus:ring-amber-500 outline-none transition"
               />
               <div class="w-24 shrink-0 relative">
                 <input
                   v-model="item.price"
                   type="text"
                   placeholder="価格"
-                  class="w-full pl-3 pr-6 py-2 text-stone-900 font-bold text-sm rounded-lg border border-stone-200 focus:ring-2 focus:ring-amber-800 focus:border-amber-800 text-right"
+                  class="w-full pl-3 pr-6 py-2 text-stone-900 font-bold text-sm bg-white rounded-xl border border-stone-300 focus:ring-2 focus:ring-amber-500 outline-none text-right transition"
                 />
                 <span class="absolute right-2 top-2 text-stone-400 text-xs pointer-events-none">円</span>
               </div>
@@ -775,15 +932,15 @@ function selectLayout(mode) {
               <input
                 v-model="item.note"
                 type="text"
-                placeholder="補足（例: 塩・タレ / 数量限定）"
-                class="flex-1 px-2.5 py-1.5 text-stone-600 text-xs rounded-lg border border-stone-200 focus:ring-1 focus:ring-amber-800"
+                placeholder="補足（例: 数量限定 / 旬の味覚）"
+                class="flex-1 min-w-0 px-2.5 py-1.5 text-stone-600 text-xs bg-white rounded-lg border border-stone-200 focus:ring-1 focus:ring-amber-500 outline-none"
               />
               <input
                 v-if="menuData.showEnglish"
                 v-model="item.translation"
                 type="text"
                 placeholder="English / Translation"
-                class="flex-1 px-2.5 py-1.5 text-stone-500 text-xs rounded-lg border border-stone-200 focus:ring-1 focus:ring-amber-800"
+                class="flex-1 min-w-0 px-2.5 py-1.5 text-stone-500 text-xs bg-white rounded-lg border border-stone-200 focus:ring-1 focus:ring-amber-500 outline-none"
               />
             </div>
           </div>
@@ -792,7 +949,7 @@ function selectLayout(mode) {
           <button
             type="button"
             @click="removeItem(index)"
-            class="p-2 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+            class="p-2 text-stone-300 hover:text-red-600 hover:bg-red-50 rounded-xl transition cursor-pointer shrink-0"
             title="削除"
           >
             <Trash2 class="w-4 h-4" />
@@ -802,13 +959,13 @@ function selectLayout(mode) {
     </div>
 
     <!-- Bottom Footer Note -->
-    <div class="bg-white rounded-2xl p-4 shadow-xs border border-stone-200">
-      <label class="block text-xs font-medium text-stone-500 mb-1">用紙下部・注記テキスト</label>
+    <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-stone-200">
+      <label class="block text-xs font-medium text-stone-500 mb-1.5">用紙下部・注記テキスト</label>
       <input
         v-model="menuData.footerNote"
         type="text"
         placeholder="※価格はすべて税込表示となっております。"
-        class="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-700 text-xs focus:ring-2 focus:ring-amber-800"
+        class="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-800 text-xs bg-white focus:ring-2 focus:ring-amber-500 outline-none transition"
       />
     </div>
   </div>

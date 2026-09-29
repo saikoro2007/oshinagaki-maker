@@ -35,12 +35,23 @@ const dailyMenuData = reactive(JSON.parse(JSON.stringify(INITIAL_MENU_STATE)))
 // Menu reactive data for Grand Menu (グランドメニュー)
 const grandMenuData = reactive(JSON.parse(JSON.stringify(MOZU_GRAND_MENU_STATE)))
 
-// Load from LocalStorage
+// Load from LocalStorage and URL params
 onMounted(() => {
   try {
-    const savedType = localStorage.getItem(STORAGE_KEY_ACTIVE_TYPE)
-    if (savedType === 'daily' || savedType === 'grand') {
-      menuType.value = savedType
+    const urlParams = new URLSearchParams(window.location.search)
+    const paramTab = urlParams.get('tab')
+    if (paramTab === 'editor' || paramTab === 'preview') {
+      activeTab.value = paramTab
+    }
+
+    const paramType = urlParams.get('type')
+    if (paramType === 'daily' || paramType === 'grand') {
+      menuType.value = paramType
+    } else {
+      const savedType = localStorage.getItem(STORAGE_KEY_ACTIVE_TYPE)
+      if (savedType === 'daily' || savedType === 'grand') {
+        menuType.value = savedType
+      }
     }
 
     const savedDaily = localStorage.getItem(STORAGE_KEY_DAILY)
