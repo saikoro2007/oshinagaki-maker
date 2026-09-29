@@ -11,6 +11,8 @@ import GrandMenuEditor from './components/GrandMenuEditor.vue'
 import GrandMenuPreview from './components/GrandMenuPreview.vue'
 import PresetModal from './components/PresetModal.vue'
 import MyMenusModal from './components/MyMenusModal.vue'
+import ShareModal from './components/ShareModal.vue'
+import { decompressMenuData } from './utils/shareEncoder'
 import {
   Edit3,
   Eye,
@@ -36,7 +38,12 @@ const menuType = ref('grand')
 const activeTab = ref('preview')
 const showPresetModal = ref(false)
 const showMyMenusModal = ref(false)
+const showShareModal = ref(false)
 const showSaveToast = ref(false)
+
+// 共有受信ステート
+const showIncomingSharePrompt = ref(false)
+const incomingShareData = ref(null)
 
 // Menu reactive data for Daily (本日のおすすめ)
 const dailyMenuData = reactive(JSON.parse(JSON.stringify(INITIAL_MENU_STATE)))
@@ -76,6 +83,8 @@ onMounted(() => {
     const paramModal = urlParams.get('modal')
     if (paramModal === 'mymenu') {
       showMyMenusModal.value = true
+    } else if (paramModal === 'share') {
+      showShareModal.value = true
     }
 
     // 1. Daily Menu Load & Migration
@@ -130,10 +139,53 @@ onMounted(() => {
         localStorage.setItem(STORAGE_KEY_DRINK, JSON.stringify(updatedDrink))
       }
     }
+    // 4. URLハッシュによる共有リンクの自動検知
+    checkShareHash()
+    window.addEventListener('hashchange', checkShareHash)
   } catch (e) {
     console.error('Failed to load menu data:', e)
   }
 })
+
+async function checkShareHash() {
+  const hash = window.location.hash
+  if (hash && hash.startsWith('#share=')) {
+    const encoded = hash.replace('#share=', '')
+    try {
+      const decompressed = await decompressMenuData(encoded)
+      if (decompressed && decompressed.data) {
+        incomingShareData.value = decompressed
+        showIncomingSharePrompt.value = true
+      }
+    } catch (e) {
+      console.error('Failed to parse shared menu hash:', e)
+      alert('共有リンクのデータ読み込みに失敗しました。正しいURLかご確認ください。')
+    } finally {
+      history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
+  }
+}
+
+function handleAcceptSharedMenu() {
+  if (!incomingShareData.value) return
+  const { type, data } = incomingShareData.value
+  if (type === 'daily') {
+    menuType.value = 'daily'
+    for (const k of Object.keys(dailyMenuData)) delete dailyMenuData[k]
+    Object.assign(dailyMenuData, data)
+  } else if (type === 'drink') {
+    menuType.value = 'drink'
+    for (const k of Object.keys(drinkMenuData)) delete drinkMenuData[k]
+    Object.assign(drinkMenuData, data)
+  } else {
+    menuType.value = 'grand'
+    for (const k of Object.keys(grandMenuData)) delete grandMenuData[k]
+    Object.assign(grandMenuData, data)
+  }
+  showIncomingSharePrompt.value = false
+  triggerSaveToast()
+  alert('共有メニューを正常に画面に読み込みました！')
+}
 
 // Auto-save
 let toastTimer = null
@@ -357,6 +409,17 @@ function triggerPrint() {
             <Bookmark class="w-3.5 h-3.5 text-amber-400" />
             <span class="hidden sm:inline">メニュー保存・呼出</span>
             <span class="sm:hidden">保存・呼出</span>
+          </button>
+
+          <!-- Share Button (URL共有・LINEで送る) -->
+          <button
+            type="button"
+            @click="showShareModal = true"
+            class="px-2.5 sm:px-3 py-1.5 bg-stone-800 hover:bg-stone-700 active:scale-95 text-stone-200 hover:text-white font-bold text-xs rounded-lg border border-stone-700 shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+            title="メニューの共有URLリンクを発行・LINEで送信"
+          >
+            <Share2 class="w-3.5 h-3.5 text-sky-400" />
+            <span class="hidden sm:inline">共有</span>
           </button>
 
           <!-- Quick Print Button -->
@@ -597,5 +660,56 @@ function triggerPrint() {
       @load-slot="handleLoadSlot"
       @load-preset="handleLoadPreset"
     />
+
+    <!-- Share Modal (URL共有・LINEで送る) -->
+    <ShareModal
+      v-if="showShareModal"
+      :show="showShareModal"
+      :menu-type="menuType"
+      :current-data="currentActiveData"
+      @close="showShareModal = false"
+    />
+
+    <!-- Incoming Shared Menu Prompt Modal (共有メニュー受信ダイアログ) -->
+    <div
+      v-if="showIncomingSharePrompt && incomingShareData"
+      class="fixed inset-0 z-50 bg-stone-950/75 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in"
+      @click.self="showIncomingSharePrompt = false"
+    >
+      <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-stone-200 text-center space-y-4 animate-in zoom-in-95">
+        <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-700">
+          <Share2 class="w-6 h-6" />
+        </div>
+        <div>
+          <span
+            class="inline-block px-2.5 py-0.5 rounded text-[10px] font-bold mb-1.5"
+            :class="incomingShareData.type === 'daily' ? 'bg-amber-100 text-amber-900' : incomingShareData.type === 'drink' ? 'bg-sky-100 text-sky-800' : 'bg-emerald-100 text-emerald-800'"
+          >
+            {{ incomingShareData.type === 'daily' ? '本日のおすすめ' : incomingShareData.type === 'drink' ? 'お飲み物メニュー' : '定番料理メニュー' }}
+          </span>
+          <h3 class="font-bold text-stone-900 text-base">共有メニューが届きました！</h3>
+          <p class="text-xs text-stone-600 mt-1 leading-relaxed">
+            届いたお品書きデータを画面に読み込みますか？<br />
+            <span class="text-[11px] text-stone-400">（現在の未保存の編集内容は上書きされます）</span>
+          </p>
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button
+            type="button"
+            @click="showIncomingSharePrompt = false"
+            class="flex-1 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl text-xs transition cursor-pointer"
+          >
+            キャンセル
+          </button>
+          <button
+            type="button"
+            @click="handleAcceptSharedMenu"
+            class="flex-1 py-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-black rounded-xl text-xs shadow-xs transition cursor-pointer"
+          >
+            読み込む
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

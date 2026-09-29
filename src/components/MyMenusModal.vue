@@ -153,6 +153,49 @@
           </div>
         </div>
 
+        <!-- 4. File Backup & Restore (JSON) -->
+        <div class="space-y-2 pt-2 border-t border-stone-100">
+          <div class="flex items-center justify-between px-1">
+            <span class="font-bold text-stone-700">ファイルバックアップ（JSON）</span>
+            <span class="text-[10px] text-stone-400">機種変更や保管用</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <!-- Export JSON -->
+            <button
+              type="button"
+              @click="exportJson"
+              class="p-2.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl text-left flex items-center gap-2 transition cursor-pointer"
+            >
+              <Download class="w-4 h-4 text-stone-600 shrink-0" />
+              <div>
+                <div class="font-bold text-stone-800 text-xs">ファイル保存</div>
+                <div class="text-[10px] text-stone-400">現在のデータを書き出し</div>
+              </div>
+            </button>
+
+            <!-- Import JSON -->
+            <button
+              type="button"
+              @click="triggerImport"
+              class="p-2.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-xl text-left flex items-center gap-2 transition cursor-pointer"
+            >
+              <Upload class="w-4 h-4 text-stone-600 shrink-0" />
+              <div>
+                <div class="font-bold text-stone-800 text-xs">ファイル読込</div>
+                <div class="text-[10px] text-stone-400">保存したJSONを復元</div>
+              </div>
+            </button>
+            <input
+              type="file"
+              ref="jsonFileInput"
+              accept=".json,application/json"
+              class="hidden"
+              @change="handleFileImport"
+            />
+          </div>
+        </div>
+
       </div>
 
       <!-- Footer -->
@@ -172,7 +215,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Bookmark, Save, Trash2, FolderOpen, X } from '@lucide/vue'
+import { Bookmark, Save, Trash2, FolderOpen, X, Download, Upload } from '@lucide/vue'
 
 const props = defineProps({
   show: {
@@ -276,5 +319,66 @@ function formatDate(isoStr) {
   if (!isoStr) return ''
   const d = new Date(isoStr)
   return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+const jsonFileInput = ref(null)
+
+function exportJson() {
+  const exportPayload = {
+    version: 'oshinagaki_backup_v1',
+    exportedAt: new Date().toISOString(),
+    type: props.currentMenuType,
+    menuData: props.currentData,
+    savedSlots: savedSlots.value
+  }
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportPayload, null, 2))
+  const downloadAnchor = document.createElement('a')
+  downloadAnchor.setAttribute("href", dataStr)
+  downloadAnchor.setAttribute("download", `oshinagaki-${props.currentMenuType}-${new Date().toISOString().slice(0, 10)}.json`)
+  document.body.appendChild(downloadAnchor)
+  downloadAnchor.click()
+  downloadAnchor.remove()
+}
+
+function triggerImport() {
+  if (jsonFileInput.value) {
+    jsonFileInput.value.click()
+  }
+}
+
+function handleFileImport(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    try {
+      const parsed = JSON.parse(e.target.result)
+      // バックアップファイルか単体メニューJSONかを判定
+      if (parsed.version === 'oshinagaki_backup_v1') {
+        if (parsed.savedSlots && Array.isArray(parsed.savedSlots)) {
+          // 保存スロットもマージ
+          const merged = [...parsed.savedSlots, ...savedSlots.value]
+          // 重複ID除外
+          const unique = merged.filter((item, index, self) => index === self.findIndex((t) => t.id === item.id))
+          savedSlots.value = unique
+          persistSlots()
+        }
+        if (parsed.type && parsed.menuData) {
+          emit('load-slot', { type: parsed.type, data: parsed.menuData, name: 'ファイル復元' })
+        }
+      } else {
+        // 単一メニューJSON
+        emit('load-slot', { type: props.currentMenuType, data: parsed, name: 'ファイル復元' })
+      }
+      alert('メニューファイルを正常に読み込みました！')
+      emit('close')
+    } catch (err) {
+      console.error(err)
+      alert('ファイルの読み込みに失敗しました。正しいJSONファイルを選択してください。')
+    } finally {
+      event.target.value = ''
+    }
+  }
+  reader.readAsText(file)
 }
 </script>
