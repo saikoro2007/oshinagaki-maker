@@ -184,6 +184,48 @@ const itemClasses = computed(() => {
   }
 })
 
+// 3. 品名に含まれる補足括弧（...）または (...) を小さな文字としてレンダリングするためのパーサー
+function parseItemName(name) {
+  if (!name) return []
+  const regex = /([（\(][^）\)]+[）\)])/g
+  const parts = []
+  let lastIndex = 0
+  let match
+
+  while ((match = regex.exec(name)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ text: name.substring(lastIndex, match.index), isBracket: false })
+    }
+    parts.push({ text: match[0], isBracket: true })
+    lastIndex = regex.lastIndex
+  }
+  if (lastIndex < name.length) {
+    parts.push({ text: name.substring(lastIndex), isBracket: false })
+  }
+  return parts
+}
+
+// 4. 品名の文字数と密度設定に応じた動的な文字サイズ調整（文字溢れ・価格押し出しを防止）
+function getItemNameClass(name) {
+  const len = name ? name.length : 0
+  const density = effectiveDensity.value
+
+  if (density === 'compact') {
+    if (len <= 7) return 'text-sm sm:text-base tracking-normal leading-snug'
+    if (len <= 11) return 'text-xs sm:text-sm tracking-tight leading-snug'
+    return 'text-[11px] sm:text-xs tracking-tighter leading-tight'
+  } else if (density === 'spacious') {
+    if (len <= 6) return 'text-lg sm:text-xl tracking-widest leading-tight'
+    if (len <= 10) return 'text-base sm:text-lg tracking-wider leading-snug'
+    return 'text-sm sm:text-base tracking-normal leading-snug'
+  } else {
+    // normal
+    if (len <= 6) return 'text-base sm:text-lg tracking-wider leading-snug'
+    if (len <= 10) return 'text-sm sm:text-base tracking-tight leading-snug'
+    return 'text-xs sm:text-sm tracking-tighter leading-snug'
+  }
+}
+
 // 5. プレビュー上からの直接編集（インプレース編集）ハンドラー
 function onTextBlur(targetObj, key, event) {
   const text = event.target.innerText.trim()
@@ -400,18 +442,24 @@ function closeImageModal() {
                 ]"
               >
                 <!-- Item Name & Tag (Top of vertical column) -->
-                <div>
+                <div class="flex-1 min-h-0 overflow-visible">
                   <!-- Main Item Name (Editable) -->
                   <div
                     contenteditable="true"
                     @blur="onTextBlur(item, 'name', $event)"
                     :class="[
                       'editable-field font-bold outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text whitespace-nowrap',
-                      itemClasses.name
+                      getItemNameClass(item.name)
                     ]"
                     title="タップして品名を編集"
                   >
-                    <span v-if="menuData.showDotPrefix && !item.name.startsWith('・')" class="text-[0.75em] opacity-80 mr-0.5">・</span>{{ item.name }}
+                    <span v-if="menuData.showDotPrefix && !item.name.startsWith('・')" class="text-[0.75em] opacity-80 mr-0.5">・</span>
+                    <template v-for="(part, pIdx) in parseItemName(item.name)" :key="pIdx">
+                      <span v-if="part.isBracket" class="text-[0.72em] font-normal opacity-80 tracking-tight">
+                        {{ part.text }}
+                      </span>
+                      <span v-else>{{ part.text }}</span>
+                    </template>
                   </div>
 
                   <!-- Note Badge (e.g. 塩・タレ) (Editable) -->
@@ -440,8 +488,8 @@ function closeImageModal() {
                   </div>
                 </div>
 
-                <!-- Price at the bottom of the column (Editable) -->
-                <div class="self-end pb-1">
+                <!-- Price at the bottom of the column (Editable) - 下端固定 -->
+                <div class="shrink-0 self-end pb-1 pt-1">
                   <div
                     contenteditable="true"
                     @blur="onPriceBlur(item, $event)"
@@ -533,7 +581,13 @@ function closeImageModal() {
                       itemClasses.hName
                     ]"
                   >
-                    <span v-if="menuData.showDotPrefix && !item.name.startsWith('・')" class="opacity-70 mr-1">・</span>{{ item.name }}
+                    <span v-if="menuData.showDotPrefix && !item.name.startsWith('・')" class="opacity-70 mr-1">・</span>
+                    <template v-for="(part, pIdx) in parseItemName(item.name)" :key="pIdx">
+                      <span v-if="part.isBracket" class="text-[0.8em] font-normal opacity-75">
+                        {{ part.text }}
+                      </span>
+                      <span v-else>{{ part.text }}</span>
+                    </template>
                   </span>
                   <span
                     v-if="menuData.showNotes && item.note"
