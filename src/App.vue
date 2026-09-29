@@ -1,11 +1,16 @@
 <script setup>
-import { ref, reactive, watch, onMounted } from 'vue'
-import { INITIAL_MENU_STATE, MOZU_GRAND_MENU_STATE } from './constants/presets'
+import { ref, reactive, watch, onMounted, computed } from 'vue'
+import {
+  INITIAL_MENU_STATE,
+  MOZU_GRAND_MENU_STATE,
+  MOZU_DRINK_MENU_STATE
+} from './constants/presets'
 import MenuEditor from './components/MenuEditor.vue'
 import MenuPreview from './components/MenuPreview.vue'
 import GrandMenuEditor from './components/GrandMenuEditor.vue'
 import GrandMenuPreview from './components/GrandMenuPreview.vue'
 import PresetModal from './components/PresetModal.vue'
+import MyMenusModal from './components/MyMenusModal.vue'
 import {
   Edit3,
   Eye,
@@ -14,26 +19,40 @@ import {
   Share2,
   CheckCircle2,
   Layers,
-  UtensilsCrossed
+  UtensilsCrossed,
+  Wine,
+  Bookmark
 } from '@lucide/vue'
 
 const STORAGE_KEY_DAILY = 'oshinagaki_maker_menu_data'
 const STORAGE_KEY_GRAND = 'oshinagaki_maker_grand_menu_data'
+const STORAGE_KEY_DRINK = 'oshinagaki_maker_drink_menu_data'
 const STORAGE_KEY_ACTIVE_TYPE = 'oshinagaki_maker_active_type'
 
-// Menu Mode: 'daily' (本日のおすすめ) | 'grand' (グランドメニュー)
-const menuType = ref('grand') // 写真をいただいたのでデフォルトをグランドメニューにしてすぐ確認できるようにする
+// Menu Mode: 'grand' (定番料理) | 'drink' (お飲み物) | 'daily' (本日のおすすめ)
+const menuType = ref('grand')
 
 // Tab state: 'editor' | 'preview'
 const activeTab = ref('preview')
 const showPresetModal = ref(false)
+const showMyMenusModal = ref(false)
 const showSaveToast = ref(false)
 
 // Menu reactive data for Daily (本日のおすすめ)
 const dailyMenuData = reactive(JSON.parse(JSON.stringify(INITIAL_MENU_STATE)))
 
-// Menu reactive data for Grand Menu (グランドメニュー)
+// Menu reactive data for Grand Menu (定番料理メニュー)
 const grandMenuData = reactive(JSON.parse(JSON.stringify(MOZU_GRAND_MENU_STATE)))
+
+// Menu reactive data for Drink Menu (お飲み物メニュー)
+const drinkMenuData = reactive(JSON.parse(JSON.stringify(MOZU_DRINK_MENU_STATE)))
+
+// Current active menu data for modal storage
+const currentActiveData = computed(() => {
+  if (menuType.value === 'daily') return dailyMenuData
+  if (menuType.value === 'drink') return drinkMenuData
+  return grandMenuData
+})
 
 // Load from LocalStorage and URL params
 onMounted(() => {
@@ -45,15 +64,16 @@ onMounted(() => {
     }
 
     const paramType = urlParams.get('type')
-    if (paramType === 'daily' || paramType === 'grand') {
+    if (paramType === 'daily' || paramType === 'grand' || paramType === 'drink') {
       menuType.value = paramType
     } else {
       const savedType = localStorage.getItem(STORAGE_KEY_ACTIVE_TYPE)
-      if (savedType === 'daily' || savedType === 'grand') {
+      if (savedType === 'daily' || savedType === 'grand' || savedType === 'drink') {
         menuType.value = savedType
       }
     }
 
+    // 1. Daily Menu Load & Migration
     const savedDaily = localStorage.getItem(STORAGE_KEY_DAILY)
     if (savedDaily) {
       const parsedDaily = JSON.parse(savedDaily)
@@ -69,14 +89,13 @@ onMounted(() => {
       }
     }
 
+    // 2. Grand Menu Load & Migration
     const savedGrand = localStorage.getItem(STORAGE_KEY_GRAND)
     if (savedGrand) {
       const parsed = JSON.parse(savedGrand)
-      // 写真完全再現版への自動マイグレーション
       if (parsed.version === MOZU_GRAND_MENU_STATE.version) {
         Object.assign(grandMenuData, parsed)
       } else {
-        // バージョンが古い場合は最新の改定データ（豚・最新価格・左下ロゴ等）に自動移行（ロゴ画像は保持）
         const keepLogo = parsed.logoImage || parsed.noticeBlock?.logoImage || ''
         const updated = JSON.parse(JSON.stringify(MOZU_GRAND_MENU_STATE))
         if (keepLogo) {
@@ -88,6 +107,22 @@ onMounted(() => {
         }
         Object.assign(grandMenuData, updated)
         localStorage.setItem(STORAGE_KEY_GRAND, JSON.stringify(updated))
+      }
+    }
+
+    // 3. Drink Menu Load & Migration
+    const savedDrink = localStorage.getItem(STORAGE_KEY_DRINK)
+    if (savedDrink) {
+      const parsedDrink = JSON.parse(savedDrink)
+      if (parsedDrink.version === MOZU_DRINK_MENU_STATE.version) {
+        Object.assign(drinkMenuData, parsedDrink)
+      } else {
+        const updatedDrink = JSON.parse(JSON.stringify(MOZU_DRINK_MENU_STATE))
+        for (const k of Object.keys(drinkMenuData)) {
+          delete drinkMenuData[k]
+        }
+        Object.assign(drinkMenuData, updatedDrink)
+        localStorage.setItem(STORAGE_KEY_DRINK, JSON.stringify(updatedDrink))
       }
     }
   } catch (e) {
@@ -139,6 +174,19 @@ watch(
   { deep: true }
 )
 
+watch(
+  drinkMenuData,
+  (newVal) => {
+    try {
+      localStorage.setItem(STORAGE_KEY_DRINK, JSON.stringify(newVal))
+      triggerSaveToast()
+    } catch (e) {
+      console.error(e)
+    }
+  },
+  { deep: true }
+)
+
 function handleAddItemFromPreset(item) {
   dailyMenuData.items.push({
     id: Date.now().toString() + Math.random().toString(36).substr(2, 4),
@@ -151,14 +199,58 @@ function handleAddItemFromPreset(item) {
 
 function handleResetDefaultDaily() {
   if (confirm('本日のおすすめを初期設定に戻しますか？')) {
+    for (const k of Object.keys(dailyMenuData)) delete dailyMenuData[k]
     Object.assign(dailyMenuData, JSON.parse(JSON.stringify(INITIAL_MENU_STATE)))
   }
 }
 
 function handleResetDefaultGrand() {
-  if (confirm('グランドメニューを初期設定（やきとりもず定番データ）に戻しますか？')) {
+  if (confirm('グランドメニューを初期設定（やきとりもず定番料理データ）に戻しますか？')) {
+    for (const k of Object.keys(grandMenuData)) delete grandMenuData[k]
     Object.assign(grandMenuData, JSON.parse(JSON.stringify(MOZU_GRAND_MENU_STATE)))
   }
+}
+
+function handleResetDefaultDrink() {
+  if (confirm('ドリンクメニューを初期設定（やきとりもず公式お飲み物データ）に戻しますか？')) {
+    for (const k of Object.keys(drinkMenuData)) delete drinkMenuData[k]
+    Object.assign(drinkMenuData, JSON.parse(JSON.stringify(MOZU_DRINK_MENU_STATE)))
+  }
+}
+
+// マイメニュー（手元スロット）からの読み込み
+function handleLoadSlot(slot) {
+  if (slot.type === 'daily') {
+    menuType.value = 'daily'
+    for (const k of Object.keys(dailyMenuData)) delete dailyMenuData[k]
+    Object.assign(dailyMenuData, slot.data)
+  } else if (slot.type === 'drink') {
+    menuType.value = 'drink'
+    for (const k of Object.keys(drinkMenuData)) delete drinkMenuData[k]
+    Object.assign(drinkMenuData, slot.data)
+  } else {
+    menuType.value = 'grand'
+    for (const k of Object.keys(grandMenuData)) delete grandMenuData[k]
+    Object.assign(grandMenuData, slot.data)
+  }
+}
+
+// 公式プリセットの復元
+function handleLoadPreset(type) {
+  if (type === 'daily') {
+    menuType.value = 'daily'
+    for (const k of Object.keys(dailyMenuData)) delete dailyMenuData[k]
+    Object.assign(dailyMenuData, JSON.parse(JSON.stringify(INITIAL_MENU_STATE)))
+  } else if (type === 'drink') {
+    menuType.value = 'drink'
+    for (const k of Object.keys(drinkMenuData)) delete drinkMenuData[k]
+    Object.assign(drinkMenuData, JSON.parse(JSON.stringify(MOZU_DRINK_MENU_STATE)))
+  } else {
+    menuType.value = 'grand'
+    for (const k of Object.keys(grandMenuData)) delete grandMenuData[k]
+    Object.assign(grandMenuData, JSON.parse(JSON.stringify(MOZU_GRAND_MENU_STATE)))
+  }
+  showMyMenusModal.value = false
 }
 
 function triggerPrint() {
@@ -209,7 +301,20 @@ function triggerPrint() {
             ]"
           >
             <Layers class="w-3.5 h-3.5" />
-            <span>グランドメニュー (定番)</span>
+            <span>定番料理</span>
+          </button>
+          <button
+            type="button"
+            @click="menuType = 'drink'"
+            :class="[
+              'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer',
+              menuType === 'drink'
+                ? 'bg-sky-600 text-white shadow-xs'
+                : 'text-stone-300 hover:text-white'
+            ]"
+          >
+            <Wine class="w-3.5 h-3.5" />
+            <span>お飲み物</span>
           </button>
           <button
             type="button"
@@ -237,6 +342,18 @@ function triggerPrint() {
             <span class="hidden sm:inline">保存済</span>
           </div>
 
+          <!-- My Menus (手元に記憶・保存スロット管理) -->
+          <button
+            type="button"
+            @click="showMyMenusModal = true"
+            class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 active:scale-95 text-stone-200 hover:text-white font-bold text-xs rounded-lg border border-stone-700 shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+            title="作成したお品書きを手元に記憶・読み込み"
+          >
+            <Bookmark class="w-3.5 h-3.5 text-amber-400" />
+            <span class="hidden sm:inline">マイメニュー</span>
+            <span class="sm:hidden">手元保存</span>
+          </button>
+
           <!-- Quick Print Button -->
           <button
             @click="triggerPrint"
@@ -249,34 +366,47 @@ function triggerPrint() {
         </div>
       </div>
 
-      <!-- Mobile Menu Type Switcher -->
+      <!-- Mobile Menu Type Switcher (3-tabs) -->
       <div class="max-w-5xl mx-auto px-4 pb-2 md:hidden">
-        <div class="bg-stone-800 p-1 rounded-xl w-full grid grid-cols-2 gap-1 border border-stone-700/80">
+        <div class="bg-stone-800 p-1 rounded-xl w-full grid grid-cols-3 gap-1 border border-stone-700/80">
           <button
             type="button"
             @click="menuType = 'grand'"
             :class="[
-              'py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer',
+              'py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition cursor-pointer',
               menuType === 'grand'
                 ? 'bg-emerald-600 text-white shadow-xs'
                 : 'text-stone-300 hover:text-white'
             ]"
           >
-            <Layers class="w-3.5 h-3.5" />
-            <span>グランドメニュー</span>
+            <Layers class="w-3.5 h-3.5 shrink-0" />
+            <span class="truncate">定番料理</span>
+          </button>
+          <button
+            type="button"
+            @click="menuType = 'drink'"
+            :class="[
+              'py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition cursor-pointer',
+              menuType === 'drink'
+                ? 'bg-sky-600 text-white shadow-xs'
+                : 'text-stone-300 hover:text-white'
+            ]"
+          >
+            <Wine class="w-3.5 h-3.5 shrink-0" />
+            <span class="truncate">お飲み物</span>
           </button>
           <button
             type="button"
             @click="menuType = 'daily'"
             :class="[
-              'py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer',
+              'py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition cursor-pointer',
               menuType === 'daily'
                 ? 'bg-amber-600 text-white shadow-xs'
                 : 'text-stone-300 hover:text-white'
             ]"
           >
-            <UtensilsCrossed class="w-3.5 h-3.5" />
-            <span>本日のおすすめ</span>
+            <UtensilsCrossed class="w-3.5 h-3.5 shrink-0" />
+            <span class="truncate">おすすめ</span>
           </button>
         </div>
       </div>
@@ -319,7 +449,7 @@ function triggerPrint() {
     <main class="flex-1 w-full mx-auto p-3 sm:p-6 transition-all print:p-0 print:m-0 print:w-full print:max-w-none print:h-full max-w-[1680px]">
       
       <!-- ==========================================
-           1. GRAND MENU MODE (グランドメニュー)
+           1. GRAND MENU MODE (定番料理メニュー)
            ========================================== -->
       <template v-if="menuType === 'grand'">
         <!-- Screen Layout: Split view on lg+, tab view on mobile -->
@@ -355,7 +485,43 @@ function triggerPrint() {
       </template>
 
       <!-- ==========================================
-           2. DAILY MENU MODE (本日のおすすめ)
+           2. DRINK MENU MODE (お飲み物メニュー)
+           ========================================== -->
+      <template v-else-if="menuType === 'drink'">
+        <!-- Screen Layout: Split view on lg+, tab view on mobile -->
+        <div class="no-print lg:grid lg:grid-cols-12 lg:gap-6 xl:gap-8 items-start">
+          <!-- Left: Drink Menu Editor -->
+          <div
+            :class="[
+              'lg:col-span-5 xl:col-span-5',
+              activeTab === 'editor' ? 'block' : 'hidden lg:block'
+            ]"
+          >
+            <GrandMenuEditor
+              :menu-data="drinkMenuData"
+              @reset-mozu-default="handleResetDefaultDrink"
+            />
+          </div>
+
+          <!-- Right: Drink Menu Preview (Sticky on PC) -->
+          <div
+            :class="[
+              'lg:col-span-7 xl:col-span-7 lg:sticky lg:top-20',
+              activeTab === 'preview' ? 'block' : 'hidden lg:block'
+            ]"
+          >
+            <GrandMenuPreview :menu-data="drinkMenuData" />
+          </div>
+        </div>
+
+        <!-- Print View for Drink Menu -->
+        <div class="hidden print:block print:w-full print:h-full">
+          <GrandMenuPreview :menu-data="drinkMenuData" />
+        </div>
+      </template>
+
+      <!-- ==========================================
+           3. DAILY MENU MODE (本日のおすすめ)
            ========================================== -->
       <template v-else>
         <!-- Screen Layout: Split view on lg+, tab view on mobile -->
@@ -414,6 +580,17 @@ function triggerPrint() {
       :show="showPresetModal"
       @close="showPresetModal = false"
       @add-item="handleAddItemFromPreset"
+    />
+
+    <!-- My Menus (手元に記憶) Modal -->
+    <MyMenusModal
+      v-if="showMyMenusModal"
+      :show="showMyMenusModal"
+      :current-menu-type="menuType"
+      :current-data="currentActiveData"
+      @close="showMyMenusModal = false"
+      @load-slot="handleLoadSlot"
+      @load-preset="handleLoadPreset"
     />
   </div>
 </template>

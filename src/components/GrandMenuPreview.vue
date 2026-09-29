@@ -19,8 +19,11 @@
       class="no-print bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-stone-200 flex flex-wrap items-center justify-between gap-3"
     >
       <div class="flex items-center gap-2">
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 text-xs font-bold">
-          グランドメニュー（定番）
+        <span
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold"
+          :class="isDrink ? 'bg-sky-100 text-sky-800' : 'bg-emerald-100 text-emerald-800'"
+        >
+          {{ isDrink ? 'お飲み物メニュー' : 'グランドメニュー（定番）' }}
         </span>
         <span class="text-xs text-stone-500 font-medium">
           {{ menuData.paperSize || 'A4' }} {{ isLandscape ? '横置き' : '縦置き' }} · 縦書き
@@ -469,7 +472,9 @@
         <div class="flex items-center justify-between pb-3 border-b border-stone-200">
           <div class="flex items-center gap-2">
             <ImageIcon class="w-5 h-5 text-amber-600" />
-            <h3 class="font-bold text-stone-900 text-base">生成されたグランドメニュー画像</h3>
+            <h3 class="font-bold text-stone-900 text-base">
+              {{ isDrink ? '生成されたお飲み物メニュー画像' : '生成されたグランドメニュー画像' }}
+            </h3>
           </div>
           <button
             @click="showImageModal = false"
@@ -482,7 +487,7 @@
         <div class="flex-1 overflow-auto py-4 flex items-center justify-center bg-stone-100 rounded-xl my-3">
           <img
             :src="generatedImageUrl"
-            alt="グランドメニュー画像"
+            alt="メニュー画像"
             class="max-h-[60vh] max-w-full rounded shadow-md object-contain"
           />
         </div>
@@ -518,6 +523,10 @@ const props = defineProps({
     type: Object,
     required: true,
   }
+})
+
+const isDrink = computed(() => {
+  return props.menuData.menuType === 'drink' || (props.menuData.title && props.menuData.title.includes('飲み物'))
 })
 
 const scrollContainer = ref(null)

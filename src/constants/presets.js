@@ -235,3 +235,156 @@ export const MOZU_GRAND_MENU_STATE = {
     }
   ]
 };
+
+// やきとりもず ドリンクメニュー初期データ（写真実物完全再現版）
+export const MOZU_DRINK_MENU_STATE = {
+  version: 'v1_drink_menu_2026',
+  menuType: 'drink', // 2段組エンジンを使用 (お飲み物)
+  title: 'やきとりもず お飲み物',
+  bgColor: '#ffffff', // ドリンクメニュー実物の白背景
+  bgPattern: 'none',
+  textColor: '#1a1f1b',
+  fontFamily: 'brush', // 筆文字
+  paperSize: 'A4',
+  paperOrientation: 'landscape',
+  priceFormat: 'kanji',
+  showDotPrefix: true, // 品名の頭に中黒「・」をつける（実物同様）
+  frameStyle: 'none', // フレーム枠線なし
+  storeName: '',
+  sectionSpacing: 'auto', // 用紙に合わせて自動均等配置
+  itemFontSize: 'large', // ゆったり標準
+  logoSize: 140,
+  logoPosition: 'bottom-left',
+  logoImage: '',
+  noticeBlock: {
+    show: false, // 写真実物は店舗案内なし
+    logoText: '',
+    logoImage: '',
+    lines: []
+  },
+  sections: [
+    {
+      id: 'beer',
+      name: 'ビール',
+      subtitle: '',
+      placement: 'top',
+      uniformPrice: '',
+      items: [
+        { id: 'b1', name: 'サッポロクラシック樽生', price: '650', note: '' },
+        { id: 'b2', name: 'ノンアルコールビール', price: '450', note: '' },
+      ]
+    },
+    {
+      id: 'highball',
+      name: 'ハイボール',
+      subtitle: '',
+      placement: 'top',
+      uniformPrice: '',
+      items: [
+        { id: 'hb1', name: 'デュワーズ樽詰', price: '600', note: '' }
+      ]
+    },
+    {
+      id: 'sour',
+      name: 'サワー',
+      subtitle: 'ノンアル可',
+      placement: 'top',
+      uniformPrice: '580',
+      items: [
+        { id: 'sr1', name: 'レモン', price: '' },
+        { id: 'sr2', name: 'ライム', price: '' },
+        { id: 'sr3', name: 'グレープフルーツ', price: '' },
+        { id: 'sr4', name: 'うめ', price: '' },
+        { id: 'sr5', name: 'カルピス', price: '' },
+        { id: 'sr6', name: '巨峰', price: '' },
+        { id: 'sr7', name: 'パンチレモン', price: '' },
+        { id: 'sr8', name: '男梅', price: '' },
+        { id: 'sr9', name: 'パイン', price: '' },
+        { id: 'sr10', name: 'シークワーサー', price: '' },
+        { id: 'sr11', name: 'オレンジ', price: '' },
+        { id: 'sr12', name: 'マスカット', price: '' },
+        { id: 'sr13', name: 'ラムネ', price: '' },
+        { id: 'sr14', name: 'カシス', price: '' },
+        { id: 'sr15', name: '緑茶割り', price: '' },
+        { id: 'sr16', name: 'ウーロン割り', price: '' },
+      ]
+    },
+    {
+      id: 'shochu_mugi',
+      name: '焼酎 麦',
+      subtitle: 'ロック・水割り・ソーダ',
+      placement: 'top',
+      uniformPrice: '',
+      items: [
+        { id: 'sc1', name: '銀座のすずめ 琥珀', price: '700', note: '' },
+        { id: 'sc2', name: '薩州 呂布', price: '700', note: '' },
+      ]
+    },
+    {
+      id: 'shochu_imo',
+      name: '焼酎 芋',
+      subtitle: 'ロック・水割り・ソーダ',
+      placement: 'top',
+      uniformPrice: '',
+      items: [
+        { id: 'sc3', name: 'だいやめ〜DAIYAME〜', price: '700', note: '' },
+        { id: 'sc4', name: '薩州 赤兎馬', price: '700', note: '' },
+        { id: 'sc5', name: '三岳', price: '800', note: '' },
+      ]
+    },
+    {
+      id: 'nihonshu',
+      name: '日本酒',
+      subtitle: '',
+      placement: 'bottom',
+      uniformPrice: '',
+      items: [
+        { id: 'ns1', name: '十勝碧雲蔵 純米(冷酒一合)', price: '750', note: '' },
+        { id: 'ns2', name: '北の勝(冷酒300ml)', price: '1000', note: '' },
+        { id: 'ns3', name: '賀茂鶴(冷酒300ml)', price: '1200', note: '' },
+        { id: 'ns4', name: '酔鯨(冷酒300ml)', price: '1500', note: '' },
+        { id: 'ns5', name: '菊正宗(熱燗一合)', price: '700', note: '' },
+      ]
+    },
+    {
+      id: 'kajitsushu',
+      name: '果実酒',
+      subtitle: 'ロック・水割り・ソーダ',
+      placement: 'bottom',
+      uniformPrice: '',
+      items: [
+        { id: 'kj1', name: '黒梅酒', price: '600', note: '' },
+        { id: 'kj2', name: 'あらごしみかん酒', price: '800', note: '' },
+        { id: 'kj3', name: 'あらごしもも酒', price: '800', note: '' },
+        { id: 'kj4', name: 'あらごしパイン酒', price: '800', note: '' },
+      ]
+    },
+    {
+      id: 'wine',
+      name: 'ボトルワイン',
+      subtitle: '',
+      placement: 'bottom',
+      uniformPrice: '',
+      items: [
+        { id: 'wn1', name: 'クロード・ヴァル(赤)', price: '2500', note: '' },
+        { id: 'wn2', name: 'プリモ・フィオーレロンガネージ(白)', price: '3000', note: '' },
+      ]
+    },
+    {
+      id: 'softdrink',
+      name: 'ソフトドリンク',
+      subtitle: '',
+      placement: 'bottom',
+      uniformPrice: '300',
+      items: [
+        { id: 'sd1', name: '緑茶', price: '' },
+        { id: 'sd2', name: 'ウーロン茶', price: '' },
+        { id: 'sd3', name: 'オレンジ', price: '' },
+        { id: 'sd4', name: 'アップル', price: '' },
+        { id: 'sd5', name: 'コーラ', price: '' },
+        { id: 'sd6', name: 'サイダー', price: '' },
+        { id: 'sd7', name: 'カルピス', price: '' },
+      ]
+    }
+  ]
+};

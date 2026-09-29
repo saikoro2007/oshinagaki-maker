@@ -4,11 +4,14 @@
     <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-stone-200">
       <div class="flex items-start sm:items-center justify-between gap-2 mb-2">
         <div class="min-w-0 flex-1">
-          <span class="inline-block px-2.5 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 mb-1">
-            グランドメニュー（定番・全品一覧）
+          <span
+            class="inline-block px-2.5 py-0.5 rounded text-[11px] font-bold mb-1"
+            :class="isDrink ? 'bg-sky-100 text-sky-800' : 'bg-emerald-100 text-emerald-800'"
+          >
+            {{ isDrink ? 'お飲み物メニュー（ドリンク）' : 'グランドメニュー（定番・全品一覧）' }}
           </span>
           <h2 class="text-base sm:text-lg font-bold text-stone-900 truncate">
-            定番メニュー編集
+            {{ isDrink ? 'お飲み物メニュー編集' : '定番メニュー編集' }}
           </h2>
         </div>
 
@@ -16,7 +19,7 @@
           type="button"
           @click="$emit('reset-mozu-default')"
           class="shrink-0 px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-lg text-xs font-medium flex items-center gap-1 transition cursor-pointer"
-          title="店舗メニューの初期状態に戻す"
+          :title="isDrink ? 'お飲み物メニューの初期データに戻す' : '定番メニューの初期データに戻す'"
         >
           <RotateCcw class="w-3.5 h-3.5" />
           <span class="hidden sm:inline">初期データに戻す</span>
@@ -864,6 +867,10 @@ const props = defineProps({
 defineEmits(['reset-mozu-default'])
 
 const logoFileInput = ref(null)
+
+const isDrink = computed(() => {
+  return props.menuData.menuType === 'drink' || (props.menuData.title && props.menuData.title.includes('飲み物'))
+})
 
 const currentLogoImage = computed(() => {
   return props.menuData.logoImage || props.menuData.noticeBlock?.logoImage || ''
