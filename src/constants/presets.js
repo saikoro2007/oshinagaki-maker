@@ -69,7 +69,7 @@ export const RESTAURANT_PRESETS = [
 ];
 
 export const INITIAL_MENU_STATE = {
-  version: 'v2_mozu_recommend_2026',
+  version: 'v3_mozu_recommend_2026',
   title: '本日のおすすめ',
   subtitle: '',
   footerNote: '',
@@ -85,23 +85,23 @@ export const INITIAL_MENU_STATE = {
   paperSize: 'A4', // 'A4' | 'B5'
   paperOrientation: 'landscape', // 横置き
   density: 'spacious', // 'auto' | 'spacious' | 'normal' | 'compact'
+  fontScale: 115, // 文字サイズスケール (%): 11品に最適化された迫力サイズ
   showDividers: false, // 区切り線なし（実物同様）
   bgColor: '#ffffff', // 背景色（純白）
   bgPattern: 'none', // 無地
   textColor: '#1c1917', // 墨色
   items: [
     { id: '1', name: '豚巻きキムチ串', price: '380', note: '', translation: '' },
-    { id: '2', name: '豚巻きにんにく串(十勝産にんにく)', price: '380', note: '', translation: '' },
-    { id: '3', name: 'にんにくの芽串(二本)', price: '250', note: '', translation: '' },
-    { id: '4', name: 'やげんなんこつ串', price: '330', note: '', translation: '' },
-    { id: '5', name: '八角味噌焼き', price: '980', note: '', translation: '' },
-    { id: '6', name: 'ミノポン', price: '660', note: '', translation: '' },
-    { id: '7', name: 'ガーリックシュリンプ', price: '680', note: '', translation: '' },
-    { id: '8', name: '焼きなす', price: '680', note: '', translation: '' },
-    { id: '9', name: '炭火焼きイカマヨネーズ', price: '770', note: '', translation: '' },
-    { id: '10', name: '揚げ出しなす', price: '770', note: '', translation: '' },
-    { id: '11', name: 'カスベ一夜干し', price: '880', note: '', translation: '' },
-    { id: '12', name: 'サバ串', price: '980', note: '', translation: '' },
+    { id: '2', name: '豚巻きにんにく串 （十勝さんにんにく）', price: '380', note: '', translation: '' },
+    { id: '3', name: 'やげんなんこつ串', price: '330', note: '', translation: '' },
+    { id: '4', name: '牛すじ煮込み', price: '880', note: '', translation: '' },
+    { id: '5', name: 'ミノポン', price: '660', note: '', translation: '' },
+    { id: '6', name: 'ガーリックシュリンプ', price: '680', note: '', translation: '' },
+    { id: '7', name: '焼きなす', price: '680', note: '', translation: '' },
+    { id: '8', name: '炭火焼イカマヨネーズ', price: '770', note: '', translation: '' },
+    { id: '9', name: '揚げ出しなす', price: '770', note: '', translation: '' },
+    { id: '10', name: 'カスベ一夜干し', price: '880', note: '', translation: '' },
+    { id: '11', name: 'サバ串', price: '980', note: '', translation: '' },
   ]
 };
 

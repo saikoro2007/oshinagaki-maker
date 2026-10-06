@@ -12,7 +12,7 @@ Antigravity (Gemini)、Claude (Claude Code / Cursor / Cline) 等のすべての�
 - **リポジトリ**: `saikoro2007/oshinagaki-maker`
 - **公開先 (GitHub Pages)**: `https://saikoro2007.github.io/oshinagaki-maker/`
 - **誕生背景 (First Test Case)**:
-  - 北海道帯広市の焼き鳥店「やきとりもず」を経営する弟様が、厨房にノートPC（Office）を持ち込むのが不便だったことから着想。
+  - 北海道帯広市の焼き鳥店「やきとりもず」を経営するお父様と、そこで共に働くご家族（お父様・お母様・弟様）の現場で、厨房にノートPC（Office）を持ち込むのが不便だったことから着想。
   - 実店舗の現場における「スマホ片手にすぐ作って、すぐ印刷したい」という強いニーズを解決するための汎用Webプロダクト。
 
 ---

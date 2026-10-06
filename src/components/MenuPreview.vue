@@ -1,8 +1,10 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { formatPrice } from '../utils/formatters'
-import { Printer, Edit3, ArrowLeftRight, Download, Image as ImageIcon, Loader2, X } from '@lucide/vue'
-import { toPng } from 'html-to-image'
+import { getWashiBackgroundStyle, getFontFamilyClass } from '../utils/styleHelpers'
+import { useImageExport } from '../composables/useImageExport'
+import ImageExportModal from './ImageExportModal.vue'
+import { Printer, Edit3, ArrowLeftRight, Image as ImageIcon, Loader2, Type } from '@lucide/vue'
 
 const props = defineProps({
   menuData: {
@@ -13,9 +15,17 @@ const props = defineProps({
 
 const scrollContainer = ref(null)
 const printSheetRef = ref(null)
-const isGeneratingImage = ref(false)
-const generatedImageUrl = ref(null)
-const showImageModal = ref(false)
+
+const filenamePrefix = computed(() => props.menuData.title || 'お品書き')
+
+const {
+  isGeneratingImage,
+  generatedImageUrl,
+  showImageModal,
+  saveAsImage,
+  downloadGeneratedImage,
+  closeImageModal,
+} = useImageExport(printSheetRef, filenamePrefix)
 
 onMounted(() => {
   nextTick(() => {
@@ -39,17 +49,7 @@ watch(() => props.menuData.layout, (newLayout) => {
   })
 })
 
-const fontClass = computed(() => {
-  switch (props.menuData.fontFamily) {
-    case 'brush':
-      return 'font-brush'
-    case 'gothic':
-      return 'font-gothic'
-    case 'mincho':
-    default:
-      return 'font-mincho'
-  }
-})
+const fontClass = computed(() => getFontFamilyClass(props.menuData.fontFamily))
 
 const frameClasses = computed(() => {
   switch (props.menuData.frameStyle) {
@@ -91,47 +91,9 @@ const verticalContentHeightClass = computed(() => {
   }
 })
 
-// 背景色と和紙テクスチャ模様の合成スタイル
-const bgToneStyle = computed(() => {
-  const color = props.menuData.bgColor || '#ffffff'
-  const pattern = props.menuData.bgPattern || 'none'
-
-  let backgroundImage = 'none'
-  let backgroundSize = 'auto'
-
-  switch (pattern) {
-    case 'cloud':
-      // 雲竜・和紙繊維調
-      backgroundImage = 'radial-gradient(rgba(120, 100, 70, 0.16) 0.8px, transparent 0.8px), radial-gradient(rgba(140, 120, 90, 0.11) 0.6px, transparent 0.6px)'
-      backgroundSize = '24px 24px, 16px 16px'
-      break
-    case 'washi':
-      // 和紙の微細粒
-      backgroundImage = 'radial-gradient(rgba(100, 90, 80, 0.13) 0.6px, transparent 0.6px)'
-      backgroundSize = '18px 18px'
-      break
-    case 'grid':
-      // 和風格子（上品な薄い格子）
-      backgroundImage = 'linear-gradient(rgba(130, 110, 80, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(130, 110, 80, 0.08) 1px, transparent 1px)'
-      backgroundSize = '32px 32px'
-      break
-    case 'none':
-    default:
-      backgroundImage = 'none'
-      break
-  }
-
-  return {
-    backgroundColor: color,
-    backgroundImage,
-    backgroundSize,
-  }
-})
-
-// 用紙全体の統合スタイル（背景色・和紙模様・文字色）
 const sheetStyle = computed(() => {
   return {
-    ...bgToneStyle.value,
+    ...getWashiBackgroundStyle(props.menuData.bgColor || '#ffffff', props.menuData.bgPattern || 'none'),
     color: props.menuData.textColor || '#1c1917',
     boxSizing: 'border-box'
   }
@@ -143,43 +105,55 @@ const effectiveDensity = computed(() => {
     return props.menuData.density
   }
   const count = props.menuData.items.length
-  if (count <= 7) return 'spacious'
-  if (count <= 11) return 'normal'
+  if (count <= 8) return 'spacious'
+  if (count <= 13) return 'normal'
   return 'compact'
 })
+
+// 文字サイズスケール倍率（75%〜160%、デフォルト 100%）
+const fontScaleRatio = computed(() => {
+  const scale = Number(props.menuData.fontScale) || 100
+  return scale / 100
+})
+
+function adjustFontScale(delta) {
+  const current = Number(props.menuData.fontScale) || 100
+  const next = Math.min(160, Math.max(75, current + delta))
+  props.menuData.fontScale = next
+}
 
 const itemClasses = computed(() => {
   switch (effectiveDensity.value) {
     case 'compact':
       return {
-        col: 'px-1 sm:px-1.5 min-w-[24px] sm:min-w-[30px]',
-        name: 'text-sm sm:text-base tracking-normal leading-snug',
-        note: 'text-[9px] px-0.5 py-0.5 mt-1',
-        price: 'text-xs sm:text-sm tracking-tighter',
-        hRow: 'py-1 sm:py-1.5',
-        hName: 'text-sm sm:text-base font-bold',
-        hPrice: 'text-sm sm:text-base font-bold',
+        col: 'px-1 sm:px-2 min-w-[28px] sm:min-w-[34px]',
+        name: 'tracking-normal leading-snug',
+        note: 'text-[10px] px-0.5 py-0.5 mt-1',
+        price: 'tracking-tight',
+        hRow: 'py-1.5 sm:py-2',
+        hName: 'text-base sm:text-lg font-bold',
+        hPrice: 'text-base sm:text-lg font-bold',
       }
     case 'normal':
       return {
-        col: 'px-2 sm:px-2.5 min-w-[28px] sm:min-w-[36px]',
-        name: 'text-base sm:text-lg tracking-wider leading-snug',
-        note: 'text-[10px] px-0.5 py-1 mt-1.5',
-        price: 'text-sm sm:text-base tracking-normal',
-        hRow: 'py-2 sm:py-2.5',
-        hName: 'text-base sm:text-lg font-bold',
-        hPrice: 'text-base sm:text-lg font-bold',
+        col: 'px-2 sm:px-3 min-w-[32px] sm:min-w-[42px]',
+        name: 'tracking-wider leading-snug',
+        note: 'text-[11px] px-0.5 py-1 mt-1.5',
+        price: 'tracking-normal',
+        hRow: 'py-2 sm:py-3',
+        hName: 'text-lg sm:text-xl font-bold',
+        hPrice: 'text-lg sm:text-xl font-bold',
       }
     case 'spacious':
     default:
       return {
-        col: 'px-3 sm:px-4 min-w-[34px] sm:min-w-[44px]',
-        name: 'text-lg sm:text-xl tracking-widest leading-tight',
-        note: 'text-[11px] px-1 py-1 mt-2',
-        price: 'text-base sm:text-lg tracking-wider',
+        col: 'px-3 sm:px-4 min-w-[38px] sm:min-w-[48px]',
+        name: 'tracking-widest leading-tight',
+        note: 'text-[12px] px-1 py-1 mt-2',
+        price: 'tracking-wider',
         hRow: 'py-2.5 sm:py-3.5',
-        hName: 'text-lg sm:text-xl font-bold',
-        hPrice: 'text-lg sm:text-xl font-bold',
+        hName: 'text-xl sm:text-2xl font-bold',
+        hPrice: 'text-xl sm:text-2xl font-bold',
       }
   }
 })
@@ -205,26 +179,74 @@ function parseItemName(name) {
   return parts
 }
 
-// 4. 品名の文字数と密度設定に応じた動的な文字サイズ調整（文字溢れ・価格押し出しを防止）
-function getItemNameClass(name) {
+// 4. 品名の文字数とスケールに応じた動的な文字サイズスタイル（文字溢れ・価格押し出しを防止）
+function getItemNameStyle(name) {
   const len = name ? name.length : 0
+  const ratio = fontScaleRatio.value
   const density = effectiveDensity.value
 
+  // ベースフォントサイズ（rem）
+  let baseRem = 1.35
   if (density === 'compact') {
-    if (len <= 7) return 'text-sm sm:text-base tracking-normal leading-snug'
-    if (len <= 11) return 'text-xs sm:text-sm tracking-tight leading-snug'
-    return 'text-[11px] sm:text-xs tracking-tighter leading-tight'
+    baseRem = 1.18
   } else if (density === 'spacious') {
-    if (len <= 6) return 'text-lg sm:text-xl tracking-widest leading-tight'
-    if (len <= 10) return 'text-base sm:text-lg tracking-wider leading-snug'
-    return 'text-sm sm:text-base tracking-normal leading-snug'
-  } else {
-    // normal
-    if (len <= 6) return 'text-base sm:text-lg tracking-wider leading-snug'
-    if (len <= 10) return 'text-sm sm:text-base tracking-tight leading-snug'
-    return 'text-xs sm:text-sm tracking-tighter leading-snug'
+    baseRem = 1.55
+  }
+
+  // 文字数に応じた減衰率（長い品名でも価格と絶対に重ならないように）
+  let lenFactor = 1.0
+  if (len > 14) {
+    lenFactor = 0.65
+  } else if (len > 10) {
+    lenFactor = 0.78
+  } else if (len > 6) {
+    lenFactor = 0.90
+  }
+
+  const finalRem = (baseRem * ratio * lenFactor).toFixed(3)
+
+  // 縦書き時の文字送り（letter-spacing）
+  let tracking = '0.12em'
+  if (len <= 4) {
+    tracking = '0.24em'
+  } else if (len <= 6) {
+    tracking = '0.15em'
+  } else if (len > 10) {
+    tracking = '0.01em'
+  }
+
+  return {
+    fontSize: `calc(${finalRem}rem * var(--print-scale, 1))`,
+    letterSpacing: tracking,
+    lineHeight: 1.25,
   }
 }
+
+// 価格のフォントスタイル
+const priceStyle = computed(() => {
+  const ratio = fontScaleRatio.value
+  const density = effectiveDensity.value
+  let baseRem = 1.15
+  if (density === 'compact') baseRem = 1.05
+  else if (density === 'spacious') baseRem = 1.3
+
+  const finalRem = (baseRem * ratio).toFixed(3)
+  return {
+    fontSize: `calc(${finalRem}rem * var(--print-scale, 1))`,
+    letterSpacing: '0.06em',
+  }
+})
+
+// タイトル（表頭）のフォントスタイル
+const titleStyle = computed(() => {
+  const ratio = fontScaleRatio.value
+  const titleRatio = 1 + (ratio - 1) * 0.55
+  const baseRem = 2.4
+  return {
+    fontSize: `calc(${(baseRem * titleRatio).toFixed(3)}rem * var(--print-scale, 1))`,
+    letterSpacing: '0.22em',
+  }
+})
 
 // 5. プレビュー上からの直接編集（インプレース編集）ハンドラー
 function onTextBlur(targetObj, key, event) {
@@ -243,56 +265,6 @@ function onPriceBlur(item, event) {
 function triggerPrint() {
   window.print()
 }
-
-// SNS・Instagram用 PNG画像書き出し
-async function saveAsImage() {
-  if (!printSheetRef.value || isGeneratingImage.value) return
-  isGeneratingImage.value = true
-  try {
-    // Webフォント読み込み完了を待機
-    if (document.fonts && document.fonts.ready) {
-      await document.fonts.ready
-    }
-
-    // レンダリング安定のための微小待機
-    await new Promise((resolve) => setTimeout(resolve, 150))
-
-    // 高精細（pixelRatio: 2）で美しいPNG画像を生成
-    const dataUrl = await toPng(printSheetRef.value, {
-      quality: 0.95,
-      pixelRatio: 2,
-      cacheBust: true,
-    })
-
-    generatedImageUrl.value = dataUrl
-    showImageModal.value = true
-
-    // PC向けに自動ダウンロードも実行
-    const filename = `${props.menuData.title || 'お品書き'}_${new Date().toISOString().slice(0, 10)}.png`
-    const link = document.createElement('a')
-    link.download = filename
-    link.href = dataUrl
-    link.click()
-  } catch (error) {
-    console.error('画像生成に失敗しました:', error)
-    alert('画像の生成中にエラーが発生しました。もう一度お試しください。')
-  } finally {
-    isGeneratingImage.value = false
-  }
-}
-
-function downloadGeneratedImage() {
-  if (!generatedImageUrl.value) return
-  const filename = `${props.menuData.title || 'お品書き'}_${new Date().toISOString().slice(0, 10)}.png`
-  const link = document.createElement('a')
-  link.download = filename
-  link.href = generatedImageUrl.value
-  link.click()
-}
-
-function closeImageModal() {
-  showImageModal.value = false
-}
 </script>
 
 <template>
@@ -303,6 +275,9 @@ function closeImageModal() {
         @page {
           size: {{ menuData.paperSize === 'B5' ? '182mm 257mm' : 'A4' }} {{ isLandscape ? 'landscape' : 'portrait' }};
           margin: 6mm;
+        }
+        .print-sheet {
+          --print-scale: 1.15;
         }
         .editable-field {
           outline: none !important;
@@ -315,7 +290,7 @@ function closeImageModal() {
     <div
       class="no-print bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-stone-200 flex flex-wrap items-center justify-between gap-3"
     >
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 flex-wrap">
         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-100 text-amber-900 text-xs font-bold">
           本日のおすすめ
         </span>
@@ -328,8 +303,45 @@ function closeImageModal() {
         </span>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="flex items-center gap-2">
+      <!-- Action Buttons & Quick Controls -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- Font Scale Quick Controls -->
+        <div class="flex items-center gap-1 bg-stone-100 hover:bg-stone-200/60 p-1 rounded-xl border border-stone-200 text-xs">
+          <span class="font-bold text-stone-700 pl-1.5 flex items-center gap-1 select-none">
+            <Type class="w-3.5 h-3.5 text-stone-500" />
+            <span class="hidden sm:inline">文字</span>
+          </span>
+          <button
+            type="button"
+            @click="adjustFontScale(-5)"
+            :disabled="(menuData.fontScale || 100) <= 75"
+            class="w-6 h-6 rounded-md bg-white hover:bg-stone-50 active:scale-95 text-stone-800 font-black flex items-center justify-center text-xs shadow-xs border border-stone-200 cursor-pointer disabled:opacity-40"
+            title="文字サイズを小さく (-5%)"
+          >
+            －
+          </button>
+          <span class="font-black text-stone-900 min-w-[38px] text-center select-none text-[11px]">
+            {{ menuData.fontScale || 100 }}%
+          </span>
+          <button
+            type="button"
+            @click="adjustFontScale(5)"
+            :disabled="(menuData.fontScale || 100) >= 160"
+            class="w-6 h-6 rounded-md bg-white hover:bg-stone-50 active:scale-95 text-stone-800 font-black flex items-center justify-center text-xs shadow-xs border border-stone-200 cursor-pointer disabled:opacity-40"
+            title="文字サイズを大きく (+5%)"
+          >
+            ＋
+          </button>
+          <button
+            v-if="(menuData.fontScale || 100) !== 100"
+            type="button"
+            @click="menuData.fontScale = 100"
+            class="text-[10px] text-stone-500 hover:text-amber-800 hover:underline px-1 cursor-pointer"
+            title="標準(100%)に戻す"
+          >
+            標準
+          </button>
+        </div>
         <!-- Save as PNG button -->
         <button
           @click="saveAsImage"
@@ -423,7 +435,8 @@ function closeImageModal() {
               <h1
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'title', $event)"
-                class="editable-field text-3xl sm:text-4xl font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
+                class="editable-field font-black tracking-widest outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text"
+                :style="titleStyle"
                 title="タップして編集"
               >
                 {{ menuData.title }}
@@ -431,7 +444,7 @@ function closeImageModal() {
             </div>
 
             <!-- 2. Middle Items Section (Flows from Right to Left, Side-by-Side!) -->
-            <div class="flex-1 flex flex-col justify-around px-4 sm:px-6 h-full overflow-x-visible">
+            <div class="flex-1 flex flex-col justify-around px-3 sm:px-6 h-full overflow-x-visible">
               <div
                 v-for="(item, idx) in menuData.items"
                 :key="item.id || idx"
@@ -449,8 +462,9 @@ function closeImageModal() {
                     @blur="onTextBlur(item, 'name', $event)"
                     :class="[
                       'editable-field font-bold outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text whitespace-nowrap',
-                      getItemNameClass(item.name)
+                      itemClasses.name
                     ]"
+                    :style="getItemNameStyle(item.name)"
                     title="タップして品名を編集"
                   >
                     <span v-if="menuData.showDotPrefix && !item.name.startsWith('・')" class="text-[0.75em] opacity-80 mr-0.5">・</span>
@@ -497,6 +511,7 @@ function closeImageModal() {
                       'editable-field font-bold whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text',
                       itemClasses.price
                     ]"
+                    :style="priceStyle"
                     title="タップして価格を編集"
                   >
                     {{ formatPrice(item.price, menuData.priceFormat, true) }}
@@ -547,7 +562,8 @@ function closeImageModal() {
                 <h1
                   contenteditable="true"
                   @blur="onTextBlur(menuData, 'title', $event)"
-                  class="editable-field text-2xl sm:text-3xl font-black tracking-widest outline-none hover:bg-amber-100/60 cursor-text"
+                  class="editable-field font-black tracking-widest outline-none hover:bg-amber-100/60 cursor-text"
+                  :style="{ fontSize: `${(1.85 * fontScaleRatio).toFixed(2)}rem` }"
                 >
                   {{ menuData.title }}
                 </h1>
@@ -580,6 +596,7 @@ function closeImageModal() {
                       'editable-field tracking-wide outline-none hover:bg-amber-100/60 cursor-text',
                       itemClasses.hName
                     ]"
+                    :style="{ fontSize: `${(1.15 * fontScaleRatio).toFixed(2)}rem` }"
                   >
                     <span v-if="menuData.showDotPrefix && !item.name.startsWith('・')" class="opacity-70 mr-1">・</span>
                     <template v-for="(part, pIdx) in parseItemName(item.name)" :key="pIdx">
@@ -614,6 +631,7 @@ function closeImageModal() {
                     'editable-field whitespace-nowrap pl-4 outline-none hover:bg-amber-100/60 cursor-text',
                     itemClasses.hPrice
                   ]"
+                  :style="{ fontSize: `${(1.15 * fontScaleRatio).toFixed(2)}rem` }"
                 >
                   {{ formatPrice(item.price, menuData.priceFormat, false) }}
                 </div>
@@ -644,78 +662,12 @@ function closeImageModal() {
     </div>
 
     <!-- Image Export Modal (SNS / Instagram用) -->
-    <Teleport to="body">
-      <div
-        v-if="showImageModal"
-        class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-xs animate-in fade-in duration-200"
-        @click.self="closeImageModal"
-      >
-        <div
-          class="bg-stone-900 border border-stone-700 text-stone-100 rounded-2xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden"
-        >
-          <!-- Modal Header -->
-          <div class="px-4 py-3 border-b border-stone-800 flex items-center justify-between shrink-0">
-            <div class="flex items-center gap-2">
-              <span class="text-emerald-400 font-bold flex items-center gap-1.5 text-sm sm:text-base">
-                <ImageIcon class="w-4 h-4" /> お品書き画像の書き出し完了
-              </span>
-            </div>
-            <button
-              @click="closeImageModal"
-              type="button"
-              class="p-1 rounded-lg text-stone-400 hover:text-white hover:bg-stone-800 transition"
-              title="閉じる"
-            >
-              <X class="w-5 h-5" />
-            </button>
-          </div>
-
-          <!-- Modal Body -->
-          <div class="p-4 overflow-y-auto space-y-3 flex-1 flex flex-col items-center">
-            <!-- Mobile Guidance Banner -->
-            <div class="w-full bg-emerald-950/70 border border-emerald-700/60 rounded-xl p-3 text-xs sm:text-sm text-emerald-200 flex items-start gap-2.5">
-              <span class="text-base shrink-0">📱</span>
-              <div>
-                <p class="font-bold text-white mb-0.5">スマートフォンでご利用の場合</p>
-                <p class="leading-relaxed opacity-90 text-[11px] sm:text-xs">
-                  下の画像を<strong class="text-emerald-300">「長押し」</strong>して<strong class="text-white">「写真に追加」</strong>または<strong class="text-white">「画像を保存」</strong>を選ぶとカメラロールに保存されます。Instagramの投稿やストーリー、LINE配信にそのままお使いいただけます。
-                </p>
-              </div>
-            </div>
-
-            <!-- Image Container -->
-            <div class="w-full flex justify-center bg-stone-950 p-2 sm:p-3 rounded-xl border border-stone-800 overflow-hidden">
-              <img
-                :src="generatedImageUrl"
-                alt="生成されたお品書き画像"
-                class="max-h-[50vh] sm:max-h-[55vh] w-auto max-w-full object-contain rounded shadow-lg border border-stone-800/80 select-auto"
-              />
-            </div>
-          </div>
-
-          <!-- Modal Footer -->
-          <div class="px-4 py-3 bg-stone-950/80 border-t border-stone-800 flex items-center justify-between gap-2 shrink-0">
-            <span class="text-xs text-stone-400 hidden sm:inline">高解像度 PNG形式</span>
-            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-              <button
-                @click="downloadGeneratedImage"
-                type="button"
-                class="flex-1 sm:flex-initial px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold rounded-xl text-xs sm:text-sm shadow flex items-center justify-center gap-1.5 transition cursor-pointer"
-              >
-                <Download class="w-4 h-4" />
-                <span>PNG画像を再ダウンロード</span>
-              </button>
-              <button
-                @click="closeImageModal"
-                type="button"
-                class="px-4 py-2 bg-stone-800 hover:bg-stone-700 active:scale-95 text-stone-300 hover:text-white rounded-xl text-xs sm:text-sm transition cursor-pointer"
-              >
-                閉じる
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <ImageExportModal
+      :show="showImageModal"
+      :image-url="generatedImageUrl || ''"
+      :title="`${menuData.title || 'お品書き'}画像の書き出し完了`"
+      @close="closeImageModal"
+      @download="downloadGeneratedImage"
+    />
   </div>
 </template>

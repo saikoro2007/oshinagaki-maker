@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import PaperFormatSection from './PaperFormatSection.vue'
 import {
   Plus,
   Trash2,
@@ -99,6 +100,26 @@ function selectLayout(mode) {
     props.menuData.priceFormat = 'number'
   }
 }
+
+function adjustFontScale(delta) {
+  const current = Number(props.menuData.fontScale) || 100
+  const next = Math.min(160, Math.max(75, current + delta))
+  props.menuData.fontScale = next
+}
+
+function autoOptimizeFontAndLayout() {
+  const count = props.menuData.items.length
+  if (count <= 7) {
+    props.menuData.density = 'spacious'
+    props.menuData.fontScale = 125
+  } else if (count <= 11) {
+    props.menuData.density = 'normal'
+    props.menuData.fontScale = 110
+  } else {
+    props.menuData.density = 'normal'
+    props.menuData.fontScale = 105
+  }
+}
 </script>
 
 
@@ -134,89 +155,132 @@ function selectLayout(mode) {
     </div>
 
     <!-- Paper Format & Orientation Settings -->
-    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-stone-200 space-y-3">
-      <h3 class="font-bold text-sm text-stone-900 flex items-center justify-between">
-        <span>用紙サイズ・向き</span>
-      </h3>
-
-      <div class="grid grid-cols-2 gap-3 text-xs">
-        <!-- Paper Orientation -->
-        <div>
-          <label class="block text-stone-500 mb-1.5 font-medium">用紙の向き</label>
-          <div class="grid grid-cols-2 gap-1.5 bg-stone-100 p-1 rounded-xl">
-            <button
-              type="button"
-              @click="menuData.paperOrientation = 'landscape'"
-              :class="[
-                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
-                menuData.paperOrientation !== 'portrait'
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              ]"
-            >
-              横置き (定番)
-            </button>
-            <button
-              type="button"
-              @click="menuData.paperOrientation = 'portrait'"
-              :class="[
-                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
-                menuData.paperOrientation === 'portrait'
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              ]"
-            >
-              縦置き
-            </button>
-          </div>
-        </div>
-
-        <!-- Paper Size -->
-        <div>
-          <label class="block text-stone-500 mb-1.5 font-medium">用紙サイズ</label>
-          <div class="grid grid-cols-2 gap-1.5 bg-stone-100 p-1 rounded-xl">
-            <button
-              type="button"
-              @click="menuData.paperSize = 'A4'"
-              :class="[
-                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
-                menuData.paperSize !== 'B5'
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              ]"
-            >
-              A4
-            </button>
-            <button
-              type="button"
-              @click="menuData.paperSize = 'B5'"
-              :class="[
-                'py-1.5 rounded-lg font-bold text-center transition cursor-pointer text-xs',
-                menuData.paperSize === 'B5'
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              ]"
-            >
-              B5
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <PaperFormatSection :menu-data="menuData" />
 
     <!-- Layout & Spacing Settings (文字サイズ・密度、区切り線、価格表記、文字方向) -->
-    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-stone-200 space-y-3">
-      <h3 class="font-bold text-sm text-stone-900 flex items-center justify-between">
-        <span>配置バランス・文字サイズ</span>
-        <span class="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-medium border border-amber-200">
-          用紙に合わせて自動最適化
-        </span>
-      </h3>
+    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-stone-200 space-y-4">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <h3 class="font-bold text-sm text-stone-900 flex items-center gap-1.5">
+          <Type class="w-4 h-4 text-amber-600" />
+          <span>文字サイズ・配置バランス</span>
+        </h3>
+        <button
+          type="button"
+          @click="autoOptimizeFontAndLayout"
+          class="text-xs text-amber-900 bg-amber-50 hover:bg-amber-100 active:scale-95 px-2.5 py-1 rounded-lg font-bold border border-amber-200 flex items-center gap-1 transition cursor-pointer"
+          title="現在の品数に合わせて最適な文字サイズと間隔を自動設定"
+        >
+          <Sparkles class="w-3.5 h-3.5 text-amber-600" />
+          <span>品数に合わせて自動最適化</span>
+        </button>
+      </div>
 
-      <div class="space-y-3 text-xs">
-        <!-- Density / Font Size -->
+      <div class="space-y-3.5 text-xs">
+        <!-- Font Size Scale Slider & Quick Buttons -->
+        <div class="bg-amber-50/50 p-3 rounded-xl border border-amber-200/60 space-y-2.5">
+          <div class="flex items-center justify-between gap-1 flex-wrap">
+            <label class="font-bold text-stone-800 flex items-center gap-1">
+              <span>全体の文字サイズ</span>
+              <span class="text-[10px] text-stone-500 font-normal">（拡大率）</span>
+            </label>
+            <div class="flex items-center gap-1">
+              <button
+                type="button"
+                @click="adjustFontScale(-5)"
+                :disabled="(menuData.fontScale || 100) <= 75"
+                class="w-6 h-6 rounded bg-white hover:bg-stone-100 active:scale-95 text-stone-700 font-bold border border-stone-300 flex items-center justify-center cursor-pointer disabled:opacity-40"
+                title="文字サイズを小さく (-5%)"
+              >
+                －
+              </button>
+              <span class="font-black text-amber-950 text-xs min-w-[42px] text-center">
+                {{ menuData.fontScale || 100 }}%
+              </span>
+              <button
+                type="button"
+                @click="adjustFontScale(5)"
+                :disabled="(menuData.fontScale || 100) >= 160"
+                class="w-6 h-6 rounded bg-white hover:bg-stone-100 active:scale-95 text-stone-700 font-bold border border-stone-300 flex items-center justify-center cursor-pointer disabled:opacity-40"
+                title="文字サイズを大きく (+5%)"
+              >
+                ＋
+              </button>
+            </div>
+          </div>
+
+          <!-- Slider -->
+          <div class="flex items-center gap-3">
+            <span class="text-[10px] text-stone-400">75%</span>
+            <input
+              type="range"
+              min="75"
+              max="160"
+              step="5"
+              :value="menuData.fontScale || 100"
+              @input="menuData.fontScale = Number($event.target.value)"
+              class="w-full accent-amber-600 cursor-pointer"
+            />
+            <span class="text-[10px] text-stone-400">160%</span>
+          </div>
+
+          <!-- Quick Preset Buttons -->
+          <div class="grid grid-cols-5 gap-1 pt-0.5">
+            <button
+              type="button"
+              @click="menuData.fontScale = 140"
+              :class="[
+                'py-1 rounded font-bold text-center transition cursor-pointer text-[11px]',
+                menuData.fontScale === 140 ? 'bg-amber-600 text-white shadow-xs' : 'bg-white text-stone-700 border border-stone-200 hover:bg-stone-50'
+              ]"
+            >
+              極大 (140%)
+            </button>
+            <button
+              type="button"
+              @click="menuData.fontScale = 125"
+              :class="[
+                'py-1 rounded font-bold text-center transition cursor-pointer text-[11px]',
+                menuData.fontScale === 125 ? 'bg-amber-600 text-white shadow-xs' : 'bg-white text-stone-700 border border-stone-200 hover:bg-stone-50'
+              ]"
+            >
+              特大 (125%)
+            </button>
+            <button
+              type="button"
+              @click="menuData.fontScale = 110"
+              :class="[
+                'py-1 rounded font-bold text-center transition cursor-pointer text-[11px]',
+                menuData.fontScale === 110 ? 'bg-amber-600 text-white shadow-xs' : 'bg-white text-stone-700 border border-stone-200 hover:bg-stone-50'
+              ]"
+            >
+              大 (110%)
+            </button>
+            <button
+              type="button"
+              @click="menuData.fontScale = 100"
+              :class="[
+                'py-1 rounded font-bold text-center transition cursor-pointer text-[11px]',
+                (!menuData.fontScale || menuData.fontScale === 100) ? 'bg-amber-600 text-white shadow-xs' : 'bg-white text-stone-700 border border-stone-200 hover:bg-stone-50'
+              ]"
+            >
+              標準 (100%)
+            </button>
+            <button
+              type="button"
+              @click="menuData.fontScale = 85"
+              :class="[
+                'py-1 rounded font-bold text-center transition cursor-pointer text-[11px]',
+                menuData.fontScale === 85 ? 'bg-amber-600 text-white shadow-xs' : 'bg-white text-stone-700 border border-stone-200 hover:bg-stone-50'
+              ]"
+            >
+              小 (85%)
+            </button>
+          </div>
+        </div>
+
+        <!-- Density / Item Spacing -->
         <div>
-          <label class="block text-stone-600 mb-1.5 font-medium">文字サイズ・品目密度</label>
+          <label class="block text-stone-600 mb-1.5 font-medium">品目間隔（余白密度）</label>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 bg-stone-100 p-1 rounded-xl">
             <button
               type="button"
@@ -240,7 +304,7 @@ function selectLayout(mode) {
                   : 'text-stone-500 hover:text-stone-800'
               ]"
             >
-              ゆったり大
+              ゆったり広め
             </button>
             <button
               type="button"
@@ -264,7 +328,7 @@ function selectLayout(mode) {
                   : 'text-stone-500 hover:text-stone-800'
               ]"
             >
-              すっきり小
+              すっきり詰める
             </button>
           </div>
         </div>
