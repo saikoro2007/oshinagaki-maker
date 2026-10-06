@@ -463,60 +463,23 @@
     </div>
 
     <!-- Image Preview Modal -->
-    <div
-      v-if="showImageModal"
-      class="no-print fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
-      @click.self="showImageModal = false"
-    >
-      <div class="bg-white rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
-        <div class="flex items-center justify-between pb-3 border-b border-stone-200">
-          <div class="flex items-center gap-2">
-            <ImageIcon class="w-5 h-5 text-amber-600" />
-            <h3 class="font-bold text-stone-900 text-base">
-              {{ isDrink ? '生成されたお飲み物メニュー画像' : '生成されたグランドメニュー画像' }}
-            </h3>
-          </div>
-          <button
-            @click="showImageModal = false"
-            class="text-stone-400 hover:text-stone-700 p-1.5 rounded-lg hover:bg-stone-100 transition cursor-pointer"
-          >
-            <X class="w-5 h-5" />
-          </button>
-        </div>
-
-        <div class="flex-1 overflow-auto py-4 flex items-center justify-center bg-stone-100 rounded-xl my-3">
-          <img
-            :src="generatedImageUrl"
-            alt="メニュー画像"
-            class="max-h-[60vh] max-w-full rounded shadow-md object-contain"
-          />
-        </div>
-
-        <div class="pt-2 flex justify-end gap-2">
-          <button
-            @click="showImageModal = false"
-            class="px-4 py-2 text-stone-600 hover:bg-stone-100 rounded-xl text-sm font-bold transition cursor-pointer"
-          >
-            閉じる
-          </button>
-          <button
-            @click="downloadGeneratedImage"
-            class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-stone-950 rounded-xl text-sm font-black shadow-sm flex items-center gap-1.5 transition cursor-pointer"
-          >
-            <Download class="w-4 h-4" />
-            <span>保存する</span>
-          </button>
-        </div>
-      </div>
-    </div>
+    <ImageExportModal
+      :show="showImageModal"
+      :image-url="generatedImageUrl || ''"
+      :title="isDrink ? '生成されたお飲み物メニュー画像' : '生成されたグランドメニュー画像'"
+      @close="closeImageModal"
+      @download="downloadGeneratedImage"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { formatPrice } from '../utils/formatters'
-import { Printer, Image as ImageIcon, Loader2, Download, X, ArrowLeftRight, Edit3 } from '@lucide/vue'
-import { toPng } from 'html-to-image'
+import { getWashiBackgroundStyle, getFontFamilyClass } from '../utils/styleHelpers'
+import { useImageExport } from '../composables/useImageExport'
+import ImageExportModal from './ImageExportModal.vue'
+import { Printer, Image as ImageIcon, Loader2, ArrowLeftRight, Edit3 } from '@lucide/vue'
 
 const props = defineProps({
   menuData: {
@@ -531,9 +494,19 @@ const isDrink = computed(() => {
 
 const scrollContainer = ref(null)
 const printSheetRef = ref(null)
-const isGeneratingImage = ref(false)
-const generatedImageUrl = ref(null)
-const showImageModal = ref(false)
+
+const filenamePrefix = computed(() => {
+  return isDrink.value ? 'お飲み物メニュー' : (props.menuData.title || '定番お品書き')
+})
+
+const {
+  isGeneratingImage,
+  generatedImageUrl,
+  showImageModal,
+  saveAsImage,
+  downloadGeneratedImage,
+  closeImageModal,
+} = useImageExport(printSheetRef, filenamePrefix)
 
 const isLandscape = computed(() => props.menuData.paperOrientation !== 'portrait')
 const isB5 = computed(() => props.menuData.paperSize === 'B5')
@@ -727,17 +700,7 @@ const portraitBottomSections = computed(() => {
   return secs.filter(s => !topIds.has(s.id) && !midIds.has(s.id))
 })
 
-const fontClass = computed(() => {
-  switch (props.menuData.fontFamily) {
-    case 'brush':
-      return 'font-brush'
-    case 'gothic':
-      return 'font-gothic'
-    case 'mincho':
-    default:
-      return 'font-mincho'
-  }
-})
+const fontClass = computed(() => getFontFamilyClass(props.menuData.fontFamily))
 
 // 用紙の正確な比率（1.414 : 1 または 1 : 1.414）
 const sheetDimensionClasses = computed(() => {
@@ -752,42 +715,9 @@ const sheetDimensionClasses = computed(() => {
   }
 })
 
-const bgToneStyle = computed(() => {
-  const color = props.menuData.bgColor || '#e3ebdc'
-  const pattern = props.menuData.bgPattern || 'washi'
-
-  let backgroundImage = 'none'
-  let backgroundSize = 'auto'
-
-  switch (pattern) {
-    case 'cloud':
-      backgroundImage = 'radial-gradient(rgba(120, 100, 70, 0.16) 0.8px, transparent 0.8px), radial-gradient(rgba(140, 120, 90, 0.11) 0.6px, transparent 0.6px)'
-      backgroundSize = '24px 24px, 16px 16px'
-      break
-    case 'washi':
-      backgroundImage = 'radial-gradient(rgba(80, 100, 70, 0.14) 0.6px, transparent 0.6px)'
-      backgroundSize = '16px 16px'
-      break
-    case 'grid':
-      backgroundImage = 'linear-gradient(rgba(100, 120, 90, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(100, 120, 90, 0.08) 1px, transparent 1px)'
-      backgroundSize = '32px 32px'
-      break
-    case 'none':
-    default:
-      backgroundImage = 'none'
-      break
-  }
-
-  return {
-    backgroundColor: color,
-    backgroundImage,
-    backgroundSize,
-  }
-})
-
 const sheetStyle = computed(() => {
   return {
-    ...bgToneStyle.value,
+    ...getWashiBackgroundStyle(props.menuData.bgColor || '#e3ebdc', props.menuData.bgPattern || 'washi'),
     color: props.menuData.textColor || '#1a1f1b',
     boxSizing: 'border-box'
   }
@@ -815,38 +745,6 @@ function onNoticeBlur(index, event) {
 
 function triggerPrint() {
   window.print()
-}
-
-async function saveAsImage() {
-  if (!printSheetRef.value || isGeneratingImage.value) return
-  isGeneratingImage.value = true
-  try {
-    if (document.fonts && document.fonts.ready) {
-      await document.fonts.ready
-    }
-    await new Promise((resolve) => setTimeout(resolve, 150))
-    const dataUrl = await toPng(printSheetRef.value, {
-      quality: 0.95,
-      pixelRatio: 2,
-      cacheBust: true,
-    })
-    generatedImageUrl.value = dataUrl
-    showImageModal.value = true
-  } catch (error) {
-    console.error('画像生成に失敗しました:', error)
-    alert('画像の生成中にエラーが発生しました。もう一度お試しください。')
-  } finally {
-    isGeneratingImage.value = false
-  }
-}
-
-function downloadGeneratedImage() {
-  if (!generatedImageUrl.value) return
-  const filename = `グランドメニュー_${new Date().toISOString().slice(0, 10)}.png`
-  const link = document.createElement('a')
-  link.download = filename
-  link.href = generatedImageUrl.value
-  link.click()
 }
 </script>
 
