@@ -418,7 +418,7 @@ function triggerPrint() {
             <!-- 1. Right Header Section (Title & Subtitle ONLY) -->
             <div
               :class="[
-                'pl-6 sm:pl-8 shrink-0 h-full flex flex-col justify-start',
+                'pl-6 sm:pl-8 shrink-0 h-full flex flex-col justify-start py-1',
                 (menuData.showDividers || menuData.subtitle) ? 'border-l border-current/30' : ''
               ]"
             >
@@ -457,7 +457,7 @@ function triggerPrint() {
                 ]"
               >
                 <!-- Item Name & Tag (Top of vertical column - 上端固定・中黒水平揃え) -->
-                <div class="flex-1 min-h-0 overflow-visible pt-1">
+                <div class="flex-1 min-h-0 overflow-visible">
                   <!-- Main Item Name (Editable) -->
                   <div
                     contenteditable="true"
@@ -523,12 +523,12 @@ function triggerPrint() {
             </div>
 
             <!-- 3. Left Footer Section (Clean footer with optional store signature & tax note) -->
-            <div class="flex flex-row justify-between pr-2 sm:pr-4 shrink-0 h-full">
+            <div class="flex flex-row justify-between pr-2 sm:pr-4 shrink-0 h-full py-1">
               <div
                 v-if="menuData.storeName"
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'storeName', $event)"
-                class="editable-field text-xs font-bold opacity-90 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text pt-1"
+                class="editable-field text-xs font-bold opacity-90 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text"
                 title="タップして店名を編集"
               >
                 {{ menuData.storeName }}
@@ -542,7 +542,7 @@ function triggerPrint() {
                 :class="[
                   'editable-field text-[10px] leading-relaxed opacity-65 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text pb-1 whitespace-pre-line',
                   menuData.footerNoteAlign === 'top'
-                    ? (menuData.storeName ? 'mt-4 mb-auto' : 'mt-1 mb-auto')
+                    ? (menuData.storeName ? 'mt-4 mb-auto' : 'mt-0 mb-auto')
                     : menuData.footerNoteAlign === 'center'
                       ? 'my-auto'
                       : 'mt-auto mb-0'
