@@ -179,46 +179,48 @@ function parseItemName(name) {
   return parts
 }
 
-// 4. 品名の文字数とスケールに応じた動的な文字サイズスタイル（文字溢れ・価格押し出しを防止）
+// 4. 品名の文字数とスケールに応じた動的な文字サイズスタイル（文字溢れ・価格衝突を確実に防止）
 function getItemNameStyle(name) {
   const len = name ? name.length : 0
   const ratio = fontScaleRatio.value
   const density = effectiveDensity.value
 
   // ベースフォントサイズ（rem）
-  let baseRem = 1.35
+  let baseRem = 1.28
   if (density === 'compact') {
-    baseRem = 1.18
+    baseRem = 1.12
   } else if (density === 'spacious') {
-    baseRem = 1.55
+    baseRem = 1.45
   }
 
-  // 文字数に応じた減衰率（長い品名でも価格と絶対に重ならないように）
+  // 文字数に応じた減衰率（10文字以上の長い品名でも価格と絶対に重ならないように）
   let lenFactor = 1.0
-  if (len > 14) {
-    lenFactor = 0.65
-  } else if (len > 10) {
-    lenFactor = 0.78
+  if (len > 13) {
+    lenFactor = 0.60
+  } else if (len > 8) {
+    lenFactor = 0.72
   } else if (len > 6) {
-    lenFactor = 0.90
+    lenFactor = 0.84
+  } else if (len <= 4) {
+    lenFactor = 1.05
   }
 
   const finalRem = (baseRem * ratio * lenFactor).toFixed(3)
 
   // 縦書き時の文字送り（letter-spacing）
-  let tracking = '0.12em'
+  let tracking = '0.08em'
   if (len <= 4) {
-    tracking = '0.24em'
+    tracking = '0.18em'
   } else if (len <= 6) {
-    tracking = '0.15em'
-  } else if (len > 10) {
-    tracking = '0.01em'
+    tracking = '0.12em'
+  } else if (len > 8) {
+    tracking = '0.02em'
   }
 
   return {
     fontSize: `calc(${finalRem}rem * var(--print-scale, 1))`,
     letterSpacing: tracking,
-    lineHeight: 1.25,
+    lineHeight: 1.2,
   }
 }
 
@@ -226,9 +228,9 @@ function getItemNameStyle(name) {
 const priceStyle = computed(() => {
   const ratio = fontScaleRatio.value
   const density = effectiveDensity.value
-  let baseRem = 1.15
-  if (density === 'compact') baseRem = 1.05
-  else if (density === 'spacious') baseRem = 1.3
+  let baseRem = 1.1
+  if (density === 'compact') baseRem = 1.0
+  else if (density === 'spacious') baseRem = 1.22
 
   const finalRem = (baseRem * ratio).toFixed(3)
   return {
@@ -449,25 +451,25 @@ function triggerPrint() {
                 v-for="(item, idx) in menuData.items"
                 :key="item.id || idx"
                 :class="[
-                  'flex flex-row justify-between items-center h-full py-1 relative group transition-all text-center',
+                  'flex flex-row justify-between items-center h-full py-1 relative group transition-all',
                   itemClasses.col,
                   menuData.showDividers ? 'border-l border-current/20' : ''
                 ]"
               >
-                <!-- Item Name & Tag (Top of vertical column) -->
-                <div class="flex-1 min-h-0 overflow-visible flex flex-col items-center justify-start w-full text-center">
+                <!-- Item Name & Tag (Top of vertical column - 上端固定・中黒水平揃え) -->
+                <div class="flex-1 min-h-0 overflow-visible pt-1">
                   <!-- Main Item Name (Editable) -->
                   <div
                     contenteditable="true"
                     @blur="onTextBlur(item, 'name', $event)"
                     :class="[
-                      'editable-field font-bold outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text whitespace-nowrap text-center mx-auto',
+                      'editable-field font-bold outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text whitespace-nowrap',
                       itemClasses.name
                     ]"
                     :style="getItemNameStyle(item.name)"
                     title="タップして品名を編集"
                   >
-                    <span v-if="menuData.showDotPrefix && !item.name.startsWith('・')" class="text-[0.75em] opacity-80 mr-0.5 inline-block text-center">・</span>
+                    <span v-if="menuData.showDotPrefix && !item.name.startsWith('・')" class="text-[0.75em] opacity-80 select-none">・</span>
                     <template v-for="(part, pIdx) in parseItemName(item.name)" :key="pIdx">
                       <span v-if="part.isBracket" class="text-[0.72em] font-normal opacity-80 tracking-tight">
                         {{ part.text }}
@@ -482,7 +484,7 @@ function triggerPrint() {
                     contenteditable="true"
                     @blur="onTextBlur(item, 'note', $event)"
                     :class="[
-                      'editable-field tracking-tighter opacity-85 bg-current/10 border border-current/25 rounded-xs outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text text-center mx-auto mt-1',
+                      'editable-field tracking-tighter opacity-85 bg-current/10 border border-current/25 rounded-xs outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text mt-1',
                       itemClasses.note
                     ]"
                     title="タップして補足を編集"
@@ -495,20 +497,20 @@ function triggerPrint() {
                     v-if="menuData.showEnglish && item.translation"
                     contenteditable="true"
                     @blur="onTextBlur(item, 'translation', $event)"
-                    class="editable-field text-[9px] font-sans tracking-tight opacity-70 mt-1 outline-none hover:bg-amber-100/60 cursor-text text-center mx-auto"
+                    class="editable-field text-[9px] font-sans tracking-tight opacity-70 mt-1 outline-none hover:bg-amber-100/60 cursor-text"
                     title="タップして翻訳を編集"
                   >
                     {{ item.translation }}
                   </div>
                 </div>
 
-                <!-- Price at the bottom of the column (Editable) - 下端固定＆芯合わせ -->
-                <div class="shrink-0 flex flex-col items-center justify-end pb-1 pt-1 w-full text-center">
+                <!-- Price at the bottom of the column (Editable) - 下端固定＆左右中央芯合わせ＆安全マージン -->
+                <div class="shrink-0 pb-1.5 pt-2">
                   <div
                     contenteditable="true"
                     @blur="onPriceBlur(item, $event)"
                     :class="[
-                      'editable-field font-bold whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text text-center mx-auto',
+                      'editable-field font-bold whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text',
                       itemClasses.price
                     ]"
                     :style="priceStyle"
