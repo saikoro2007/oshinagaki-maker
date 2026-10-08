@@ -55,7 +55,8 @@ export function useMenuStorage() {
       if (savedDaily) {
         const parsedDaily = JSON.parse(savedDaily)
         const hasLegacyHakkaku = parsedDaily.items?.some(it => it.name && it.name.includes('八角'))
-        if (parsedDaily.version === INITIAL_MENU_STATE.version && !hasLegacyHakkaku) {
+        const hasLegacyGarlic = parsedDaily.items?.some(it => it.name && it.name.includes('十勝さん'))
+        if (parsedDaily.version === INITIAL_MENU_STATE.version && !hasLegacyHakkaku && !hasLegacyGarlic) {
           Object.assign(dailyMenuData, parsedDaily)
         } else {
           const updatedDaily = JSON.parse(JSON.stringify(INITIAL_MENU_STATE))

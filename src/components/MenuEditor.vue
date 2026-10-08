@@ -1030,13 +1030,13 @@ function autoOptimizeFontAndLayout() {
       </div>
     </div>
 
-    <!-- Bottom Footer Note -->
+    <!-- Footer Note (注記・お知らせ) -->
     <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-stone-200">
-      <label class="block text-xs font-medium text-stone-500 mb-1.5">用紙下部・注記テキスト</label>
+      <label class="block text-xs font-medium text-stone-500 mb-1.5">注記テキスト</label>
       <input
         v-model="menuData.footerNote"
         type="text"
-        placeholder="※価格はすべて税込表示となっております。"
+        placeholder="※価格はすべて税込表示となっております。仕入れ状況により売り切れの際はご容赦ください。"
         class="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-800 text-xs bg-white focus:ring-2 focus:ring-amber-500 outline-none transition"
       />
     </div>

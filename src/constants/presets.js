@@ -69,10 +69,10 @@ export const RESTAURANT_PRESETS = [
 ];
 
 export const INITIAL_MENU_STATE = {
-  version: 'v4_mozu_recommend_2026',
+  version: 'v5_mozu_recommend_2026',
   title: '本日のおすすめ',
   subtitle: '',
-  footerNote: '',
+  footerNote: '※価格はすべて税込表示となっております。仕入れ状況により売り切れの際はご容赦ください。',
   storeName: '',
   dateText: '本日のお品書き',
   layout: 'vertical', // 'vertical' | 'horizontal'
@@ -92,7 +92,7 @@ export const INITIAL_MENU_STATE = {
   textColor: '#1c1917', // 墨色
   items: [
     { id: '1', name: '豚巻きキムチ串', price: '380', note: '', translation: '' },
-    { id: '2', name: '豚巻きにんにく串 （十勝さんにんにく）', price: '380', note: '', translation: '' },
+    { id: '2', name: '豚巻きにんにく串 （十勝産にんにく）', price: '380', note: '', translation: '' },
     { id: '3', name: 'やげんなんこつ串', price: '330', note: '', translation: '' },
     { id: '4', name: '牛すじ煮込み', price: '880', note: '', translation: '' },
     { id: '5', name: 'ミノポン', price: '660', note: '', translation: '' },
