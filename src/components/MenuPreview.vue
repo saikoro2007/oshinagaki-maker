@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { formatPrice } from '../utils/formatters'
 import { getWashiBackgroundStyle, getFontFamilyClass } from '../utils/styleHelpers'
 import { useImageExport } from '../composables/useImageExport'
@@ -15,6 +15,41 @@ const props = defineProps({
 
 const scrollContainer = ref(null)
 const printSheetRef = ref(null)
+const containerWidth = ref(0)
+const viewMode = ref('fit') // 'fit' (全体フィット) | '100' (実寸100%)
+let resizeObserver = null
+
+const isLandscape = computed(() => props.menuData.paperOrientation !== 'portrait')
+const isB5 = computed(() => props.menuData.paperSize === 'B5')
+
+// 用紙の基準キャンバス寸法（A4 / B5 のアスペクト比 1.414 : 1 を忠実に再現）
+const baseSheetDimensions = computed(() => {
+  if (isLandscape.value) {
+    return isB5.value
+      ? { width: 860, height: 609 } // B5横 (257mm x 182mm, 1.412:1)
+      : { width: 960, height: 679 } // A4横 (297mm x 210mm, 1.414:1)
+  } else {
+    return isB5.value
+      ? { width: 520, height: 735 } // B5縦
+      : { width: 580, height: 820 } // A4縦
+  }
+})
+
+// プレビュー領域の利用可能幅に応じた自動縮小スケール
+const autoFitScale = computed(() => {
+  if (!containerWidth.value || containerWidth.value <= 0) return 1
+  const availableWidth = Math.max(240, containerWidth.value - 24)
+  const targetWidth = baseSheetDimensions.value.width
+  if (targetWidth <= 0) return 1
+  // PC等の広大な画面でも拡大(>1)でぼやけないよう上限1.0、下限0.25
+  return Math.min(1.0, Math.max(0.25, availableWidth / targetWidth))
+})
+
+// 実際に適用するスケール倍率
+const appliedScale = computed(() => {
+  if (viewMode.value === '100') return 1.0
+  return autoFitScale.value
+})
 
 const filenamePrefix = computed(() => props.menuData.title || 'お品書き')
 
@@ -27,19 +62,44 @@ const {
   closeImageModal,
 } = useImageExport(printSheetRef, filenamePrefix)
 
+function updateContainerWidth() {
+  if (scrollContainer.value) {
+    containerWidth.value = scrollContainer.value.clientWidth
+  }
+}
+
 onMounted(() => {
+  updateContainerWidth()
+  if (typeof ResizeObserver !== 'undefined' && scrollContainer.value) {
+    resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect) {
+          containerWidth.value = entry.contentRect.width
+        }
+      }
+    })
+    resizeObserver.observe(scrollContainer.value)
+  }
+
   nextTick(() => {
-    // 縦書きの場合、最初は右側のタイトルが見えるように右端へスクロール
-    if (scrollContainer.value && props.menuData.layout === 'vertical') {
+    // 縦書きで等倍表示の場合、最初は右側のタイトルが見えるように右端へスクロール
+    if (scrollContainer.value && props.menuData.layout === 'vertical' && viewMode.value === '100') {
       scrollContainer.value.scrollLeft = scrollContainer.value.scrollWidth
     }
   })
 })
 
+onUnmounted(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+    resizeObserver = null
+  }
+})
+
 // レイアウト切替時にスクロール位置を調整
 watch(() => props.menuData.layout, (newLayout) => {
   nextTick(() => {
-    if (scrollContainer.value) {
+    if (scrollContainer.value && viewMode.value === '100') {
       if (newLayout === 'vertical') {
         scrollContainer.value.scrollLeft = scrollContainer.value.scrollWidth
       } else {
@@ -61,33 +121,6 @@ const frameClasses = computed(() => {
       return 'border-0'
     default:
       return 'border-2 border-current'
-  }
-})
-
-const isLandscape = computed(() => props.menuData.paperOrientation !== 'portrait')
-const isB5 = computed(() => props.menuData.paperSize === 'B5')
-
-// 用紙サイズ（A4/B5）と向き（縦/横）に応じた画面上の用紙プロポーション
-const sheetDimensionClasses = computed(() => {
-  if (isLandscape.value) {
-    // 横向き（横長用紙：1.414 : 1）
-    return isB5.value
-      ? 'min-w-[660px] max-w-[900px] w-full min-h-[460px] sm:min-h-[500px] p-5 sm:p-7'
-      : 'min-w-[720px] max-w-[1040px] w-full min-h-[500px] sm:min-h-[540px] p-5 sm:p-8'
-  } else {
-    // 縦向き（縦長用紙：1 : 1.414、正方形にならず美しい縦長比率を保持）
-    return isB5.value
-      ? 'min-w-[340px] max-w-[480px] w-full min-h-[680px] sm:min-h-[720px] p-5 sm:p-7'
-      : 'min-w-[340px] max-w-[550px] w-full min-h-[780px] sm:min-h-[820px] p-5 sm:p-8'
-  }
-})
-
-// 縦書きコンテンツの高さ（縦長用紙のときは高さを広げる）
-const verticalContentHeightClass = computed(() => {
-  if (isLandscape.value) {
-    return 'h-[450px] sm:h-[490px]'
-  } else {
-    return isB5.value ? 'h-[580px] sm:h-[620px]' : 'h-[660px] sm:h-[720px]'
   }
 })
 
@@ -278,7 +311,29 @@ function triggerPrint() {
           size: {{ menuData.paperSize === 'B5' ? '182mm 257mm' : 'A4' }} {{ isLandscape ? 'landscape' : 'portrait' }};
           margin: 6mm;
         }
+        .preview-scroll {
+          display: block !important;
+          overflow: visible !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          height: 100% !important;
+        }
+        .print-sheet-scaler {
+          width: 100% !important;
+          height: 100% !important;
+          transform: none !important;
+          display: block !important;
+        }
         .print-sheet {
+          position: static !important;
+          transform: none !important;
+          width: 100% !important;
+          height: 100% !important;
+          min-width: 0 !important;
+          max-width: none !important;
+          box-shadow: none !important;
+          border: none !important;
+          overflow: hidden !important;
           --print-scale: 1.15;
         }
         .editable-field {
@@ -307,6 +362,36 @@ function triggerPrint() {
 
       <!-- Action Buttons & Quick Controls -->
       <div class="flex items-center gap-2 flex-wrap">
+        <!-- View Mode: Auto-fit vs 100% Original Size -->
+        <div class="flex items-center gap-1 bg-stone-100 p-1 rounded-xl border border-stone-200 text-xs select-none">
+          <button
+            type="button"
+            @click="viewMode = 'fit'"
+            :class="[
+              'px-2 py-1 rounded-lg font-bold transition cursor-pointer text-xs',
+              viewMode === 'fit'
+                ? 'bg-stone-900 text-white shadow-xs'
+                : 'text-stone-600 hover:text-stone-900'
+            ]"
+            title="用紙全体が枠内に収まるよう自動縮小表示"
+          >
+            全体表示 ({{ Math.round(autoFitScale * 100) }}%)
+          </button>
+          <button
+            type="button"
+            @click="viewMode = '100'"
+            :class="[
+              'px-2 py-1 rounded-lg font-bold transition cursor-pointer text-xs',
+              viewMode === '100'
+                ? 'bg-stone-900 text-white shadow-xs'
+                : 'text-stone-600 hover:text-stone-900'
+            ]"
+            title="等倍(100%)で表示して横スクロールで確認・編集"
+          >
+            実寸 (100%)
+          </button>
+        </div>
+
         <!-- Font Scale Quick Controls -->
         <div class="flex items-center gap-1 bg-stone-100 hover:bg-stone-200/60 p-1 rounded-xl border border-stone-200 text-xs">
           <span class="font-bold text-stone-700 pl-1.5 flex items-center gap-1 select-none">
@@ -370,8 +455,9 @@ function triggerPrint() {
       </div>
     </div>
 
-    <!-- Mobile swipe hint -->
+    <!-- Mobile swipe hint (only when 100% original size) -->
     <div
+      v-if="viewMode === '100'"
       class="no-print lg:hidden text-center text-xs text-stone-500 flex items-center justify-center gap-1.5 py-1"
     >
       <ArrowLeftRight class="w-3.5 h-3.5 text-amber-600 animate-pulse" />
@@ -381,40 +467,51 @@ function triggerPrint() {
     <!-- Paper Scroll Container -->
     <div
       ref="scrollContainer"
-      class="preview-scroll w-full overflow-x-auto pb-8 flex justify-start lg:justify-center px-1 sm:px-2 print:p-0 print:overflow-visible print:block print:h-full"
+      class="preview-scroll w-full overflow-x-auto pb-8 flex justify-center items-start px-1 sm:px-2 print:p-0 print:overflow-visible print:block print:h-full"
     >
+      <!-- Scaled Box Wrapper: takes exact layout space of the scaled sheet on screen -->
       <div
-        ref="printSheetRef"
-        :class="[
-          'print-sheet shrink-0 shadow-2xl transition-all relative select-none border border-current/20 print:shadow-none print:border-none print:min-w-0 print:max-w-none print:w-full print:h-full print:min-h-0 print:p-3 sm:print:p-4 overflow-hidden',
-          fontClass,
-          sheetDimensionClasses
-        ]"
-        :style="sheetStyle"
+        class="print-sheet-scaler relative shrink-0 transition-[width,height] duration-150 print:w-full print:h-full print:static"
+        :style="{
+          width: `${Math.round(baseSheetDimensions.width * appliedScale)}px`,
+          height: `${Math.round(baseSheetDimensions.height * appliedScale)}px`,
+        }"
       >
-        <!-- Outer Frame -->
         <div
+          ref="printSheetRef"
           :class="[
-            'w-full h-full p-5 sm:p-8 flex flex-col justify-between relative z-10 print:p-3.5 print:h-full',
-            frameClasses
+            'print-sheet shadow-2xl relative select-none border border-current/20 overflow-hidden print:shadow-none print:border-none print:w-full print:h-full print:p-3 sm:print:p-4',
+            fontClass
           ]"
+          :style="{
+            ...sheetStyle,
+            width: `${baseSheetDimensions.width}px`,
+            height: `${baseSheetDimensions.height}px`,
+            transform: `scale(${appliedScale})`,
+            transformOrigin: 'top left',
+            boxSizing: 'border-box'
+          }"
         >
-          <!-- Corner Accents (if traditional frame) -->
-          <template v-if="menuData.frameStyle === 'traditional'">
-            <div class="absolute -top-1.5 -left-1.5 w-3 h-3 bg-current"></div>
-            <div class="absolute -top-1.5 -right-1.5 w-3 h-3 bg-current"></div>
-            <div class="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-current"></div>
-            <div class="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-current"></div>
-          </template>
-
-          <!-- VERTICAL WRITING LAYOUT (縦書き・メニューが横に流れる) -->
+          <!-- Outer Frame -->
           <div
-            v-if="menuData.layout === 'vertical'"
             :class="[
-              'vertical-rl w-full print:h-full flex flex-col justify-between overflow-x-visible py-1',
-              verticalContentHeightClass
+              'w-full h-full p-6 sm:p-7 flex flex-col justify-between relative z-10 print:p-3.5 print:h-full box-border',
+              frameClasses
             ]"
           >
+            <!-- Corner Accents (if traditional frame) -->
+            <template v-if="menuData.frameStyle === 'traditional'">
+              <div class="absolute -top-1.5 -left-1.5 w-3 h-3 bg-current"></div>
+              <div class="absolute -top-1.5 -right-1.5 w-3 h-3 bg-current"></div>
+              <div class="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-current"></div>
+              <div class="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-current"></div>
+            </template>
+
+            <!-- VERTICAL WRITING LAYOUT (縦書き・メニューが横に流れる) -->
+            <div
+              v-if="menuData.layout === 'vertical'"
+              class="vertical-rl w-full h-full print:h-full flex flex-col justify-between overflow-hidden py-1 box-border"
+            >
             <!-- 1. Right Header Section (Title & Subtitle ONLY) -->
             <div
               :class="[
@@ -446,7 +543,7 @@ function triggerPrint() {
             </div>
 
             <!-- 2. Middle Items Section (Flows from Right to Left, Side-by-Side!) -->
-            <div class="flex-1 flex flex-col justify-around items-start py-3 sm:py-6 px-0 h-full overflow-x-visible">
+            <div class="flex-1 flex flex-col justify-around items-start py-3 sm:py-5 px-0 h-full min-w-0 overflow-visible">
               <div
                 v-for="(item, idx) in menuData.items"
                 :key="item.id || idx"
@@ -682,6 +779,7 @@ function triggerPrint() {
         </div>
       </div>
     </div>
+  </div>
 
     <!-- Image Export Modal (SNS / Instagram用) -->
     <ImageExportModal
