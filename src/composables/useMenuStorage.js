@@ -54,7 +54,8 @@ export function useMenuStorage() {
       const savedDaily = localStorage.getItem(STORAGE_KEY_DAILY)
       if (savedDaily) {
         const parsedDaily = JSON.parse(savedDaily)
-        if (parsedDaily.version === INITIAL_MENU_STATE.version) {
+        const hasLegacyHakkaku = parsedDaily.items?.some(it => it.name && it.name.includes('八角'))
+        if (parsedDaily.version === INITIAL_MENU_STATE.version && !hasLegacyHakkaku) {
           Object.assign(dailyMenuData, parsedDaily)
         } else {
           const updatedDaily = JSON.parse(JSON.stringify(INITIAL_MENU_STATE))

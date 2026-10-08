@@ -69,7 +69,7 @@ export const RESTAURANT_PRESETS = [
 ];
 
 export const INITIAL_MENU_STATE = {
-  version: 'v3_mozu_recommend_2026',
+  version: 'v4_mozu_recommend_2026',
   title: '本日のおすすめ',
   subtitle: '',
   footerNote: '',
