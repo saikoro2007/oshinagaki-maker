@@ -1043,6 +1043,61 @@ function autoOptimizeFontAndLayout() {
         class="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-800 text-xs bg-white focus:ring-2 focus:ring-amber-500 outline-none transition resize-none leading-relaxed"
       ></textarea>
 
+      <!-- 文字サイズの調整 -->
+      <div class="mt-2.5 flex items-center justify-between pt-2 border-t border-stone-100">
+        <span class="text-xs text-stone-500 font-medium">文字サイズ</span>
+        <div class="inline-flex rounded-lg bg-stone-100 p-0.5 border border-stone-200 text-xs">
+          <button
+            type="button"
+            @click="menuData.footerNoteSize = 'small'"
+            :class="[
+              'px-2.5 py-1 rounded-md font-medium transition cursor-pointer',
+              menuData.footerNoteSize === 'small'
+                ? 'bg-white text-stone-900 shadow-xs font-bold'
+                : 'text-stone-500 hover:text-stone-800'
+            ]"
+          >
+            小
+          </button>
+          <button
+            type="button"
+            @click="menuData.footerNoteSize = 'normal'"
+            :class="[
+              'px-2.5 py-1 rounded-md font-medium transition cursor-pointer',
+              (!menuData.footerNoteSize || menuData.footerNoteSize === 'normal')
+                ? 'bg-white text-stone-900 shadow-xs font-bold'
+                : 'text-stone-500 hover:text-stone-800'
+            ]"
+          >
+            標準
+          </button>
+          <button
+            type="button"
+            @click="menuData.footerNoteSize = 'large'"
+            :class="[
+              'px-2.5 py-1 rounded-md font-medium transition cursor-pointer',
+              menuData.footerNoteSize === 'large'
+                ? 'bg-white text-stone-900 shadow-xs font-bold'
+                : 'text-stone-500 hover:text-stone-800'
+            ]"
+          >
+            大
+          </button>
+          <button
+            type="button"
+            @click="menuData.footerNoteSize = 'xlarge'"
+            :class="[
+              'px-2.5 py-1 rounded-md font-medium transition cursor-pointer',
+              menuData.footerNoteSize === 'xlarge'
+                ? 'bg-white text-stone-900 shadow-xs font-bold'
+                : 'text-stone-500 hover:text-stone-800'
+            ]"
+          >
+            特大
+          </button>
+        </div>
+      </div>
+
       <!-- 高さ・配置位置の調整 -->
       <div class="mt-2.5 flex items-center justify-between pt-2 border-t border-stone-100">
         <span class="text-xs text-stone-500 font-medium">配置位置（高さ）</span>

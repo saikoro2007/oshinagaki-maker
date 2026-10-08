@@ -74,6 +74,7 @@ export const INITIAL_MENU_STATE = {
   subtitle: '',
   footerNote: '※価格はすべて税込表示となっております。\n　仕入れ状況により売り切れの際はご容赦ください。',
   footerNoteAlign: 'bottom', // 'bottom' (下寄せ・標準) | 'center' | 'top'
+  footerNoteSize: 'normal', // 'small' | 'normal' | 'large' | 'xlarge'
   storeName: '',
   dateText: '本日のお品書き',
   layout: 'vertical', // 'vertical' | 'horizontal'

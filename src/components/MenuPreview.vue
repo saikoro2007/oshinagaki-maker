@@ -191,6 +191,35 @@ const itemClasses = computed(() => {
   }
 })
 
+// フッター注記テキストの文字サイズクラス
+const footerNoteSizeClass = computed(() => {
+  switch (props.menuData.footerNoteSize) {
+    case 'small':
+      return 'text-[9px]'
+    case 'large':
+      return 'text-[12px]'
+    case 'xlarge':
+      return 'text-[14px]'
+    case 'normal':
+    default:
+      return 'text-[10.5px]'
+  }
+})
+
+const hFooterNoteSizeClass = computed(() => {
+  switch (props.menuData.footerNoteSize) {
+    case 'small':
+      return 'text-[10px]'
+    case 'large':
+      return 'text-sm'
+    case 'xlarge':
+      return 'text-base'
+    case 'normal':
+    default:
+      return 'text-xs'
+  }
+})
+
 // 3. 品名に含まれる補足括弧（...）または (...) を小さな文字としてレンダリングするためのパーサー
 function parseItemName(name) {
   if (!name) return []
@@ -647,7 +676,8 @@ function triggerPrint() {
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'footerNote', $event)"
                 :class="[
-                  'editable-field text-[10px] leading-relaxed opacity-65 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text pb-1 whitespace-pre-line',
+                  'editable-field leading-relaxed opacity-65 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text pb-1 whitespace-pre-line',
+                  footerNoteSizeClass,
                   menuData.storeName
                     ? (menuData.footerNoteAlign === 'top'
                         ? 'mt-4 mb-auto'
@@ -762,7 +792,10 @@ function triggerPrint() {
               <div
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'footerNote', $event)"
-                class="editable-field outline-none hover:bg-amber-100/60 cursor-text whitespace-pre-line leading-relaxed"
+                :class="[
+                  'editable-field outline-none hover:bg-amber-100/60 cursor-text whitespace-pre-line leading-relaxed',
+                  hFooterNoteSizeClass
+                ]"
               >
                 {{ menuData.footerNote }}
               </div>
