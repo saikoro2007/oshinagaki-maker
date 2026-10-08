@@ -69,10 +69,11 @@ export const RESTAURANT_PRESETS = [
 ];
 
 export const INITIAL_MENU_STATE = {
-  version: 'v6_mozu_recommend_2026',
+  version: 'v7_mozu_recommend_2026',
   title: '本日のおすすめ',
   subtitle: '',
-  footerNote: '※価格はすべて税込表示となっております。\n仕入れ状況により売り切れの際はご容赦ください。',
+  footerNote: '※価格はすべて税込表示となっております。\n　仕入れ状況により売り切れの際はご容赦ください。',
+  footerNoteAlign: 'bottom', // 'bottom' (下寄せ・標準) | 'center' | 'top'
   storeName: '',
   dateText: '本日のお品書き',
   layout: 'vertical', // 'vertical' | 'horizontal'

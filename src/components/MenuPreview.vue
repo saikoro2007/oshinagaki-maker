@@ -539,7 +539,14 @@ function triggerPrint() {
                 v-if="menuData.footerNote"
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'footerNote', $event)"
-                class="editable-field text-[10px] leading-relaxed opacity-65 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text pb-1 mt-auto whitespace-pre-line"
+                :class="[
+                  'editable-field text-[10px] leading-relaxed opacity-65 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text pb-1 whitespace-pre-line',
+                  menuData.footerNoteAlign === 'top'
+                    ? (menuData.storeName ? 'mt-4 mb-auto' : 'mt-1 mb-auto')
+                    : menuData.footerNoteAlign === 'center'
+                      ? 'my-auto'
+                      : 'mt-auto mb-0'
+                ]"
                 title="タップして注記を編集"
               >
                 {{ menuData.footerNote }}

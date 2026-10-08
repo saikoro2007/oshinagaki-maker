@@ -1039,9 +1039,52 @@ function autoOptimizeFontAndLayout() {
       <textarea
         v-model="menuData.footerNote"
         rows="2"
-        placeholder="※価格はすべて税込表示となっております。&#10;仕入れ状況により売り切れの際はご容赦ください。"
+        placeholder="※価格はすべて税込表示となっております。&#10;　仕入れ状況により売り切れの際はご容赦ください。"
         class="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-800 text-xs bg-white focus:ring-2 focus:ring-amber-500 outline-none transition resize-none leading-relaxed"
       ></textarea>
+
+      <!-- 高さ・配置位置の調整 -->
+      <div class="mt-2.5 flex items-center justify-between pt-2 border-t border-stone-100">
+        <span class="text-xs text-stone-500 font-medium">配置位置（高さ）</span>
+        <div class="inline-flex rounded-lg bg-stone-100 p-0.5 border border-stone-200 text-xs">
+          <button
+            type="button"
+            @click="menuData.footerNoteAlign = 'bottom'"
+            :class="[
+              'px-2.5 py-1 rounded-md font-medium transition cursor-pointer',
+              (!menuData.footerNoteAlign || menuData.footerNoteAlign === 'bottom')
+                ? 'bg-white text-stone-900 shadow-xs font-bold'
+                : 'text-stone-500 hover:text-stone-800'
+            ]"
+          >
+            下寄せ (標準)
+          </button>
+          <button
+            type="button"
+            @click="menuData.footerNoteAlign = 'center'"
+            :class="[
+              'px-2.5 py-1 rounded-md font-medium transition cursor-pointer',
+              menuData.footerNoteAlign === 'center'
+                ? 'bg-white text-stone-900 shadow-xs font-bold'
+                : 'text-stone-500 hover:text-stone-800'
+            ]"
+          >
+            中央
+          </button>
+          <button
+            type="button"
+            @click="menuData.footerNoteAlign = 'top'"
+            :class="[
+              'px-2.5 py-1 rounded-md font-medium transition cursor-pointer',
+              menuData.footerNoteAlign === 'top'
+                ? 'bg-white text-stone-900 shadow-xs font-bold'
+                : 'text-stone-500 hover:text-stone-800'
+            ]"
+          >
+            上寄せ
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
