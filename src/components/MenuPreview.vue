@@ -449,25 +449,25 @@ function triggerPrint() {
                 v-for="(item, idx) in menuData.items"
                 :key="item.id || idx"
                 :class="[
-                  'flex flex-row justify-between h-full py-1 relative group transition-all',
+                  'flex flex-row justify-between items-center h-full py-1 relative group transition-all text-center',
                   itemClasses.col,
                   menuData.showDividers ? 'border-l border-current/20' : ''
                 ]"
               >
                 <!-- Item Name & Tag (Top of vertical column) -->
-                <div class="flex-1 min-h-0 overflow-visible">
+                <div class="flex-1 min-h-0 overflow-visible flex flex-col items-center justify-start w-full text-center">
                   <!-- Main Item Name (Editable) -->
                   <div
                     contenteditable="true"
                     @blur="onTextBlur(item, 'name', $event)"
                     :class="[
-                      'editable-field font-bold outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text whitespace-nowrap',
+                      'editable-field font-bold outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text whitespace-nowrap text-center mx-auto',
                       itemClasses.name
                     ]"
                     :style="getItemNameStyle(item.name)"
                     title="タップして品名を編集"
                   >
-                    <span v-if="menuData.showDotPrefix && !item.name.startsWith('・')" class="text-[0.75em] opacity-80 mr-0.5">・</span>
+                    <span v-if="menuData.showDotPrefix && !item.name.startsWith('・')" class="text-[0.75em] opacity-80 mr-0.5 inline-block text-center">・</span>
                     <template v-for="(part, pIdx) in parseItemName(item.name)" :key="pIdx">
                       <span v-if="part.isBracket" class="text-[0.72em] font-normal opacity-80 tracking-tight">
                         {{ part.text }}
@@ -482,7 +482,7 @@ function triggerPrint() {
                     contenteditable="true"
                     @blur="onTextBlur(item, 'note', $event)"
                     :class="[
-                      'editable-field tracking-tighter opacity-85 bg-current/10 border border-current/25 rounded-xs outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text',
+                      'editable-field tracking-tighter opacity-85 bg-current/10 border border-current/25 rounded-xs outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text text-center mx-auto mt-1',
                       itemClasses.note
                     ]"
                     title="タップして補足を編集"
@@ -495,20 +495,20 @@ function triggerPrint() {
                     v-if="menuData.showEnglish && item.translation"
                     contenteditable="true"
                     @blur="onTextBlur(item, 'translation', $event)"
-                    class="editable-field text-[9px] font-sans tracking-tight opacity-70 mt-1 outline-none hover:bg-amber-100/60 cursor-text"
+                    class="editable-field text-[9px] font-sans tracking-tight opacity-70 mt-1 outline-none hover:bg-amber-100/60 cursor-text text-center mx-auto"
                     title="タップして翻訳を編集"
                   >
                     {{ item.translation }}
                   </div>
                 </div>
 
-                <!-- Price at the bottom of the column (Editable) - 下端固定 -->
-                <div class="shrink-0 self-end pb-1 pt-1">
+                <!-- Price at the bottom of the column (Editable) - 下端固定＆芯合わせ -->
+                <div class="shrink-0 flex flex-col items-center justify-end pb-1 pt-1 w-full text-center">
                   <div
                     contenteditable="true"
                     @blur="onPriceBlur(item, $event)"
                     :class="[
-                      'editable-field font-bold whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text',
+                      'editable-field font-bold whitespace-nowrap outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 focus:ring-1 focus:ring-amber-700 rounded px-0.5 cursor-text text-center mx-auto',
                       itemClasses.price
                     ]"
                     :style="priceStyle"
