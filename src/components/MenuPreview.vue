@@ -126,7 +126,7 @@ const itemClasses = computed(() => {
   switch (effectiveDensity.value) {
     case 'compact':
       return {
-        col: 'px-1 sm:px-2 min-w-[28px] sm:min-w-[34px]',
+        col: 'py-1 sm:py-2 px-0 min-w-[28px] sm:min-w-[34px]',
         name: 'tracking-normal leading-snug',
         note: 'text-[10px] px-0.5 py-0.5 mt-1',
         price: 'tracking-tight',
@@ -136,7 +136,7 @@ const itemClasses = computed(() => {
       }
     case 'normal':
       return {
-        col: 'px-2 sm:px-3 min-w-[32px] sm:min-w-[42px]',
+        col: 'py-2 sm:py-3 px-0 min-w-[32px] sm:min-w-[42px]',
         name: 'tracking-wider leading-snug',
         note: 'text-[11px] px-0.5 py-1 mt-1.5',
         price: 'tracking-normal',
@@ -147,7 +147,7 @@ const itemClasses = computed(() => {
     case 'spacious':
     default:
       return {
-        col: 'px-3 sm:px-4 min-w-[38px] sm:min-w-[48px]',
+        col: 'py-3 sm:py-4 px-0 min-w-[38px] sm:min-w-[48px]',
         name: 'tracking-widest leading-tight',
         note: 'text-[12px] px-1 py-1 mt-2',
         price: 'tracking-wider',
@@ -446,12 +446,12 @@ function triggerPrint() {
             </div>
 
             <!-- 2. Middle Items Section (Flows from Right to Left, Side-by-Side!) -->
-            <div class="flex-1 flex flex-col justify-around px-3 sm:px-6 h-full overflow-x-visible">
+            <div class="flex-1 flex flex-col justify-around items-start py-3 sm:py-6 px-0 h-full overflow-x-visible">
               <div
                 v-for="(item, idx) in menuData.items"
                 :key="item.id || idx"
                 :class="[
-                  'flex flex-row justify-between items-center h-full py-1 relative group transition-all',
+                  'flex flex-row justify-between items-center h-full relative group transition-all',
                   itemClasses.col,
                   menuData.showDividers ? 'border-l border-current/20' : ''
                 ]"
@@ -523,7 +523,18 @@ function triggerPrint() {
             </div>
 
             <!-- 3. Left Footer Section (Clean footer with optional store signature & tax note) -->
-            <div class="flex flex-row justify-between pr-2 sm:pr-4 shrink-0 h-full py-1">
+            <div
+              :class="[
+                'flex flex-row pr-2 sm:pr-4 shrink-0 h-full py-1',
+                menuData.storeName
+                  ? 'justify-between'
+                  : (menuData.footerNoteAlign === 'top'
+                      ? 'justify-start'
+                      : menuData.footerNoteAlign === 'center'
+                        ? 'justify-center'
+                        : 'justify-end')
+              ]"
+            >
               <div
                 v-if="menuData.storeName"
                 contenteditable="true"
@@ -533,7 +544,6 @@ function triggerPrint() {
               >
                 {{ menuData.storeName }}
               </div>
-              <div v-else></div>
 
               <div
                 v-if="menuData.footerNote"
@@ -541,11 +551,13 @@ function triggerPrint() {
                 @blur="onTextBlur(menuData, 'footerNote', $event)"
                 :class="[
                   'editable-field text-[10px] leading-relaxed opacity-65 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text pb-1 whitespace-pre-line',
-                  menuData.footerNoteAlign === 'top'
-                    ? (menuData.storeName ? 'mt-4 mb-auto' : 'mt-0 mb-auto')
-                    : menuData.footerNoteAlign === 'center'
-                      ? 'my-auto'
-                      : 'mt-auto mb-0'
+                  menuData.storeName
+                    ? (menuData.footerNoteAlign === 'top'
+                        ? 'mt-4 mb-auto'
+                        : menuData.footerNoteAlign === 'center'
+                          ? 'my-auto'
+                          : 'mt-auto mb-0')
+                    : ''
                 ]"
                 title="タップして注記を編集"
               >
