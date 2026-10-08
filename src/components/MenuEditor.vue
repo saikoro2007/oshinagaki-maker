@@ -1032,13 +1032,16 @@ function autoOptimizeFontAndLayout() {
 
     <!-- Footer Note (注記・お知らせ) -->
     <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-stone-200">
-      <label class="block text-xs font-medium text-stone-500 mb-1.5">注記テキスト</label>
-      <input
+      <div class="flex items-center justify-between mb-1.5">
+        <label class="block text-xs font-medium text-stone-500">注記テキスト</label>
+        <span class="text-[11px] text-stone-400">改行で複数行表示</span>
+      </div>
+      <textarea
         v-model="menuData.footerNote"
-        type="text"
-        placeholder="※価格はすべて税込表示となっております。仕入れ状況により売り切れの際はご容赦ください。"
-        class="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-800 text-xs bg-white focus:ring-2 focus:ring-amber-500 outline-none transition"
-      />
+        rows="2"
+        placeholder="※価格はすべて税込表示となっております。&#10;仕入れ状況により売り切れの際はご容赦ください。"
+        class="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-800 text-xs bg-white focus:ring-2 focus:ring-amber-500 outline-none transition resize-none leading-relaxed"
+      ></textarea>
     </div>
   </div>
 </template>

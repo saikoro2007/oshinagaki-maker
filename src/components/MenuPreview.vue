@@ -528,7 +528,7 @@ function triggerPrint() {
                 v-if="menuData.storeName"
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'storeName', $event)"
-                class="editable-field text-xs font-bold opacity-90 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text self-start pt-1"
+                class="editable-field text-xs font-bold opacity-90 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text pt-1"
                 title="タップして店名を編集"
               >
                 {{ menuData.storeName }}
@@ -536,9 +536,10 @@ function triggerPrint() {
               <div v-else></div>
 
               <div
+                v-if="menuData.footerNote"
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'footerNote', $event)"
-                class="editable-field text-[10px] opacity-65 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text self-end pb-1"
+                class="editable-field text-[10px] leading-relaxed opacity-65 tracking-wider outline-none hover:bg-amber-100/60 focus:bg-amber-100/90 cursor-text pb-1 mt-auto whitespace-pre-line"
                 title="タップして注記を編集"
               >
                 {{ menuData.footerNote }}
@@ -645,7 +646,7 @@ function triggerPrint() {
               <div
                 contenteditable="true"
                 @blur="onTextBlur(menuData, 'footerNote', $event)"
-                class="editable-field outline-none hover:bg-amber-100/60 cursor-text"
+                class="editable-field outline-none hover:bg-amber-100/60 cursor-text whitespace-pre-line leading-relaxed"
               >
                 {{ menuData.footerNote }}
               </div>
